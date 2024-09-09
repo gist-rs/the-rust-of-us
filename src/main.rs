@@ -1,15 +1,11 @@
-// This example shows how to create controllable character with multiple animations.
-//
-// - We'll create a few animations for our character (idle, walk, shoot) in a setup system
-// - We'll move the character with the keyboard and switch to the appropriate animation in another system
-
-#[path = "./common/mod.rs"]
-pub mod common;
-
-use bevy::prelude::*;
+use bevy::{
+    diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
+    prelude::*,
+    window::{PresentMode, WindowResolution},
+};
 use bevy_spritesheet_animation::prelude::*;
 
-use extol_sprite_layer::{LayerIndex, SpriteLayerOptions, SpriteLayerPlugin};
+use extol_sprite_layer::{LayerIndex, SpriteLayerPlugin};
 
 #[derive(Debug, Copy, Clone, Component, PartialEq, Eq, Hash)]
 enum SpriteLayer {
@@ -39,9 +35,19 @@ impl LayerIndex for SpriteLayer {
 fn main() {
     App::new()
         .add_plugins((
-            DefaultPlugins.set(ImagePlugin::default_nearest()),
             SpritesheetAnimationPlugin,
             SpriteLayerPlugin::<SpriteLayer>::default(),
+            DefaultPlugins
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        title: "🦀 The Rust of Us".into(),
+                        resolution: WindowResolution::new(320.0, 320.0),
+                        present_mode: PresentMode::AutoNoVsync,
+                        ..default()
+                    }),
+                    ..default()
+                })
+                .set(ImagePlugin::default_nearest()),
         ))
         .add_systems(Startup, setup)
         .add_systems(Update, control_character)
@@ -55,15 +61,15 @@ fn setup(
     mut library: ResMut<AnimationLibrary>,
     assets: Res<AssetServer>,
 ) {
+    let clip_fps = 60;
     commands.spawn(Camera2dBundle::default());
 
     // Create the animations
-
     let spritesheet = Spritesheet::new(10, 3);
 
     // Idle
-
-    let idle_clip = Clip::from_frames(spritesheet.horizontal_strip(0, 0, 9));
+    let idle_clip = Clip::from_frames(spritesheet.horizontal_strip(0, 0, 9))
+        .with_duration(AnimationDuration::PerFrame(clip_fps));
     let idle_clip_id = library.register_clip(idle_clip);
     let idle_animation = Animation::from_clip(idle_clip_id);
     let idle_animation_id = library.register_animation(idle_animation);
@@ -71,20 +77,24 @@ fn setup(
     library.name_animation(idle_animation_id, "idle").unwrap();
 
     // Walk
-    let walk_clip = Clip::from_frames(spritesheet.horizontal_strip(0, 1, 8));
+    let walk_clip = Clip::from_frames(spritesheet.horizontal_strip(0, 1, 8))
+        .with_duration(AnimationDuration::PerFrame(clip_fps));
     let walk_clip_id = library.register_clip(walk_clip);
     let walk_animation = Animation::from_clip(walk_clip_id);
     let walk_animation_id = library.register_animation(walk_animation);
 
     library.name_animation(walk_animation_id, "walk").unwrap();
 
-    // Shoot
-    let shoot_clip = Clip::from_frames(spritesheet.horizontal_strip(0, 2, 10));
-    let shoot_clip_id = library.register_clip(shoot_clip);
-    let shoot_animation = Animation::from_clip(shoot_clip_id);
-    let shoot_animation_id = library.register_animation(shoot_animation);
+    // Attack
+    let attack_clip = Clip::from_frames(spritesheet.horizontal_strip(0, 2, 10))
+        .with_duration(AnimationDuration::PerFrame(clip_fps));
+    let attack_clip_id = library.register_clip(attack_clip);
+    let attack_animation = Animation::from_clip(attack_clip_id);
+    let attack_animation_id = library.register_animation(attack_animation);
 
-    library.name_animation(shoot_animation_id, "shoot").unwrap();
+    library
+        .name_animation(attack_animation_id, "attack")
+        .unwrap();
 
     // Spawn the character
     let texture = assets.load("man.png");
@@ -120,9 +130,9 @@ fn setup(
     ));
 }
 
-// Component to check if a character is currently shooting
+// Component to check if a character is currently attack
 #[derive(Component)]
-struct Shooting;
+struct Attack;
 
 fn control_character(
     mut commands: Commands,
@@ -135,36 +145,31 @@ fn control_character(
         &mut Transform,
         &mut Sprite,
         &mut SpritesheetAnimation,
-        Option<&Shooting>,
+        Option<&Attack>,
     )>,
 ) {
     // Control the character with the keyboard
-
     const CHARACTER_SPEED: f32 = 150.0;
 
-    for (entity, mut transform, mut sprite, mut animation, shooting) in &mut characters {
-        // Except if they're shooting, in which case we wait for the animation to end
-
-        if shooting.is_some() {
+    for (entity, mut transform, mut sprite, mut animation, attack) in &mut characters {
+        // Except if they're attack, in which case we wait for the animation to end
+        if attack.is_some() {
             continue;
         }
 
-        // Shoot
+        // Attack
         if keyboard.pressed(KeyCode::Space) {
             // Set the animation
-
-            if let Some(shoot_animation_id) = library.animation_with_name("shoot") {
-                animation.switch(shoot_animation_id);
+            if let Some(attack_animation_id) = library.animation_with_name("attack") {
+                animation.switch(attack_animation_id);
             }
 
-            // Add a Shooting component
-
-            commands.entity(entity).insert(Shooting);
+            // Add a Attacking component
+            commands.entity(entity).insert(Attack);
         }
         // Move left
         else if keyboard.pressed(KeyCode::ArrowLeft) {
             // Set the animation
-
             if let Some(walk_animation_id) = library.animation_with_name("walk") {
                 if animation.animation_id != walk_animation_id {
                     animation.switch(walk_animation_id);
@@ -172,14 +177,12 @@ fn control_character(
             }
 
             // Move
-
             transform.translation -= Vec3::X * time.delta_seconds() * CHARACTER_SPEED;
             sprite.flip_x = true;
         }
         // Move right
         else if keyboard.pressed(KeyCode::ArrowRight) {
             // Set the animation
-
             if let Some(walk_animation_id) = library.animation_with_name("walk") {
                 if animation.animation_id != walk_animation_id {
                     animation.switch(walk_animation_id);
@@ -187,14 +190,12 @@ fn control_character(
             }
 
             // Move
-
             transform.translation += Vec3::X * time.delta_seconds() * CHARACTER_SPEED;
             sprite.flip_x = false;
         }
         // Idle
         else {
             // Set the animation
-
             if let Some(idle_animation_id) = library.animation_with_name("idle") {
                 if animation.animation_id != idle_animation_id {
                     animation.switch(idle_animation_id);
@@ -203,11 +204,8 @@ fn control_character(
         }
     }
 
-    // Remove the Shooting component when the shooting animation ends
-    //
+    // Remove the Attacking component when the attack animation ends
     // We use animation events to detect when this happens.
-    // Check out the `events` examples for more details.
-
     for event in events.read() {
         match event {
             AnimationEvent::AnimationRepetitionEnd {
@@ -215,8 +213,8 @@ fn control_character(
                 animation_id,
                 ..
             } => {
-                if library.is_animation_name(*animation_id, "shoot") {
-                    commands.entity(*entity).remove::<Shooting>();
+                if library.is_animation_name(*animation_id, "attack") {
+                    commands.entity(*entity).remove::<Attack>();
                 }
             }
             _ => (),
