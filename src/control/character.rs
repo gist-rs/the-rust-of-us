@@ -64,6 +64,30 @@ pub fn control_character(
             transform.translation += Vec3::X * time.delta_seconds() * CHARACTER_SPEED;
             sprite.flip_x = false;
         }
+        // Move up
+        else if keyboard.pressed(KeyCode::ArrowUp) {
+            // Set the animation
+            if let Some(walk_animation_id) = library.animation_with_name("walk") {
+                if animation.animation_id != walk_animation_id {
+                    animation.switch(walk_animation_id);
+                }
+            }
+
+            // Move
+            transform.translation += Vec3::Y * time.delta_seconds() * CHARACTER_SPEED;
+        }
+        // Move down
+        else if keyboard.pressed(KeyCode::ArrowDown) {
+            // Set the animation
+            if let Some(walk_animation_id) = library.animation_with_name("walk") {
+                if animation.animation_id != walk_animation_id {
+                    animation.switch(walk_animation_id);
+                }
+            }
+
+            // Move
+            transform.translation -= Vec3::Y * time.delta_seconds() * CHARACTER_SPEED;
+        }
         // Idle
         else {
             // Set the animation
