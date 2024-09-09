@@ -1,6 +1,7 @@
 [
   {
-    "file_uri": "man.png",
+    "name": "man",
+    "texture_path": "man.png",
     "width": 96,
     "height": 96,
     "animations": [
@@ -21,6 +22,44 @@
         "x": 0,
         "y": 2,
         "count": 10
+      }
+    ]
+  },
+  {
+    "name": "skeleton",
+    "texture_path": "skeleton.png",
+    "width": 96,
+    "height": 96,
+    "animations": [
+      {
+        "action_name": "idle",
+        "x": 0,
+        "y": 0,
+        "count": 6
+      },
+      {
+        "action_name": "walk",
+        "x": 0,
+        "y": 1,
+        "count": 8
+      },
+      {
+        "action_name": "attack",
+        "x": 0,
+        "y": 2,
+        "count": 7
+      },
+      {
+        "action_name": "hurt",
+        "x": 0,
+        "y": 3,
+        "count": 7
+      },
+      {
+        "action_name": "death",
+        "x": 0,
+        "y": 4,
+        "count": 7
       }
     ]
   }

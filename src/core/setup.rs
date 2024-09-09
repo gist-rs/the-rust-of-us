@@ -15,25 +15,25 @@ struct AnimationDetails {
 
 #[derive(Deserialize)]
 struct Character {
-    file_uri: String,
+    name: String,
+    texture_path: String,
     width: u32,
     height: u32,
     animations: Vec<AnimationDetails>,
 }
 
+#[derive(Component)]
+pub struct ManCharacter;
+
+#[derive(Component)]
+pub struct SkeletonCharacter;
+
 fn build_character(
+    mut commands: &Commands,
     asset_server: &Res<AssetServer>,
     atlas_layouts: &mut ResMut<Assets<TextureAtlasLayout>>,
     library: &mut ResMut<AnimationLibrary>,
-    texture_path: String,
-    sprite_width: u32,
-    sprite_height: u32,
-    animations: Vec<AnimationDetails>,
-) -> (
-    SpriteBundle,
-    TextureAtlas,
-    SpritesheetAnimation,
-    SpriteLayer,
+    character: Character,
 ) {
     let clip_fps = 30;
 
@@ -41,35 +41,46 @@ fn build_character(
     let spritesheet = Spritesheet::new(10, 3);
 
     // Register animations
-    for anim in animations {
+    let animations = character.animations;
+    let texture_path = character.texture_path;
+    let sprite_width = character.width;
+    let sprite_height = character.height;
+
+    animations.iter().for_each(|anim: &AnimationDetails| {
         let clip = Clip::from_frames(spritesheet.horizontal_strip(anim.x, anim.y, anim.count))
             .with_duration(AnimationDuration::PerFrame(clip_fps));
         let clip_id = library.register_clip(clip);
         let animation = Animation::from_clip(clip_id);
         let animation_id = library.register_animation(animation);
+        let animation_name = format!("{}_{}", character.name, &anim.action_name);
+        println!("{animation_name}");
         library
-            .name_animation(animation_id, &anim.action_name)
+            .name_animation(animation_id, animation_name.clone())
             .unwrap();
-    }
 
-    // Spawn the character with the initial idle animation
-    let texture = asset_server.load(texture_path);
-    let layout = atlas_layouts.add(spritesheet.atlas_layout(sprite_width, sprite_height));
-    let idle_animation_id = library.animation_with_name("idle").unwrap();
+        // Spawn the character
+        let texture = asset_server.load(texture_path.clone());
+        let layout = atlas_layouts.add(spritesheet.atlas_layout(sprite_width, sprite_height));
 
-    (
-        SpriteBundle {
-            texture,
-            transform: Transform::from_scale(Vec3::splat(2.0)),
-            ..default()
-        },
-        TextureAtlas {
-            layout,
-            ..default()
-        },
-        SpritesheetAnimation::from_id(idle_animation_id),
-        SpriteLayer::Player,
-    )
+        commands.spawn((
+            SpriteBundle {
+                texture,
+                transform: Transform::from_scale(Vec3::splat(2.0)),
+                ..default()
+            },
+            TextureAtlas {
+                layout,
+                ..default()
+            },
+            SpritesheetAnimation::from_id(library.animation_with_name(animation_name).unwrap()),
+            SpriteLayer::Player,
+            match character.name.as_str() {
+                "man" => ManCharacter,
+                "skeleton" => SkeletonCharacter,
+                _ => panic!("Unknown character type"),
+            },
+        ));
+    })
 }
 
 pub fn setup_scene(
@@ -86,22 +97,13 @@ pub fn setup_scene(
     let characters: Vec<Character> = from_str(&characters_json).expect("Unable to parse JSON");
 
     for character in characters {
-        let (sprite_bundle, texture_atlas, spritesheet_animation, sprite_layer) = build_character(
+        build_character(
+            &commands,
             &asset_server,
             &mut atlas_layouts,
             &mut library,
-            character.file_uri,
-            character.width,
-            character.height,
-            character.animations,
+            character,
         );
-
-        commands.spawn((
-            sprite_bundle,
-            texture_atlas,
-            spritesheet_animation,
-            sprite_layer,
-        ));
     }
 
     // Background

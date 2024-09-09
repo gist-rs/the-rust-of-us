@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use bevy_spritesheet_animation::prelude::*;
 
+use crate::core::setup::ManCharacter;
+
 // Component to check if a character is currently attack
 #[derive(Component)]
 pub struct Attack;
@@ -11,13 +13,16 @@ pub fn control_character(
     keyboard: Res<ButtonInput<KeyCode>>,
     library: Res<AnimationLibrary>,
     mut events: EventReader<AnimationEvent>,
-    mut characters: Query<(
-        Entity,
-        &mut Transform,
-        &mut Sprite,
-        &mut SpritesheetAnimation,
-        Option<&Attack>,
-    )>,
+    mut characters: Query<
+        (
+            Entity,
+            &mut Transform,
+            &mut Sprite,
+            &mut SpritesheetAnimation,
+            Option<&Attack>,
+        ),
+        With<ManCharacter>,
+    >,
 ) {
     // Control the character with the keyboard
     const CHARACTER_SPEED: f32 = 150.0;
@@ -31,7 +36,7 @@ pub fn control_character(
         // Attack
         if keyboard.pressed(KeyCode::Space) {
             // Set the animation
-            if let Some(attack_animation_id) = library.animation_with_name("attack") {
+            if let Some(attack_animation_id) = library.animation_with_name("man_attack") {
                 animation.switch(attack_animation_id);
             }
 
@@ -41,7 +46,7 @@ pub fn control_character(
         // Move left
         else if keyboard.pressed(KeyCode::ArrowLeft) {
             // Set the animation
-            if let Some(walk_animation_id) = library.animation_with_name("walk") {
+            if let Some(walk_animation_id) = library.animation_with_name("man_walk") {
                 if animation.animation_id != walk_animation_id {
                     animation.switch(walk_animation_id);
                 }
@@ -54,7 +59,7 @@ pub fn control_character(
         // Move right
         else if keyboard.pressed(KeyCode::ArrowRight) {
             // Set the animation
-            if let Some(walk_animation_id) = library.animation_with_name("walk") {
+            if let Some(walk_animation_id) = library.animation_with_name("man_walk") {
                 if animation.animation_id != walk_animation_id {
                     animation.switch(walk_animation_id);
                 }
@@ -67,7 +72,7 @@ pub fn control_character(
         // Move up
         else if keyboard.pressed(KeyCode::ArrowUp) {
             // Set the animation
-            if let Some(walk_animation_id) = library.animation_with_name("walk") {
+            if let Some(walk_animation_id) = library.animation_with_name("man_walk") {
                 if animation.animation_id != walk_animation_id {
                     animation.switch(walk_animation_id);
                 }
@@ -79,7 +84,7 @@ pub fn control_character(
         // Move down
         else if keyboard.pressed(KeyCode::ArrowDown) {
             // Set the animation
-            if let Some(walk_animation_id) = library.animation_with_name("walk") {
+            if let Some(walk_animation_id) = library.animation_with_name("man_walk") {
                 if animation.animation_id != walk_animation_id {
                     animation.switch(walk_animation_id);
                 }
@@ -91,7 +96,7 @@ pub fn control_character(
         // Idle
         else {
             // Set the animation
-            if let Some(idle_animation_id) = library.animation_with_name("idle") {
+            if let Some(idle_animation_id) = library.animation_with_name("man_idle") {
                 if animation.animation_id != idle_animation_id {
                     animation.switch(idle_animation_id);
                 }
@@ -108,7 +113,7 @@ pub fn control_character(
                 animation_id,
                 ..
             } => {
-                if library.is_animation_name(*animation_id, "attack") {
+                if library.is_animation_name(*animation_id, "man_attack") {
                     commands.entity(*entity).remove::<Attack>();
                 }
             }
