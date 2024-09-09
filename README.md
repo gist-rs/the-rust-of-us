@@ -2,6 +2,18 @@
 
 "The Rust of Us" is an RPG game where AI characters can join, live their lives, and survive a zombie apocalypse.
 
+## Setup
+
+```
+cargo install cargo-watch
+```
+
+## Dev
+
+```
+cargo watch -c -w src -x run
+```
+
 ## Resources
 
 - Assets: https://x.com/DanielDiggle/status/1830297625452806371?t=cLYMikMGynFuZH1lozaTxg
