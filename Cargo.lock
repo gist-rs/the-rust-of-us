@@ -3404,6 +3404,8 @@ dependencies = [
  "bevy",
  "bevy_spritesheet_animation",
  "extol_sprite_layer",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

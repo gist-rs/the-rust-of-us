@@ -1,0 +1,27 @@
+[
+  {
+    "file_uri": "man.png",
+    "width": 96,
+    "height": 96,
+    "animations": [
+      {
+        "action_name": "idle",
+        "x": 0,
+        "y": 0,
+        "count": 9
+      },
+      {
+        "action_name": "walk",
+        "x": 0,
+        "y": 1,
+        "count": 8
+      },
+      {
+        "action_name": "attack",
+        "x": 0,
+        "y": 2,
+        "count": 10
+      }
+    ]
+  }
+]
