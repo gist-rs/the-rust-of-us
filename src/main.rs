@@ -32,65 +32,99 @@ fn main() {
         .run();
 }
 
+#[derive(Debug)]
+struct AnimationDetails {
+    action_name: String,
+    x: usize,
+    y: usize,
+    count: usize,
+}
+
+fn build_character(
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    atlas_layouts: &mut ResMut<Assets<TextureAtlasLayout>>,
+    library: &mut ResMut<AnimationLibrary>,
+    texture_path: String,
+    sprite_width: u32,
+    sprite_height: u32,
+    animations: Vec<AnimationDetails>,
+) {
+    let clip_fps = 30;
+
+    // Create the spritesheet
+    let spritesheet = Spritesheet::new(10, 3);
+
+    // Register animations
+    for anim in animations {
+        let clip = Clip::from_frames(spritesheet.horizontal_strip(anim.x, anim.y, anim.count))
+            .with_duration(AnimationDuration::PerFrame(clip_fps));
+        let clip_id = library.register_clip(clip);
+        let animation = Animation::from_clip(clip_id);
+        let animation_id = library.register_animation(animation);
+        library
+            .name_animation(animation_id, &anim.action_name)
+            .unwrap();
+
+        // Spawn the character
+        let texture = asset_server.load(texture_path.clone());
+        let layout = atlas_layouts.add(spritesheet.atlas_layout(sprite_width, sprite_height));
+
+        commands.spawn((
+            SpriteBundle {
+                texture,
+                transform: Transform::from_scale(Vec3::splat(2.0)),
+                ..default()
+            },
+            TextureAtlas {
+                layout,
+                ..default()
+            },
+            SpritesheetAnimation::from_id(library.animation_with_name(anim.action_name).unwrap()),
+            SpriteLayer::Player,
+        ));
+    }
+}
+
 fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     mut library: ResMut<AnimationLibrary>,
-    assets: Res<AssetServer>,
 ) {
-    let clip_fps = 30;
     commands.spawn(Camera2dBundle::default());
 
-    // Create the animations
-    let spritesheet = Spritesheet::new(10, 3);
-
-    // Idle
-    let idle_clip = Clip::from_frames(spritesheet.horizontal_strip(0, 0, 9))
-        .with_duration(AnimationDuration::PerFrame(clip_fps));
-    let idle_clip_id = library.register_clip(idle_clip);
-    let idle_animation = Animation::from_clip(idle_clip_id);
-    let idle_animation_id = library.register_animation(idle_animation);
-
-    library.name_animation(idle_animation_id, "idle").unwrap();
-
-    // Walk
-    let walk_clip = Clip::from_frames(spritesheet.horizontal_strip(0, 1, 8))
-        .with_duration(AnimationDuration::PerFrame(clip_fps));
-    let walk_clip_id = library.register_clip(walk_clip);
-    let walk_animation = Animation::from_clip(walk_clip_id);
-    let walk_animation_id = library.register_animation(walk_animation);
-
-    library.name_animation(walk_animation_id, "walk").unwrap();
-
-    // Attack
-    let attack_clip = Clip::from_frames(spritesheet.horizontal_strip(0, 2, 10))
-        .with_duration(AnimationDuration::PerFrame(clip_fps));
-    let attack_clip_id = library.register_clip(attack_clip);
-    let attack_animation = Animation::from_clip(attack_clip_id);
-    let attack_animation_id = library.register_animation(attack_animation);
-
-    library
-        .name_animation(attack_animation_id, "attack")
-        .unwrap();
-
-    // Spawn the character
-    let texture = assets.load("man.png");
-    let layout = atlas_layouts.add(spritesheet.atlas_layout(96, 96));
-
-    commands.spawn((
-        SpriteBundle {
-            texture,
-            transform: Transform::from_scale(Vec3::splat(2.0)),
-            ..default()
+    let animations = vec![
+        AnimationDetails {
+            action_name: "idle".to_string(),
+            x: 0,
+            y: 0,
+            count: 9,
         },
-        TextureAtlas {
-            layout,
-            ..default()
+        AnimationDetails {
+            action_name: "walk".to_string(),
+            x: 0,
+            y: 1,
+            count: 8,
         },
-        SpritesheetAnimation::from_id(idle_animation_id),
-        SpriteLayer::Player,
-    ));
+        AnimationDetails {
+            action_name: "attack".to_string(),
+            x: 0,
+            y: 2,
+            count: 10,
+        },
+    ];
+
+    build_character(
+        &mut commands,
+        &asset_server,
+        &mut atlas_layouts,
+        &mut library,
+        "man.png".to_owned(),
+        96,
+        96,
+        animations,
+    );
 
     // Background
     commands.spawn((
