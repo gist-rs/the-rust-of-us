@@ -18,4 +18,4 @@ cargo watch -c -w src -x run
 
 - Assets: https://x.com/DanielDiggle/status/1830297625452806371?t=cLYMikMGynFuZH1lozaTxg
 - For sprite scene layer: https://github.com/deifactor/extol_sprite_layer
-- For character animation clip; https://github.com/merwaaan/bevy_spritesheet_animation
+- For character animation clip: https://github.com/merwaaan/bevy_spritesheet_animation
