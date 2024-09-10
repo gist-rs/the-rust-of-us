@@ -1,6 +1,7 @@
 [
   {
     "name": "man",
+    "type": "player",
     "texture_path": "man.png",
     "width": 96,
     "height": 96,
@@ -27,6 +28,7 @@
   },
   {
     "name": "skeleton",
+    "type": "enemy",
     "texture_path": "skeleton.png",
     "width": 96,
     "height": 96,

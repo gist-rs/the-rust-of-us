@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_spritesheet_animation::prelude::*;
 
-use crate::core::setup::{CharacterType, ManCharacter};
+use crate::core::setup::Player;
 
 // Component to check if a character is currently attack
 #[derive(Component)]
@@ -13,13 +13,16 @@ pub fn control_character(
     keyboard: Res<ButtonInput<KeyCode>>,
     library: Res<AnimationLibrary>,
     mut events: EventReader<AnimationEvent>,
-    mut characters: Query<(
-        Entity,
-        &mut Transform,
-        &mut Sprite,
-        &mut SpritesheetAnimation,
-        Option<&Attack>,
-    )>,
+    mut characters: Query<
+        (
+            Entity,
+            &mut Transform,
+            &mut Sprite,
+            &mut SpritesheetAnimation,
+            Option<&Attack>,
+        ),
+        With<Player>,
+    >,
 ) {
     // Control the character with the keyboard
     const CHARACTER_SPEED: f32 = 60.0;
@@ -115,7 +118,7 @@ pub fn control_character(
             } => {
                 if library.is_animation_name(*animation_id, "man_attack") {
                     println!("-man_attack");
-                    commands.entity(*entity).remove::<Attack>();
+                    // commands.entity(*entity).remove::<Attack>();
                 }
             }
             _ => (),
