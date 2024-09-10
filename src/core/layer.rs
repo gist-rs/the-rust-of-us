@@ -20,3 +20,17 @@ impl LayerIndex for SpriteLayer {
         }
     }
 }
+
+/// Component to sort entities by their y position.
+/// Takes in a base value usually the sprite default Z with possibly an height offset.
+/// this value could be tweaked to implement virtual Z for jumping
+#[derive(Component, Default, Reflect)]
+#[reflect(Component)]
+pub struct YSort(pub f32);
+
+/// Applies the y-sorting to the entities Z position.
+pub fn y_sort(mut query: Query<(&mut Transform, &YSort)>) {
+    for (mut transform, ysort) in query.iter_mut() {
+        transform.translation.z = ysort.0 - transform.translation.y;
+    }
+}

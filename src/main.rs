@@ -7,7 +7,10 @@ use bevy::{
 };
 use bevy_spritesheet_animation::prelude::*;
 use control::character;
-use core::{layer::SpriteLayer, setup::setup_scene};
+use core::{
+    layer::{y_sort, SpriteLayer},
+    setup::setup_scene,
+};
 use extol_sprite_layer::SpriteLayerPlugin;
 
 fn main() {
@@ -28,6 +31,6 @@ fn main() {
                 .set(ImagePlugin::default_nearest()),
         ))
         .add_systems(Startup, setup_scene)
-        .add_systems(Update, character::control_character)
+        .add_systems(Update, (character::control_character, y_sort))
         .run();
 }

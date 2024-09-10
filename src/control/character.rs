@@ -7,6 +7,7 @@ use crate::core::setup::Player;
 #[derive(Component)]
 pub struct Attack;
 
+#[allow(clippy::type_complexity)]
 pub fn control_character(
     mut commands: Commands,
     time: Res<Time>,
@@ -118,7 +119,7 @@ pub fn control_character(
             } => {
                 if library.is_animation_name(*animation_id, "man_attack") {
                     println!("-man_attack");
-                    // commands.entity(*entity).remove::<Attack>();
+                    commands.entity(*entity).remove::<Attack>();
                 }
             }
             _ => (),

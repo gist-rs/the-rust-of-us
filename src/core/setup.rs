@@ -5,6 +5,8 @@ use serde::Deserialize;
 use serde_json::from_str;
 use std::fs;
 
+use super::layer::YSort;
+
 #[derive(Deserialize)]
 struct AnimationDetails {
     action_name: String,
@@ -36,6 +38,7 @@ struct PlayerBundle {
     spritesheet_animation: SpritesheetAnimation,
     sprite_layer: SpriteLayer,
     marker: Player,
+    ysort: YSort,
 }
 
 #[derive(Bundle)]
@@ -45,6 +48,7 @@ struct EnemyBundle {
     spritesheet_animation: SpritesheetAnimation,
     sprite_layer: SpriteLayer,
     marker: Enemy,
+    ysort: YSort,
 }
 
 fn build_library(
@@ -96,7 +100,7 @@ fn build_player(
     PlayerBundle {
         sprite_bundle: SpriteBundle {
             texture,
-            transform: Transform::from_scale(Vec3::splat(2.0)),
+            transform: Transform::from_xyz(0.0, 0.0, 0.0).with_scale(Vec3::splat(2.0)),
             ..default()
         },
         texture_atlas: TextureAtlas {
@@ -108,6 +112,7 @@ fn build_player(
         ),
         sprite_layer: SpriteLayer::Character,
         marker: Player,
+        ysort: YSort(0.0),
     }
 }
 
@@ -127,7 +132,7 @@ fn build_enemy(
     EnemyBundle {
         sprite_bundle: SpriteBundle {
             texture,
-            transform: Transform::from_scale(Vec3::splat(2.0)),
+            transform: Transform::from_xyz(0.0, 0.0, 0.0).with_scale(Vec3::splat(2.0)),
             ..default()
         },
         texture_atlas: TextureAtlas {
@@ -139,6 +144,7 @@ fn build_enemy(
         ),
         sprite_layer: SpriteLayer::Character,
         marker: Enemy,
+        ysort: YSort(0.0),
     }
 }
 
