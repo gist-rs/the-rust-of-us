@@ -6,6 +6,10 @@ use std::marker::PhantomData;
 #[reflect(Component)]
 pub struct PlayerCharacter;
 
+#[derive(Component, Default, Reflect)]
+#[reflect(Component)]
+pub struct EnemyCharacter;
+
 #[derive(Component, Reflect)]
 #[reflect(Component)]
 pub struct Stat<T>
@@ -81,7 +85,7 @@ pub type Health = Stat<HealthValue>;
 pub fn adjust_stats(
     time: Res<Time>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut hp_query: Query<&mut Health>,
+    mut hp_query: Query<&mut Health, With<EnemyCharacter>>,
 ) {
     let delta = 5.0 * time.delta_seconds();
     hp_query.iter_mut().for_each(|mut hp| {

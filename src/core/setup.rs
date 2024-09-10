@@ -223,7 +223,7 @@ pub fn setup_scene(
                 let enemy_id = commands
                     .spawn(enemy_bundle)
                     .insert((
-                        PlayerCharacter,
+                        EnemyCharacter,
                         Health::new_full(100.0),
                         Statbar::<Health> {
                             color: Color::from(bevy::color::palettes::css::YELLOW),
