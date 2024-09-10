@@ -21,3 +21,5 @@ cargo watch -c -w src -x run
 - For sprite scene layer: https://github.com/deifactor/extol_sprite_layer
 - For character animation clip: https://github.com/merwaaan/bevy_spritesheet_animation
 - Bevy ECS Markers: https://github.com/ChoppedStudio/bevy_ecs_markers
+- Floating statbars like health bars: https://github.com/adrien-bon/bevy_stat_bars
+- 2d tiled map: https://github.com/adrien-bon/bevy_entitiles

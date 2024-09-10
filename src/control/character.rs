@@ -119,7 +119,7 @@ pub fn control_character(
             } => {
                 if library.is_animation_name(*animation_id, "man_attack") {
                     println!("-man_attack");
-                    commands.entity(*entity).remove::<Attack>();
+                    // commands.entity(*entity).remove::<Attack>();
                 }
             }
             _ => (),

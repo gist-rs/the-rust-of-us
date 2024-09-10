@@ -148,6 +148,9 @@ fn build_enemy(
     }
 }
 
+use crate::control::bar::*;
+use bevy_stat_bars::*;
+
 pub fn setup_scene(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -181,12 +184,75 @@ pub fn setup_scene(
             "player" => {
                 let player_bundle =
                     build_player(&asset_server, &mut atlas_layouts, &mut library, character);
-                commands.spawn(player_bundle);
+
+                let player_id = commands
+                    .spawn(player_bundle)
+                    .insert((
+                        PlayerCharacter,
+                        Health::new_full(20.0),
+                        Magic::new_full(17.0),
+                        Statbar::<Health> {
+                            color: Color::from(bevy::color::palettes::css::RED),
+                            empty_color: Color::from(bevy::color::palettes::css::BLACK),
+                            length: 32.0,
+                            thickness: 6.0,
+                            displacement: 40. * Vec2::Y,
+                            ..Default::default()
+                        },
+                    ))
+                    .id();
+
+                commands
+                    .spawn((
+                        Statbar::<Health> {
+                            color: Color::WHITE,
+                            empty_color: Color::BLACK,
+                            length: 500.0,
+                            thickness: 50.0,
+                            ..Default::default()
+                        },
+                        StatbarObserveEntity(player_id),
+                    ))
+                    .insert(SpatialBundle {
+                        transform: Transform::from_translation(-200. * Vec3::Y),
+                        ..Default::default()
+                    });
             }
             "enemy" => {
                 let enemy_bundle =
                     build_enemy(&asset_server, &mut atlas_layouts, &mut library, character);
-                commands.spawn(enemy_bundle);
+                let enemy_id = commands
+                    .spawn(enemy_bundle)
+                    .insert((
+                        PlayerCharacter,
+                        Health::new_full(20.0),
+                        Magic::new_full(17.0),
+                        Statbar::<Health> {
+                            color: Color::from(bevy::color::palettes::css::RED),
+                            empty_color: Color::from(bevy::color::palettes::css::BLACK),
+                            length: 32.0,
+                            thickness: 6.0,
+                            displacement: 40. * Vec2::Y,
+                            ..Default::default()
+                        },
+                    ))
+                    .id();
+
+                commands
+                    .spawn((
+                        Statbar::<Health> {
+                            color: Color::WHITE,
+                            empty_color: Color::BLACK,
+                            length: 500.0,
+                            thickness: 50.0,
+                            ..Default::default()
+                        },
+                        StatbarObserveEntity(enemy_id),
+                    ))
+                    .insert(SpatialBundle {
+                        transform: Transform::from_translation(-200. * Vec3::Y),
+                        ..Default::default()
+                    });
             }
             _ => (),
         }

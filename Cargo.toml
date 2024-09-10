@@ -9,6 +9,7 @@ bevy_spritesheet_animation = "0.4.2"
 extol_sprite_layer = "0.6.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+bevy_stat_bars = { git = "https://github.com/adrien-bon/bevy_stat_bars"}
 
 [profile.dev]
 opt-level = 1

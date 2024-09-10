@@ -6,7 +6,11 @@ use bevy::{
     window::{PresentMode, WindowResolution},
 };
 use bevy_spritesheet_animation::prelude::*;
-use control::character;
+use bevy_stat_bars::RegisterStatbarSubject;
+use control::{
+    bar::{adjust_stats, Health, Magic, PlayerCharacter},
+    character,
+};
 use core::{
     layer::{y_sort, SpriteLayer},
     setup::setup_scene,
@@ -30,7 +34,12 @@ fn main() {
                 })
                 .set(ImagePlugin::default_nearest()),
         ))
+        .register_type::<Health>()
+        .register_type::<Magic>()
+        .register_type::<PlayerCharacter>()
+        .add_statbar_component_observer::<Health>()
+        .add_statbar_component_observer::<Magic>()
         .add_systems(Startup, setup_scene)
-        .add_systems(Update, (character::control_character, y_sort))
+        .add_systems(Update, (character::control_character, y_sort, adjust_stats))
         .run();
 }

@@ -940,6 +940,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_stat_bars"
+version = "0.3.1"
+source = "git+https://github.com/adrien-bon/bevy_stat_bars#66bf32d5235ee87b5bd518f781ea1928ca5c9b5c"
+dependencies = [
+ "bevy",
+ "copyless",
+]
+
+[[package]]
 name = "bevy_state"
 version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1435,6 +1444,12 @@ checksum = "e1aaf9b65849a68662ac6c0810c8893a765c960b907dd7cfab9c4a50bf764fbc"
 dependencies = [
  "const_soft_float",
 ]
+
+[[package]]
+name = "copyless"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a2df960f5d869b2dd8532793fde43eb5427cceb126c929747a26823ab0eeb536"
 
 [[package]]
 name = "core-foundation"
@@ -3403,6 +3418,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_spritesheet_animation",
+ "bevy_stat_bars",
  "extol_sprite_layer",
  "serde",
  "serde_json",
