@@ -76,12 +76,7 @@ where
 #[reflect(Component)]
 pub struct HealthValue;
 
-#[derive(Component, Default, Reflect)]
-#[reflect(Component)]
-pub struct MagicValue;
-
 pub type Health = Stat<HealthValue>;
-pub type Magic = Stat<MagicValue>;
 
 pub fn adjust_stats(
     time: Res<Time>,
