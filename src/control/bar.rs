@@ -87,7 +87,6 @@ pub fn adjust_stats(
     time: Res<Time>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut hp_query: Query<&mut Health>,
-    mut mp_query: Query<&mut Magic>,
 ) {
     let delta = 5.0 * time.delta_seconds();
     hp_query.iter_mut().for_each(|mut hp| {
@@ -96,14 +95,6 @@ pub fn adjust_stats(
         }
         if keyboard_input.pressed(KeyCode::KeyS) {
             *hp += delta;
-        }
-    });
-    mp_query.iter_mut().for_each(|mut mp| {
-        if keyboard_input.pressed(KeyCode::KeyQ) {
-            *mp -= delta;
-        }
-        if keyboard_input.pressed(KeyCode::KeyW) {
-            *mp += delta;
         }
     });
 }

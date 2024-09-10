@@ -189,8 +189,7 @@ pub fn setup_scene(
                     .spawn(player_bundle)
                     .insert((
                         PlayerCharacter,
-                        Health::new_full(20.0),
-                        Magic::new_full(17.0),
+                        Health::new_full(100.0),
                         Statbar::<Health> {
                             color: Color::from(bevy::color::palettes::css::RED),
                             empty_color: Color::from(bevy::color::palettes::css::BLACK),
@@ -225,10 +224,9 @@ pub fn setup_scene(
                     .spawn(enemy_bundle)
                     .insert((
                         PlayerCharacter,
-                        Health::new_full(20.0),
-                        Magic::new_full(17.0),
+                        Health::new_full(100.0),
                         Statbar::<Health> {
-                            color: Color::from(bevy::color::palettes::css::RED),
+                            color: Color::from(bevy::color::palettes::css::YELLOW),
                             empty_color: Color::from(bevy::color::palettes::css::BLACK),
                             length: 32.0,
                             thickness: 6.0,
