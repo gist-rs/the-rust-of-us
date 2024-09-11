@@ -5,6 +5,7 @@ use extol_sprite_layer::LayerIndex;
 #[derive(Debug, Copy, Clone, Component, PartialEq, Eq, Hash)]
 pub enum SpriteLayer {
     Background,
+    Ground,
     Character,
     Ui,
 }
@@ -15,6 +16,7 @@ impl LayerIndex for SpriteLayer {
         use SpriteLayer::*;
         match *self {
             Background => 0.,
+            Ground => 1.,
             Character => 800.,
             Ui => 900.,
         }

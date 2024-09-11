@@ -5,7 +5,7 @@ use serde::Deserialize;
 use serde_json::from_str;
 use std::fs;
 
-use super::layer::YSort;
+use super::{layer::YSort, map::load_map_from_csv, scene::build_scene};
 
 #[derive(Deserialize)]
 struct AnimationDetails {
@@ -173,6 +173,10 @@ pub fn setup_scene(
             stretch_value: 0.25,
         },
     ));
+
+    // Load map
+    let (mut _grid, map) = load_map_from_csv("assets/map.csv").unwrap();
+    build_scene(&mut commands, &asset_server, map);
 
     // Load characters from JSON file
     let characters_json =
