@@ -1,4 +1,4 @@
-mod control;
+mod characters;
 mod core;
 
 use bevy::{
@@ -7,9 +7,9 @@ use bevy::{
 };
 use bevy_spritesheet_animation::prelude::*;
 use bevy_stat_bars::RegisterStatbarSubject;
-use control::{
+use characters::{
     bar::{adjust_stats, Health, PlayerCharacter},
-    character,
+    control,
 };
 use core::{
     layer::{y_sort, SpriteLayer},
@@ -38,6 +38,6 @@ fn main() {
         .register_type::<PlayerCharacter>()
         .add_statbar_component_observer::<Health>()
         .add_systems(Startup, setup_scene)
-        .add_systems(Update, (character::control_character, y_sort, adjust_stats))
+        .add_systems(Update, (control::control_character, y_sort, adjust_stats))
         .run();
 }

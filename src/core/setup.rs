@@ -148,7 +148,7 @@ fn build_enemy(
     }
 }
 
-use crate::control::bar::*;
+use crate::characters::bar::*;
 use bevy_stat_bars::*;
 
 pub fn setup_scene(
