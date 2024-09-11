@@ -1,5 +1,6 @@
 mod characters;
 mod core;
+mod pathfinder;
 
 use bevy::{
     prelude::*,
