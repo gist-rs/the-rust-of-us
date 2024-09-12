@@ -8,7 +8,7 @@ use super::{
     layer::YSort,
     library::{build_library, Ani},
     map::load_map_from_csv,
-    scene::{build_decor_bundle, build_scene},
+    scene::build_scene,
 };
 
 #[derive(Component)]

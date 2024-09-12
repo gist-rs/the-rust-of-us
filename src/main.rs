@@ -14,6 +14,8 @@ use characters::{
 };
 use core::{
     layer::{y_sort, SpriteLayer},
+    menu::{button_system, setup_ui},
+    play::{schedule_timeline_actions, TimelineActions},
     setup::setup_scene,
 };
 use extol_sprite_layer::SpriteLayerPlugin;
@@ -38,7 +40,17 @@ fn main() {
         .register_type::<Health>()
         .register_type::<PlayerCharacter>()
         .add_statbar_component_observer::<Health>()
-        .add_systems(Startup, setup_scene)
-        .add_systems(Update, (control::control_character, y_sort, adjust_stats))
+        .init_resource::<TimelineActions>()
+        .add_systems(Startup, (setup_scene, setup_ui))
+        .add_systems(
+            Update,
+            (
+                control::control_character,
+                y_sort,
+                adjust_stats,
+                button_system,
+                schedule_timeline_actions,
+            ),
+        )
         .run();
 }

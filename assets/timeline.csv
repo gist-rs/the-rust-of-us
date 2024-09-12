@@ -1,7 +1,9 @@
 time,id,act,at,to
-1726057897125,man_0,walk,a1,a2
-1726057897125,skeleton_0,walk,b2,a2
-1726057899125,man_0,attack,a2
-1726057899125,skeleton_0,hurt,a2
-1726057901125,man_0,idle,a2
-1726057901125,skeleton_0,die,a2
+1.5,man_0,idle,a1
+1.5,skeleton_0,idle,b2
+2,man_0,walk,a1,a2
+2,skeleton_0,walk,b2,a2
+2.1,man_0,attack,a2
+2.1,skeleton_0,hurt,a2
+0,man_0,idle,a2
+0,skeleton_0,die,a2
