@@ -23,6 +23,22 @@ struct DecorBundle {
     ysort: YSort,
 }
 
+pub fn get_position_from_map(
+    cell_size: usize,
+    half_width: f32,
+    half_height: f32,
+    offset_x: f32,
+    offset_y: f32,
+    x: usize,
+    y: usize,
+) -> Transform {
+    Transform::from_xyz(
+        cell_size as f32 * x as f32 - half_width + offset_x,
+        -(cell_size as f32 * y as f32 - half_height + offset_y),
+        0.0,
+    )
+}
+
 pub fn build_scene(
     commands: &mut Commands,
     asset_server: &Res<AssetServer>,
@@ -50,22 +66,20 @@ pub fn build_scene(
     let object_animations: Vec<Ani> = from_str(&decor_json).expect("Unable to parse JSON");
 
     // Spawn obstacles based on the map
-    let cell_size = 46.;
+    let cell_size = 46usize;
     let half_width = 320. / 2.;
     let half_height = 320. / 2.;
     for (y, row) in map.0.iter().enumerate() {
         for (x, cell) in row.iter().enumerate() {
+            let (offset_x, offset_y) = (0., 30.);
+            let transform =
+                get_position_from_map(cell_size, half_width, half_height, offset_x, offset_y, x, y);
             match cell.as_str() {
                 "🌳" => {
                     commands.spawn(DecorBundle {
                         sprite_bundle: SpriteBundle {
                             texture: asset_server.load("tree.png"),
-                            transform: Transform::from_xyz(
-                                cell_size * x as f32 - half_width,
-                                cell_size * y as f32 - half_height + 30.,
-                                0.0,
-                            )
-                            .with_scale(Vec3::splat(2.0)),
+                            transform: transform.with_scale(Vec3::splat(2.0)),
                             ..default()
                         },
                         sprite_layer: SpriteLayer::Ground,
@@ -77,12 +91,7 @@ pub fn build_scene(
                     commands.spawn(DecorBundle {
                         sprite_bundle: SpriteBundle {
                             texture: asset_server.load("crab.png"),
-                            transform: Transform::from_xyz(
-                                cell_size * x as f32 - half_width,
-                                cell_size * y as f32 - half_height + 30.,
-                                0.0,
-                            )
-                            .with_scale(Vec3::splat(1.0)),
+                            transform: transform.with_scale(Vec3::splat(1.0)),
                             ..default()
                         },
                         sprite_layer: SpriteLayer::Ground,
@@ -100,12 +109,7 @@ pub fn build_scene(
                         atlas_layouts,
                         library,
                         ani,
-                        Transform::from_xyz(
-                            cell_size * x as f32 - half_width,
-                            cell_size * y as f32 - half_height + 30.,
-                            0.0,
-                        )
-                        .with_scale(Vec3::splat(2.0)),
+                        transform.with_scale(Vec3::splat(2.0)),
                     );
 
                     commands.spawn(deco_bundle);
