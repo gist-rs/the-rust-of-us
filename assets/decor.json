@@ -1,0 +1,23 @@
+[
+  {
+    "name": "chest",
+    "type": "decor",
+    "texture_path": "chest.png",
+    "width": 17,
+    "height": 29,
+    "animations": [
+      {
+        "action_name": "idle",
+        "x": 0,
+        "y": 0,
+        "count": 1
+      },
+      {
+        "action_name": "open",
+        "x": 1,
+        "y": 0,
+        "count": 1
+      }
+    ]
+  }
+]

@@ -1,29 +1,15 @@
 use crate::core::layer::SpriteLayer;
 use bevy::prelude::*;
 use bevy_spritesheet_animation::prelude::*;
-use serde::Deserialize;
 use serde_json::from_str;
 use std::fs;
 
-use super::{layer::YSort, map::load_map_from_csv, scene::build_scene};
-
-#[derive(Deserialize)]
-struct AnimationDetails {
-    action_name: String,
-    x: usize,
-    y: usize,
-    count: usize,
-}
-
-#[derive(Deserialize)]
-struct Character {
-    name: String,
-    r#type: String,
-    texture_path: String,
-    width: u32,
-    height: u32,
-    animations: Vec<AnimationDetails>,
-}
+use super::{
+    layer::YSort,
+    library::{build_library, Ani},
+    map::load_map_from_csv,
+    scene::{build_decor_bundle, build_scene},
+};
 
 #[derive(Component)]
 pub struct Player;
@@ -51,50 +37,17 @@ struct EnemyBundle {
     ysort: YSort,
 }
 
-fn build_library(
-    atlas_layouts: &mut ResMut<Assets<TextureAtlasLayout>>,
-    library: &mut ResMut<AnimationLibrary>,
-    character: &Character,
-    clip_fps: u32,
-) -> Vec<Handle<TextureAtlasLayout>> {
-    // Create the spritesheet
-    let spritesheet = Spritesheet::new(10, character.animations.len());
-
-    // Register animations
-    let animations = &character.animations;
-    let sprite_width = character.width;
-    let sprite_height = character.height;
-
-    animations
-        .iter()
-        .map(|anim| {
-            let clip = Clip::from_frames(spritesheet.horizontal_strip(anim.x, anim.y, anim.count))
-                .with_duration(AnimationDuration::PerFrame(clip_fps));
-            let clip_id = library.register_clip(clip);
-            let animation = Animation::from_clip(clip_id);
-            let animation_id = library.register_animation(animation);
-            let animation_name = format!("{}_{}", character.name, &anim.action_name);
-            println!("{animation_name}");
-            library
-                .name_animation(animation_id, animation_name.clone())
-                .unwrap();
-
-            atlas_layouts.add(spritesheet.atlas_layout(sprite_width, sprite_height))
-        })
-        .collect::<Vec<_>>()
-}
-
 fn build_player(
     asset_server: &Res<AssetServer>,
     atlas_layouts: &mut ResMut<Assets<TextureAtlasLayout>>,
     library: &mut ResMut<AnimationLibrary>,
-    character: Character,
+    ani: Ani,
 ) -> PlayerBundle {
     let clip_fps = 30;
 
-    let libs = build_library(atlas_layouts, library, &character, clip_fps);
+    let libs = build_library(atlas_layouts, library, &ani, clip_fps);
 
-    let texture_path = character.texture_path.clone();
+    let texture_path = ani.texture_path.clone();
     let texture = asset_server.load(texture_path);
 
     PlayerBundle {
@@ -104,13 +57,13 @@ fn build_player(
             ..default()
         },
         texture_atlas: TextureAtlas {
-            layout: libs[0].clone(),
+            layout: libs[0].1.clone(),
             ..default()
         },
         spritesheet_animation: SpritesheetAnimation::from_id(
             library.animation_with_name("man_idle").unwrap(),
         ),
-        sprite_layer: SpriteLayer::Character,
+        sprite_layer: SpriteLayer::Ground,
         marker: Player,
         ysort: YSort(0.0),
     }
@@ -120,13 +73,13 @@ fn build_enemy(
     asset_server: &Res<AssetServer>,
     atlas_layouts: &mut ResMut<Assets<TextureAtlasLayout>>,
     library: &mut ResMut<AnimationLibrary>,
-    character: Character,
+    ani: Ani,
 ) -> EnemyBundle {
     let clip_fps = 30;
 
-    let libs = build_library(atlas_layouts, library, &character, clip_fps);
+    let libs = build_library(atlas_layouts, library, &ani, clip_fps);
 
-    let texture_path = character.texture_path.clone();
+    let texture_path = ani.texture_path.clone();
     let texture = asset_server.load(texture_path);
 
     EnemyBundle {
@@ -136,13 +89,13 @@ fn build_enemy(
             ..default()
         },
         texture_atlas: TextureAtlas {
-            layout: libs[0].clone(),
+            layout: libs[0].1.clone(),
             ..default()
         },
         spritesheet_animation: SpritesheetAnimation::from_id(
             library.animation_with_name("skeleton_idle").unwrap(),
         ),
-        sprite_layer: SpriteLayer::Character,
+        sprite_layer: SpriteLayer::Ground,
         marker: Enemy,
         ysort: YSort(0.0),
     }
@@ -176,18 +129,23 @@ pub fn setup_scene(
 
     // Load map
     let (mut _grid, map) = load_map_from_csv("assets/map.csv").unwrap();
-    build_scene(&mut commands, &asset_server, map);
+    build_scene(
+        &mut commands,
+        &asset_server,
+        &mut atlas_layouts,
+        &mut library,
+        map,
+    );
 
     // Load characters from JSON file
-    let characters_json =
-        fs::read_to_string("assets/characters.json").expect("Unable to read file");
-    let characters: Vec<Character> = from_str(&characters_json).expect("Unable to parse JSON");
+    let char_json = fs::read_to_string("assets/char.json").expect("Unable to read file");
+    let characters: Vec<Ani> = from_str(&char_json).expect("Unable to parse JSON");
 
-    for character in characters {
-        match character.r#type.as_str() {
+    for ani in characters {
+        match ani.r#type.as_str() {
             "player" => {
                 let player_bundle =
-                    build_player(&asset_server, &mut atlas_layouts, &mut library, character);
+                    build_player(&asset_server, &mut atlas_layouts, &mut library, ani);
 
                 let player_id = commands
                     .spawn(player_bundle)
@@ -223,7 +181,7 @@ pub fn setup_scene(
             }
             "enemy" => {
                 let enemy_bundle =
-                    build_enemy(&asset_server, &mut atlas_layouts, &mut library, character);
+                    build_enemy(&asset_server, &mut atlas_layouts, &mut library, ani);
                 let enemy_id = commands
                     .spawn(enemy_bundle)
                     .insert((
