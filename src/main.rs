@@ -12,6 +12,7 @@ use bevy_stat_bars::RegisterStatbarSubject;
 use characters::{
     bar::{adjust_stats, Health, PlayerCharacter},
     control,
+    position::move_character,
 };
 use core::{
     layer::{y_sort, SpriteLayer},
@@ -52,6 +53,7 @@ fn main() {
                 adjust_stats,
                 button_system,
                 schedule_timeline_actions,
+                move_character,
             ),
         )
         .run();

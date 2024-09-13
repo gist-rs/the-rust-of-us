@@ -5,7 +5,10 @@ use bevy::prelude::*;
 use bevy_spritesheet_animation::prelude::*;
 use csv::Reader;
 
-use crate::{characters::control::*, timeline::entity::TimelineActions};
+use crate::{
+    characters::{control::*, position::MovementState},
+    timeline::entity::TimelineActions,
+};
 
 use super::{scene::get_position_from_map, setup::Player};
 
@@ -21,6 +24,7 @@ pub fn schedule_timeline_actions(
             &mut Sprite,
             &mut SpritesheetAnimation,
             Option<&Attack>,
+            Option<&mut MovementState>,
         ),
         With<Player>,
     >,
@@ -36,22 +40,25 @@ pub fn schedule_timeline_actions(
     for (i, action) in timeline_actions.0.iter().enumerate() {
         if time.elapsed_seconds() >= action.sec {
             actions_to_remove.push(i);
-            let (entity, mut transform, mut sprite, mut animation, attack) = characters
-                .iter_mut()
-                .find(|(_, _, _, _, _)| action.id == "man_0" || action.id == "skeleton_0")
-                .unwrap();
+            let (entity, mut transform, mut sprite, mut animation, attack, mut movement_state) =
+                characters
+                    .iter_mut()
+                    .find(|(_, _, _, _, _, _)| action.id == "man_0" || action.id == "skeleton_0")
+                    .unwrap();
 
             let (x, y) = convert_map_to_screen(action.at.clone()).expect("x,y");
-            let new_transform =
+            let current_transform =
                 get_position_from_map(cell_size, half_width, half_height, offset_x, offset_y, x, y);
-            transform.translation = new_transform.translation;
 
-            println!("🔥 {}:{}", action.act.as_str(), transform.translation);
+            transform.translation = current_transform.translation;
 
             match action.act.as_str() {
                 "idle" => {
                     if let Some(idle_animation_id) = library.animation_with_name("man_idle") {
                         animation.switch(idle_animation_id);
+                    }
+                    if let Some(mut movement_state) = movement_state {
+                        movement_state.is_moving = false;
                     }
                 }
                 "walk" => {
@@ -70,6 +77,15 @@ pub fn schedule_timeline_actions(
                             y,
                         );
                         println!("+ move: {:#?}", target_transform.translation);
+                        if let Some(mut movement_state) = movement_state {
+                            movement_state.target_position = target_transform.translation;
+                            movement_state.is_moving = true;
+                        } else {
+                            commands.entity(entity).insert(MovementState {
+                                target_position: target_transform.translation,
+                                is_moving: true,
+                            });
+                        }
                     }
                 }
                 "attack" => {
@@ -114,7 +130,6 @@ pub fn schedule_timeline_actions(
         }
     }
 }
-
 fn convert_map_to_screen(map_coord: String) -> Option<(usize, usize)> {
     if map_coord.len() < 2 {
         return None;

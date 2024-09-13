@@ -14,6 +14,11 @@ cargo install cargo-watch
 cargo watch -c -w src -x run
 ```
 
+## TODO
+
+- [ ] Walkable from a to b.
+- [ ] Walkable with Pathfinding from a to b.
+
 ## Resources
 
 - [x] Unofficial Bevy Cheat Book: https://bevy-cheatbook.github.io/programming/bundle.html
@@ -23,5 +28,5 @@ cargo watch -c -w src -x run
 - [x] Bevy ECS Markers: https://github.com/ChoppedStudio/bevy_ecs_markers
 - [x] Floating statbars like health bars: https://github.com/adrien-bon/bevy_stat_bars
 - [x] 2d tiled map: https://github.com/443eb9/bevy_entitiles
-- [ ] CSV: https://github.com/BurntSushi/rust-csv
-- [ ] A\* Pathfinding: https://github.com/nikhilhenry/astar.rs
+- [x] CSV: https://github.com/BurntSushi/rust-csv
+- [x] A\* Pathfinding: https://github.com/nikhilhenry/astar.rs
