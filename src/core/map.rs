@@ -20,11 +20,12 @@ pub fn load_map_from_csv(file_path: &str) -> Result<(Grid, GameMap)> {
     for (y, result) in rdr.records().enumerate() {
         let record = result?;
         for (x, cell) in record.iter().enumerate() {
-            map[y][x] = cell.to_string();
+            let inverted_y = 7 - y; // Invert the y-coordinate
+            map[inverted_y][x] = cell.to_string();
             match cell {
-                "🌳" => grid.set_obstacle(x, y),
-                "🚪" => grid.set_start(x, y),
-                "💰" => grid.set_goal(x, y),
+                "🌳" => grid.set_obstacle(x, inverted_y),
+                "🚪" => grid.set_start(x, inverted_y),
+                "💰" => grid.set_goal(x, inverted_y),
                 _ => (),
             }
         }
@@ -39,9 +40,6 @@ fn test_map_csv() {
 
     let (mut grid, _) = load_map_from_csv("assets/map.csv").unwrap();
     grid.solve(&Heuristic::Manhattan);
-    if let Some(path) = grid.path.as_mut() {
-        path.reverse();
-    }
 
     println!("Goal: {:?}", grid.goal.unwrap());
     println!("Path: {:?}", grid.path);

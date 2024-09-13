@@ -34,7 +34,7 @@ pub fn get_position_from_map(
 ) -> Transform {
     Transform::from_xyz(
         cell_size as f32 * x as f32 - half_width + offset_x,
-        -(cell_size as f32 * y as f32 - half_height + offset_y),
+        cell_size as f32 * y as f32 - half_height + offset_y,
         0.0,
     )
 }
@@ -69,10 +69,11 @@ pub fn build_scene(
     let cell_size = 46usize;
     let half_width = 320. / 2.;
     let half_height = 320. / 2.;
+    let (offset_x, offset_y) = (0., 0.);
+
     for (y, row) in map.0.iter().enumerate() {
         for (x, cell) in row.iter().enumerate() {
-            let (offset_x, offset_y) = (0., 30.);
-            let transform =
+            let mut transform =
                 get_position_from_map(cell_size, half_width, half_height, offset_x, offset_y, x, y);
             match cell.as_str() {
                 "🌳" => {

@@ -9,7 +9,7 @@ use crate::characters::control::*;
 
 use super::{scene::get_position_from_map, setup::Player};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct TimelineAction {
     sec: f32,
     id: String,
@@ -22,13 +22,15 @@ struct TimelineAction {
 pub struct TimelineActions(Vec<TimelineAction>);
 
 pub fn load_timeline_from_csv(file_path: &str) -> Result<TimelineActions> {
-    let file_content = fs::read_to_string(file_path)?;
+    // Read the CSV file
+    let file_content = fs::read_to_string(file_path).expect("Expected timeline.csv");
     let mut rdr = Reader::from_reader(file_content.as_bytes());
 
     let mut actions = Vec::new();
 
+    // Parse the CSV data
     for result in rdr.records() {
-        let record = result?;
+        let record = result.expect("a CSV record");
         let action = TimelineAction {
             sec: record[0].parse()?,
             id: record[1].to_string(),
@@ -38,8 +40,6 @@ pub fn load_timeline_from_csv(file_path: &str) -> Result<TimelineActions> {
         };
         actions.push(action);
     }
-
-    println!("🔥 {:#?}", actions);
 
     Ok(TimelineActions(actions))
 }
@@ -63,25 +63,26 @@ pub fn schedule_timeline_actions(
 ) {
     let mut actions_to_remove = Vec::new();
 
-    // println!("🔥 {:#?}", timeline_actions);
+    let cell_size = 46usize;
+    let half_width = 320. / 2.;
+    let half_height = 320. / 2.;
+    let (offset_x, offset_y) = (0., 0.);
 
     for (i, action) in timeline_actions.0.iter().enumerate() {
         if time.elapsed_seconds() >= action.sec {
             actions_to_remove.push(i);
             let (entity, mut transform, mut sprite, mut animation, attack) = characters
                 .iter_mut()
-                .find(|(_, _, _, _, _)| {
-                    // Assuming the character ID is stored in a component or some other way
-                    // Here we just use the ID directly for simplicity
-                    action.id == "man_0" || action.id == "skeleton_0"
-                })
+                .find(|(_, _, _, _, _)| action.id == "man_0" || action.id == "skeleton_0")
                 .unwrap();
 
-            let (x, y) = convert_map_to_screen(action.at.clone());
-            let new_transform = get_position_from_map(32, 400.0, 300.0, 0.0, 0.0, x, y);
+            let (x, y) = convert_map_to_screen(action.at.clone()).expect("x,y");
+            let new_transform =
+                get_position_from_map(cell_size, half_width, half_height, offset_x, offset_y, x, y);
             transform.translation = new_transform.translation;
 
-            println!("🔥 {}", action.act.as_str());
+            println!("🔥 {}:{}", action.act.as_str(), transform.translation);
+
             match action.act.as_str() {
                 "idle" => {
                     if let Some(idle_animation_id) = library.animation_with_name("man_idle") {
@@ -93,11 +94,17 @@ pub fn schedule_timeline_actions(
                         animation.switch(walk_animation_id);
                     }
                     if let Some(to) = &action.to {
-                        let (x, y) = convert_map_to_screen(to.clone());
-                        let target_transform =
-                            get_position_from_map(32, 400.0, 300.0, 0.0, 0.0, x, y);
-                        // Schedule a move to the target position
-                        // This can be done using a timer or a tweening system
+                        let (x, y) = convert_map_to_screen(to.clone()).expect("x,y");
+                        let target_transform = get_position_from_map(
+                            cell_size,
+                            half_width,
+                            half_height,
+                            offset_x,
+                            offset_y,
+                            x,
+                            y,
+                        );
+                        println!("+ move: {:#?}", target_transform.translation);
                     }
                 }
                 "attack" => {
@@ -143,9 +150,62 @@ pub fn schedule_timeline_actions(
     }
 }
 
-fn convert_map_to_screen(map_coord: String) -> (usize, usize) {
-    // Assuming map coordinates are in the format "a1", "b2", etc.
-    let x = map_coord.chars().nth(0).unwrap() as usize - 'a' as usize;
-    let y = map_coord.chars().nth(1).unwrap().to_digit(10).unwrap() as usize - 1;
-    (x, y)
+fn convert_map_to_screen(map_coord: String) -> Option<(usize, usize)> {
+    if map_coord.len() < 2 {
+        return None;
+    }
+
+    let x = match map_coord.chars().nth(0).unwrap().to_ascii_lowercase() {
+        'a'..='h' => map_coord.chars().nth(0).unwrap().to_ascii_lowercase() as usize - 'a' as usize,
+        _ => return None,
+    };
+
+    let y = match map_coord.chars().nth(1).unwrap().to_digit(10) {
+        Some(digit) if digit >= 1 && digit <= 8 => digit as usize - 1,
+        _ => return None,
+    };
+
+    Some((x, y))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_convert_map_to_screen() {
+        // Test cases for the function
+        assert_eq!(convert_map_to_screen("a1".to_string()), Some((0, 0)));
+        assert_eq!(convert_map_to_screen("b1".to_string()), Some((1, 0)));
+        assert_eq!(convert_map_to_screen("c1".to_string()), Some((2, 0)));
+        assert_eq!(convert_map_to_screen("d1".to_string()), Some((3, 0)));
+        assert_eq!(convert_map_to_screen("e1".to_string()), Some((4, 0)));
+        assert_eq!(convert_map_to_screen("f1".to_string()), Some((5, 0)));
+        assert_eq!(convert_map_to_screen("g1".to_string()), Some((6, 0)));
+        assert_eq!(convert_map_to_screen("h1".to_string()), Some((7, 0)));
+
+        assert_eq!(convert_map_to_screen("a2".to_string()), Some((0, 1)));
+        assert_eq!(convert_map_to_screen("b2".to_string()), Some((1, 1)));
+        assert_eq!(convert_map_to_screen("c2".to_string()), Some((2, 1)));
+        assert_eq!(convert_map_to_screen("d2".to_string()), Some((3, 1)));
+        assert_eq!(convert_map_to_screen("e2".to_string()), Some((4, 1)));
+        assert_eq!(convert_map_to_screen("f2".to_string()), Some((5, 1)));
+        assert_eq!(convert_map_to_screen("g2".to_string()), Some((6, 1)));
+        assert_eq!(convert_map_to_screen("h2".to_string()), Some((7, 1)));
+
+        assert_eq!(convert_map_to_screen("a8".to_string()), Some((0, 7)));
+        assert_eq!(convert_map_to_screen("b8".to_string()), Some((1, 7)));
+        assert_eq!(convert_map_to_screen("c8".to_string()), Some((2, 7)));
+        assert_eq!(convert_map_to_screen("d8".to_string()), Some((3, 7)));
+        assert_eq!(convert_map_to_screen("e8".to_string()), Some((4, 7)));
+        assert_eq!(convert_map_to_screen("f8".to_string()), Some((5, 7)));
+        assert_eq!(convert_map_to_screen("g8".to_string()), Some((6, 7)));
+        assert_eq!(convert_map_to_screen("h8".to_string()), Some((7, 7)));
+
+        // Test case for invalid input
+        assert_eq!(convert_map_to_screen("i1".to_string()), None);
+        assert_eq!(convert_map_to_screen("a9".to_string()), None);
+        assert_eq!(convert_map_to_screen("a".to_string()), None);
+        assert_eq!(convert_map_to_screen("".to_string()), None);
+    }
 }
