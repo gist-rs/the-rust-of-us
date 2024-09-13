@@ -1,10 +1,5 @@
 use bevy::prelude::*;
 
-use super::{
-    layer::SpriteLayer,
-    play::{load_timeline_from_csv, TimelineActions},
-};
-
 pub fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn(ButtonBundle {
@@ -40,16 +35,13 @@ pub fn button_system(
         (&Interaction, &mut BackgroundColor),
         (Changed<Interaction>, With<Button>),
     >,
-    mut timeline_actions: ResMut<TimelineActions>,
 ) {
     for (interaction, mut color) in &mut interaction_query {
         match *interaction {
             Interaction::Pressed => {
-                println!("Pressed");
                 *color = Color::srgb(0.35, 0.75, 0.35).into();
-                if let Ok(actions) = load_timeline_from_csv("assets/timeline.csv") {
-                    *timeline_actions = actions
-                }
+                println!("Pressed");
+                // TODO: init_timeline
             }
             Interaction::Hovered => {
                 *color = Color::srgb(0.25, 0.25, 0.25).into();

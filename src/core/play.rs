@@ -5,44 +5,9 @@ use bevy::prelude::*;
 use bevy_spritesheet_animation::prelude::*;
 use csv::Reader;
 
-use crate::characters::control::*;
+use crate::{characters::control::*, timeline::entity::TimelineActions};
 
 use super::{scene::get_position_from_map, setup::Player};
-
-#[derive(Debug, Clone)]
-struct TimelineAction {
-    sec: f32,
-    id: String,
-    act: String,
-    at: String,
-    to: Option<String>,
-}
-
-#[derive(Resource, Default, Debug)]
-pub struct TimelineActions(Vec<TimelineAction>);
-
-pub fn load_timeline_from_csv(file_path: &str) -> Result<TimelineActions> {
-    // Read the CSV file
-    let file_content = fs::read_to_string(file_path).expect("Expected timeline.csv");
-    let mut rdr = Reader::from_reader(file_content.as_bytes());
-
-    let mut actions = Vec::new();
-
-    // Parse the CSV data
-    for result in rdr.records() {
-        let record = result.expect("a CSV record");
-        let action = TimelineAction {
-            sec: record[0].parse()?,
-            id: record[1].to_string(),
-            act: record[2].to_string(),
-            at: record[3].to_string(),
-            to: record.get(4).map(|s| s.to_string()),
-        };
-        actions.push(action);
-    }
-
-    Ok(TimelineActions(actions))
-}
 
 pub fn schedule_timeline_actions(
     mut commands: Commands,

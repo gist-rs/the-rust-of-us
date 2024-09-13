@@ -1,6 +1,7 @@
 mod characters;
 mod core;
 mod pathfinder;
+mod timeline;
 
 use bevy::{
     prelude::*,
@@ -14,11 +15,12 @@ use characters::{
 };
 use core::{
     layer::{y_sort, SpriteLayer},
-    menu::{button_system, setup_ui},
-    play::{schedule_timeline_actions, TimelineActions},
+    menu::button_system,
+    play::schedule_timeline_actions,
     setup::setup_scene,
 };
 use extol_sprite_layer::SpriteLayerPlugin;
+use timeline::{entity::TimelineActions, init::init_timeline};
 
 fn main() {
     App::new()
@@ -41,7 +43,7 @@ fn main() {
         .register_type::<PlayerCharacter>()
         .add_statbar_component_observer::<Health>()
         .init_resource::<TimelineActions>()
-        .add_systems(Startup, (setup_scene, setup_ui))
+        .add_systems(Startup, (setup_scene, init_timeline))
         .add_systems(
             Update,
             (
