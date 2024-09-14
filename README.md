@@ -16,8 +16,22 @@ cargo watch -c -w src -x run
 
 ## TODO
 
+- [ ] Gen next stage map via llm.
+- [ ] Gen next move by llm.
+- [ ] Show model name.
+- [ ] [MENU] Add setting menu.
+- [ ] [MENU] Allow to add `API_URI`, `API_KEY`.
+- [ ] Record map on KV and NFT fallback.
+- [ ] Cut scene show owner and their message. // render like x ss
 - [ ] Walkable from a to b.
 - [ ] Walkable with Pathfinding from a to b.
+- [ ] Logic gates quiz
+- [ ] Move stone to open path way.
+- [ ] Move stone to toggle switch.
+- [ ] Jump to cross cliff.
+- [ ] Avoid fire. // walkable but hurt
+- [ ] Avoid arrow trap.
+- [ ] Learn from previously trap (don't step on it again!).
 
 ## Resources
 

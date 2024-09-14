@@ -1,9 +1,5 @@
-use std::fs;
-
-use anyhow::*;
 use bevy::prelude::*;
 use bevy_spritesheet_animation::prelude::*;
-use csv::Reader;
 
 use crate::{
     characters::{control::*, position::MovementState},
@@ -52,9 +48,11 @@ pub fn schedule_timeline_actions(
 
             transform.translation = current_transform.translation;
 
+            println!("{:?}", action.act.as_str());
             match action.act.as_str() {
                 "idle" => {
                     if let Some(idle_animation_id) = library.animation_with_name("man_idle") {
+                        println!("idle.switch");
                         animation.switch(idle_animation_id);
                     }
                     if let Some(mut movement_state) = movement_state {
@@ -63,6 +61,7 @@ pub fn schedule_timeline_actions(
                 }
                 "walk" => {
                     if let Some(walk_animation_id) = library.animation_with_name("man_walk") {
+                        println!("walk.switch");
                         animation.switch(walk_animation_id);
                     }
                     if let Some(to) = &action.to {
@@ -76,9 +75,10 @@ pub fn schedule_timeline_actions(
                             x,
                             y,
                         );
-                        println!("+ move: {:#?}", target_transform.translation);
+                        // println!("+ move: {:?}", target_transform.translation);
                         if let Some(mut movement_state) = movement_state {
                             movement_state.target_position = target_transform.translation;
+                            println!("+is_moving");
                             movement_state.is_moving = true;
                         } else {
                             commands.entity(entity).insert(MovementState {
@@ -90,8 +90,10 @@ pub fn schedule_timeline_actions(
                 }
                 "attack" => {
                     if let Some(attack_animation_id) = library.animation_with_name("man_attack") {
+                        println!("switch{:?}", attack_animation_id);
                         animation.switch(attack_animation_id);
                     }
+                    println!("+man_attack");
                     commands.entity(entity).insert(Attack);
                 }
                 "hurt" => {
@@ -111,6 +113,7 @@ pub fn schedule_timeline_actions(
 
     // Remove processed actions
     for i in actions_to_remove.iter().rev() {
+        println!("-remove{}", i);
         timeline_actions.0.remove(*i);
     }
 
@@ -123,6 +126,7 @@ pub fn schedule_timeline_actions(
                 ..
             } => {
                 if library.is_animation_name(*animation_id, "man_attack") {
+                    println!("-man_attack");
                     commands.entity(*entity).remove::<Attack>();
                 }
             }

@@ -48,7 +48,6 @@ fn main() {
         .add_systems(
             Update,
             (
-                control::control_character,
                 y_sort,
                 adjust_stats,
                 button_system,

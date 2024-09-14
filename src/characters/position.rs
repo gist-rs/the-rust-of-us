@@ -10,7 +10,7 @@ pub struct MovementState {
 }
 
 pub fn move_character(
-    mut commands: Commands,
+    mut _commands: Commands,
     time: Res<Time>,
     library: Res<AnimationLibrary>,
     mut characters: Query<
@@ -24,9 +24,9 @@ pub fn move_character(
         With<Player>,
     >,
 ) {
-    const CHARACTER_SPEED: f32 = 60.0;
+    const CHARACTER_SPEED: f32 = 150.0;
 
-    for (entity, mut transform, mut sprite, mut animation, movement_state) in &mut characters {
+    for (_entity, mut transform, mut sprite, mut animation, movement_state) in &mut characters {
         if let Some(mut movement_state) = movement_state {
             if movement_state.is_moving {
                 let direction =
@@ -37,12 +37,13 @@ pub fn move_character(
                 if transform
                     .translation
                     .distance(movement_state.target_position)
-                    < 1.0
+                    < 5.0
                 {
+                    println!("-is_moving");
                     movement_state.is_moving = false;
-                    if let Some(idle_animation_id) = library.animation_with_name("man_idle") {
-                        animation.switch(idle_animation_id);
-                    }
+                    // if let Some(idle_animation_id) = library.animation_with_name("man_idle") {
+                    //     animation.switch(idle_animation_id);
+                    // }
                 } else {
                     // Flip the sprite based on the movement direction
                     sprite.flip_x = direction.x < 0.0;
