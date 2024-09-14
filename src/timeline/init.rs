@@ -43,7 +43,7 @@ pub fn load_timeline_from_csv(file_path: &str) -> Result<CharacterTimelines> {
     Ok(CharacterTimelines(wrapped_timelines))
 }
 
-pub fn init_timeline(mut commands: Commands, mut character_timelines: ResMut<CharacterTimelines>) {
+pub fn init_timeline(_commands: Commands, mut character_timelines: ResMut<CharacterTimelines>) {
     let timelines = load_timeline_from_csv("assets/timeline.csv").expect("timeline.csv");
     *character_timelines = timelines;
 }
