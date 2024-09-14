@@ -20,7 +20,10 @@ use core::{
     setup::setup_scene,
 };
 use extol_sprite_layer::SpriteLayerPlugin;
-use timeline::{entity::TimelineActions, init::init_timeline};
+use timeline::{
+    entity::TimelineActions,
+    init::{init_timeline, CharacterTimelines},
+};
 
 fn main() {
     App::new()
@@ -43,6 +46,7 @@ fn main() {
         .register_type::<PlayerCharacter>()
         .add_statbar_component_observer::<Health>()
         .init_resource::<TimelineActions>()
+        .init_resource::<CharacterTimelines>()
         .add_systems(Startup, (setup_scene, init_timeline))
         .add_systems(
             Update,

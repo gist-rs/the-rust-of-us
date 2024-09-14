@@ -37,6 +37,9 @@ struct EnemyBundle {
     ysort: YSort,
 }
 
+#[derive(Component)]
+pub struct CharacterId(pub String);
+
 fn build_player(
     asset_server: &Res<AssetServer>,
     atlas_layouts: &mut ResMut<Assets<TextureAtlasLayout>>,
@@ -149,6 +152,7 @@ pub fn setup_scene(
 
                 let player_id = commands
                     .spawn(player_bundle)
+                    .insert(CharacterId("man_0".to_owned()))
                     .insert((
                         PlayerCharacter,
                         Health::new_full(100.0),
@@ -184,6 +188,7 @@ pub fn setup_scene(
                     build_enemy(&asset_server, &mut atlas_layouts, &mut library, ani);
                 let enemy_id = commands
                     .spawn(enemy_bundle)
+                    .insert(CharacterId("skeleton_0".to_owned()))
                     .insert((
                         EnemyCharacter,
                         Health::new_full(100.0),

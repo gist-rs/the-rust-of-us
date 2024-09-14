@@ -1,4 +1,4 @@
-use crate::core::setup::Player;
+use crate::core::setup::{Enemy, Player};
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -10,7 +10,10 @@ pub struct MovementState {
 pub fn move_character(
     mut _commands: Commands,
     time: Res<Time>,
-    mut characters: Query<(Entity, &mut Transform, Option<&mut MovementState>), With<Player>>,
+    mut characters: Query<
+        (Entity, &mut Transform, Option<&mut MovementState>),
+        Or<(With<Player>, With<Enemy>)>,
+    >,
 ) {
     const CHARACTER_SPEED: f32 = 150.0;
 
