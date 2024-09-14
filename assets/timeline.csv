@@ -1,5 +1,5 @@
 sec,id,act,at,to
 1,man_0,idle,f1,e1
-2,man_0,walk,f1,f3
-6,man_0,attack,f3,e3
-9,man_0,idle,f3,g3
+2,man_0,walk,f1,e5
+5,man_0,attack,e5,d5
+7,man_0,idle,e5,f5

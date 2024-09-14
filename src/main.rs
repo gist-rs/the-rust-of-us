@@ -11,8 +11,7 @@ use bevy_spritesheet_animation::prelude::*;
 use bevy_stat_bars::RegisterStatbarSubject;
 use characters::{
     bar::{adjust_stats, Health, PlayerCharacter},
-    control,
-    position::move_character,
+    r#move::move_character,
 };
 use core::{
     layer::{y_sort, SpriteLayer},

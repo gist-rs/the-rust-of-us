@@ -1,7 +1,5 @@
-use bevy::prelude::*;
-use bevy_spritesheet_animation::prelude::*;
-
 use crate::core::setup::Player;
+use bevy::prelude::*;
 
 #[derive(Component)]
 pub struct MovementState {
@@ -12,21 +10,11 @@ pub struct MovementState {
 pub fn move_character(
     mut _commands: Commands,
     time: Res<Time>,
-    library: Res<AnimationLibrary>,
-    mut characters: Query<
-        (
-            Entity,
-            &mut Transform,
-            &mut Sprite,
-            &mut SpritesheetAnimation,
-            Option<&mut MovementState>,
-        ),
-        With<Player>,
-    >,
+    mut characters: Query<(Entity, &mut Transform, Option<&mut MovementState>), With<Player>>,
 ) {
     const CHARACTER_SPEED: f32 = 150.0;
 
-    for (_entity, mut transform, mut sprite, mut animation, movement_state) in &mut characters {
+    for (_entity, mut transform, movement_state) in &mut characters {
         if let Some(mut movement_state) = movement_state {
             if movement_state.is_moving {
                 let direction =
@@ -41,12 +29,6 @@ pub fn move_character(
                 {
                     println!("-is_moving");
                     movement_state.is_moving = false;
-                    // if let Some(idle_animation_id) = library.animation_with_name("man_idle") {
-                    //     animation.switch(idle_animation_id);
-                    // }
-                } else {
-                    // Flip the sprite based on the movement direction
-                    sprite.flip_x = direction.x < 0.0;
                 }
             }
         }

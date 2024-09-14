@@ -2,12 +2,13 @@ use bevy::prelude::*;
 use bevy_spritesheet_animation::prelude::*;
 
 use crate::{
-    characters::{control::*, position::MovementState},
+    characters::{control::*, r#move::MovementState},
     timeline::entity::TimelineActions,
 };
 
 use super::{scene::get_position_from_map, setup::Player};
 
+#[allow(clippy::type_complexity)]
 pub fn schedule_timeline_actions(
     mut commands: Commands,
     time: Res<Time>,
@@ -42,66 +43,87 @@ pub fn schedule_timeline_actions(
                     .find(|(_, _, _, _, _, _)| action.id == "man_0" || action.id == "skeleton_0")
                     .unwrap();
 
+            // Player position
             let (x, y) = convert_map_to_screen(action.at.clone()).expect("x,y");
             let current_transform =
                 get_position_from_map(cell_size, half_width, half_height, offset_x, offset_y, x, y);
 
             transform.translation = current_transform.translation;
 
+            // Target position
+            let mut target_transform = transform.clone();
+            if let Some(to) = &action.to {
+                let (x, y) = convert_map_to_screen(to.clone()).expect("x,y");
+                target_transform = get_position_from_map(
+                    cell_size,
+                    half_width,
+                    half_height,
+                    offset_x,
+                    offset_y,
+                    x,
+                    y,
+                );
+            }
+            let is_flip_x = current_transform.translation.x > target_transform.translation.x;
+
             println!("{:?}", action.act.as_str());
             match action.act.as_str() {
                 "idle" => {
-                    if let Some(idle_animation_id) = library.animation_with_name("man_idle") {
-                        println!("idle.switch");
-                        animation.switch(idle_animation_id);
-                    }
                     if let Some(mut movement_state) = movement_state {
+                        println!("-is_moving");
                         movement_state.is_moving = false;
                     }
+                    if let Some(idle_animation_id) = library.animation_with_name("man_idle") {
+                        animation.switch(idle_animation_id);
+                    }
+                    sprite.flip_x = is_flip_x;
                 }
                 "walk" => {
                     if let Some(walk_animation_id) = library.animation_with_name("man_walk") {
-                        println!("walk.switch");
                         animation.switch(walk_animation_id);
                     }
                     if let Some(to) = &action.to {
-                        let (x, y) = convert_map_to_screen(to.clone()).expect("x,y");
-                        let target_transform = get_position_from_map(
-                            cell_size,
-                            half_width,
-                            half_height,
-                            offset_x,
-                            offset_y,
-                            x,
-                            y,
-                        );
-                        // println!("+ move: {:?}", target_transform.translation);
                         if let Some(mut movement_state) = movement_state {
                             movement_state.target_position = target_transform.translation;
-                            println!("+is_moving");
+                            println!("+is_moving1");
                             movement_state.is_moving = true;
                         } else {
+                            println!("+is_moving2");
                             commands.entity(entity).insert(MovementState {
                                 target_position: target_transform.translation,
                                 is_moving: true,
                             });
                         }
                     }
+                    sprite.flip_x = is_flip_x;
                 }
                 "attack" => {
+                    if let Some(mut movement_state) = movement_state {
+                        println!("-is_moving");
+                        movement_state.is_moving = false;
+                    }
                     if let Some(attack_animation_id) = library.animation_with_name("man_attack") {
-                        println!("switch{:?}", attack_animation_id);
                         animation.switch(attack_animation_id);
                     }
                     println!("+man_attack");
                     commands.entity(entity).insert(Attack);
+
+                    sprite.flip_x = is_flip_x;
                 }
                 "hurt" => {
+                    if let Some(mut movement_state) = movement_state {
+                        println!("-is_moving");
+                        movement_state.is_moving = false;
+                    }
                     if let Some(hurt_animation_id) = library.animation_with_name("man_hurt") {
                         animation.switch(hurt_animation_id);
                     }
                 }
                 "die" => {
+                    if let Some(mut movement_state) = movement_state {
+                        println!("-is_moving");
+                        movement_state.is_moving = false;
+                    }
                     if let Some(die_animation_id) = library.animation_with_name("man_die") {
                         animation.switch(die_animation_id);
                     }
@@ -113,7 +135,6 @@ pub fn schedule_timeline_actions(
 
     // Remove processed actions
     for i in actions_to_remove.iter().rev() {
-        println!("-remove{}", i);
         timeline_actions.0.remove(*i);
     }
 
@@ -126,7 +147,6 @@ pub fn schedule_timeline_actions(
                 ..
             } => {
                 if library.is_animation_name(*animation_id, "man_attack") {
-                    println!("-man_attack");
                     commands.entity(*entity).remove::<Attack>();
                 }
             }
