@@ -1,35 +1,50 @@
+use anyhow::*;
 use bevy::prelude::*;
-
+use serde::Deserialize;
+use serde_yaml::from_str;
+use std::collections::HashMap;
 use std::fs;
 
-use anyhow::*;
-use csv::Reader;
-
 use super::entity::{TimelineAction, TimelineActions};
-
-use std::collections::HashMap;
 
 #[derive(Resource, Default, Debug)]
 pub struct CharacterTimelines(pub HashMap<String, TimelineActions>);
 
-pub fn load_timeline_from_csv(file_path: &str) -> Result<CharacterTimelines> {
-    let file_content = fs::read_to_string(file_path).expect("Expected timeline.csv");
-    let mut rdr = Reader::from_reader(file_content.as_bytes());
+#[derive(Deserialize, Debug, PartialEq, Clone)]
+#[serde(rename_all = "lowercase")]
+pub enum LookDirection {
+    Left,
+    Right,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct YamlTimelineAction {
+    sec: f32,
+    id: String,
+    act: String,
+    at: String,
+    to: Option<String>,
+    look: Option<LookDirection>,
+}
+
+pub fn load_timeline_from_yaml(file_path: &str) -> Result<CharacterTimelines> {
+    let file_content = fs::read_to_string(file_path).expect("Expected timeline.yml");
+    let yaml_actions: Vec<YamlTimelineAction> = from_str(&file_content)?;
 
     let mut timelines = HashMap::new();
 
-    for result in rdr.records() {
-        let record = result.expect("a CSV record");
+    for yaml_action in yaml_actions {
         let action = TimelineAction {
-            sec: record[0].parse()?,
-            id: record[1].to_string(),
-            act: record[2].to_string(),
-            at: record[3].to_string(),
-            to: record.get(4).map(|s| s.to_string()),
+            sec: yaml_action.sec,
+            id: yaml_action.id.clone(),
+            act: yaml_action.act,
+            at: yaml_action.at,
+            to: yaml_action.to,
+            look: yaml_action.look,
         };
 
         timelines
-            .entry(action.id.clone())
+            .entry(yaml_action.id)
             .or_insert_with(Vec::new)
             .push(action);
     }
@@ -44,6 +59,6 @@ pub fn load_timeline_from_csv(file_path: &str) -> Result<CharacterTimelines> {
 }
 
 pub fn init_timeline(_commands: Commands, mut character_timelines: ResMut<CharacterTimelines>) {
-    let timelines = load_timeline_from_csv("assets/timeline.csv").expect("timeline.csv");
+    let timelines = load_timeline_from_yaml("assets/timeline.yml").expect("timeline.yml");
     *character_timelines = timelines;
 }

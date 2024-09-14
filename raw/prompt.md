@@ -25,7 +25,7 @@ a,b,c,d,e,f,g,h
 # OUTPUT EXAMPLE:
 
 ```csv
-sec,id,act,at,walk_to_or_look_at_or_act_at
+sec,id,act,at,to
 1,man_0,idle,f1,f1
 1,skeleton_0,idle,d5,e5
 2,man_0,walk,f1,e5

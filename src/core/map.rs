@@ -1,6 +1,7 @@
 use std::fs;
 
 use anyhow::Result;
+use bevy::prelude::Transform;
 use csv::*;
 
 use crate::pathfinder::astar::Grid;
@@ -52,6 +53,41 @@ pub fn convert_map_to_screen(map_coord: String) -> Option<(usize, usize)> {
     Some((x, y))
 }
 
+pub fn get_position_from_map(
+    cell_size: usize,
+    half_width: f32,
+    half_height: f32,
+    offset_x: f32,
+    offset_y: f32,
+    x: usize,
+    y: usize,
+) -> Transform {
+    Transform::from_xyz(
+        cell_size as f32 * x as f32 - half_width + offset_x,
+        cell_size as f32 * y as f32 - half_height + offset_y,
+        0.0,
+    )
+}
+
+pub fn get_map_from_position(
+    cell_size: usize,
+    half_width: f32,
+    half_height: f32,
+    offset_x: f32,
+    offset_y: f32,
+    transform: Transform,
+) -> (usize, usize) {
+    // Extract the x and y coordinates from the transform
+    let pos_x = transform.translation.x;
+    let pos_y = transform.translation.y;
+
+    // Reverse the transformation to get the map coordinates
+    let x = ((pos_x + half_width - offset_x) / cell_size as f32).ceil() as usize;
+    let y = ((pos_y + half_height - offset_y) / cell_size as f32).ceil() as usize;
+
+    (x, y)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -92,47 +128,76 @@ mod tests {
         assert_eq!(convert_map_to_screen("a".to_string()), None);
         assert_eq!(convert_map_to_screen("".to_string()), None);
     }
-}
 
-#[test]
-fn test_map_csv() {
-    use crate::pathfinder::astar::Heuristic;
+    #[test]
+    fn test_map_csv() {
+        use crate::pathfinder::astar::Heuristic;
 
-    let (mut grid, _) = load_map_from_csv("assets/map.csv").unwrap();
-    grid.solve(&Heuristic::Manhattan);
+        let (mut grid, _) = load_map_from_csv("assets/map.csv").unwrap();
+        grid.solve(&Heuristic::Manhattan);
 
-    println!("Goal: {:?}", grid.goal.unwrap());
-    println!("Path: {:?}", grid.path);
-}
+        println!("Goal: {:?}", grid.goal.unwrap());
+        println!("Path: {:?}", grid.path);
+    }
 
-#[test]
-fn test_flip_map_csv() {
-    let map = vec![
-        "a,b,c,d,e,f,g,h",
-        "🌳,⛩️,🌳,🌳,🌳,🌳,🌳,🌳",
-        "🌳,1,1,1,1,1,1,🌳",
-        "🌳,🌳,🌳,🌳,1,1,1,🌳",
-        "🌳,💰,1,1,💀,1,1,🌳",
-        "🌳,🌳,🌳,🌳,1,1,1,🌳",
-        "🌳,🦀,1,1,1,1,1,🌳",
-        "🌳,🌳,🌳,🌳,🌳,1,🌳,🌳",
-        "🌳,🌳,🌳,🌳,🌳,🚪,🌳,🌳",
-    ];
+    #[test]
+    fn test_flip_map_csv() {
+        let map = vec![
+            "a,b,c,d,e,f,g,h",
+            "🌳,⛩️,🌳,🌳,🌳,🌳,🌳,🌳",
+            "🌳,1,1,1,1,1,1,🌳",
+            "🌳,🌳,🌳,🌳,1,1,1,🌳",
+            "🌳,💰,1,1,💀,1,1,🌳",
+            "🌳,🌳,🌳,🌳,1,1,1,🌳",
+            "🌳,🦀,1,1,1,1,1,🌳",
+            "🌳,🌳,🌳,🌳,🌳,1,🌳,🌳",
+            "🌳,🌳,🌳,🌳,🌳,🚪,🌳,🌳",
+        ];
 
-    // Extract the header
-    let header = &map[0];
+        // Extract the header
+        let header = &map[0];
 
-    // Extract the rows to be flipped
-    let rows_to_flip = &map[1..];
+        // Extract the rows to be flipped
+        let rows_to_flip = &map[1..];
 
-    // Reverse the rows
-    let flipped_rows: Vec<&str> = rows_to_flip.iter().rev().cloned().collect();
+        // Reverse the rows
+        let flipped_rows: Vec<&str> = rows_to_flip.iter().rev().cloned().collect();
 
-    // Print the header
-    println!("{}", header);
+        // Print the header
+        println!("{}", header);
 
-    // Print the flipped rows
-    for line in flipped_rows {
-        println!("{}", line);
+        // Print the flipped rows
+        for line in flipped_rows {
+            println!("{}", line);
+        }
+    }
+
+    #[test]
+    fn test_conversion_back_and_forth() {
+        let cell_size = 46usize;
+        let half_width = 320. / 2.;
+        let half_height = 320. / 2.;
+        let offset_x = 0.;
+        let offset_y = 0.;
+
+        let x = 5;
+        let y = 7;
+
+        // Convert map coordinates to position
+        let transform =
+            get_position_from_map(cell_size, half_width, half_height, offset_x, offset_y, x, y);
+
+        // Convert position back to map coordinates
+        let (map_x, map_y) = get_map_from_position(
+            cell_size,
+            half_width,
+            half_height,
+            offset_x,
+            offset_y,
+            transform,
+        );
+
+        // Assert that the original map coordinates are recovered
+        assert_eq!((x, y), (map_x, map_y));
     }
 }

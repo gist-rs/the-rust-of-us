@@ -7,6 +7,7 @@ use serde_json::from_str;
 use super::{
     layer::{SpriteLayer, YSort},
     library::{build_library, Ani},
+    map::get_position_from_map,
 };
 
 #[derive(Resource)]
@@ -21,22 +22,6 @@ struct DecorBundle {
     sprite_layer: SpriteLayer,
     marker: Decor,
     ysort: YSort,
-}
-
-pub fn get_position_from_map(
-    cell_size: usize,
-    half_width: f32,
-    half_height: f32,
-    offset_x: f32,
-    offset_y: f32,
-    x: usize,
-    y: usize,
-) -> Transform {
-    Transform::from_xyz(
-        cell_size as f32 * x as f32 - half_width + offset_x,
-        cell_size as f32 * y as f32 - half_height + offset_y,
-        0.0,
-    )
 }
 
 pub fn build_scene(

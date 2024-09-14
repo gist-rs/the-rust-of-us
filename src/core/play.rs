@@ -6,7 +6,7 @@ use crate::{
     timeline::init::CharacterTimelines,
 };
 
-use super::{scene::get_position_from_map, setup::CharacterId};
+use super::{map::get_position_from_map, setup::CharacterId};
 
 #[derive(Component)]
 pub struct Action(pub Act);
@@ -88,10 +88,11 @@ pub fn schedule_timeline_actions(
                             y,
                         );
                     }
+
                     let is_flip_x =
                         current_transform.translation.x > target_transform.translation.x;
 
-                    println!("action:{:?}", action.act.as_str());
+                    println!("{:?} at {:?}", action.act.as_str(), action.at.clone());
                     match action.act.as_str() {
                         "idle" => {
                             if let Some(movement_state) = movement_state.as_mut() {
@@ -134,7 +135,6 @@ pub fn schedule_timeline_actions(
                             {
                                 animation.switch(attack_animation_id);
                             }
-                            println!("+man_attack");
                             commands.entity(entity).insert(Action(Act::Attack));
                             sprite.flip_x = is_flip_x;
                         }
