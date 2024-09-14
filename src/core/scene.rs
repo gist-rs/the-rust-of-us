@@ -73,7 +73,7 @@ pub fn build_scene(
 
     for (y, row) in map.0.iter().enumerate() {
         for (x, cell) in row.iter().enumerate() {
-            let mut transform =
+            let transform =
                 get_position_from_map(cell_size, half_width, half_height, offset_x, offset_y, x, y);
             match cell.as_str() {
                 "🌳" => {
