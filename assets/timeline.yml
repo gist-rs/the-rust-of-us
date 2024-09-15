@@ -42,6 +42,12 @@
 
 - sec: 8
   id: man_0
+  act: open
+  at: c5
+  look: left
+
+- sec: 9
+  id: man_0
   act: idle
   at: c5
   look: right

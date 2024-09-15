@@ -6,4 +6,5 @@ sec,id,act,at,to
 5,skeleton_0,hurt,d5,d5
 6,skeleton_0,die,d5,d5
 8,man_0,walk,d5,c5
+8,man_0,open,c5,c5
 10,man_0,idle,c5,d5

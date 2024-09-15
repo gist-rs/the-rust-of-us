@@ -23,6 +23,12 @@
         "x": 0,
         "y": 2,
         "count": 10
+      },
+      {
+        "action_name": "open",
+        "x": 0,
+        "y": 1,
+        "count": 3
       }
     ]
   },
