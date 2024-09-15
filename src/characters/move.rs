@@ -1,6 +1,6 @@
 use crate::core::{
-    map::{convert_map_to_screen, get_map_from_position, get_position_from_map},
-    setup::{CharacterId, Enemy, Player},
+    map::get_map_from_position,
+    setup::{CharacterId, Player},
 };
 use bevy::prelude::*;
 use bevy_spritesheet_animation::prelude::{AnimationLibrary, SpritesheetAnimation};
@@ -11,6 +11,7 @@ pub struct MovementState {
     pub is_moving: bool,
 }
 
+#[allow(clippy::type_complexity)]
 pub fn move_character(
     mut _commands: Commands,
     library: Res<AnimationLibrary>,
