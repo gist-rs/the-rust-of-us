@@ -4,7 +4,7 @@ use bevy_spritesheet_animation::prelude::*;
 use crate::{
     characters::r#move::MovementState,
     core::{chest::ChestState, map::convert_map_to_screen},
-    timeline::init::CharacterTimelines,
+    timeline::init::{CharacterTimelines, LookDirection},
 };
 
 use super::{chest::Chests, map::get_position_from_map, setup::CharacterId};
@@ -92,10 +92,18 @@ pub fn schedule_timeline_actions(
                         );
                     }
 
-                    let is_flip_x =
-                        current_transform.translation.x > target_transform.translation.x;
+                    let is_flip_x = match action.look {
+                        Some(LookDirection::Left) => true,
+                        Some(LookDirection::Right) => false,
+                        None => current_transform.translation.x > target_transform.translation.x,
+                    };
 
-                    println!("{:?} at {:?}", action.act.as_str(), action.at.clone());
+                    println!(
+                        "{:?} at {:?} look left {:?}",
+                        action.act.as_str(),
+                        action.at.clone(),
+                        is_flip_x
+                    );
                     match action.act.as_str() {
                         "idle" => {
                             if let Some(movement_state) = movement_state.as_mut() {
@@ -152,12 +160,6 @@ pub fn schedule_timeline_actions(
                             }
                             commands.entity(entity).insert(Action(Act::Open));
                             sprite.flip_x = is_flip_x;
-
-                            // Update the chest state
-                            if let Some(chest) = chests.0.get_mut("chest_0") {
-                                chest.status = ChestState::Open;
-                                println!("chest:{chest:?}");
-                            }
                         }
                         "hurt" => {
                             if let Some(movement_state) = movement_state.as_mut() {
@@ -224,6 +226,12 @@ pub fn schedule_timeline_actions(
                     }
                     if library.is_animation_name(*animation_id, format!("{subject}_open")) {
                         commands.entity(*entity).remove::<Action>();
+
+                        // Update the chest state after the player's "open" animation ends
+                        if let Some(chest) = chests.0.get_mut("chest_0") {
+                            chest.status = ChestState::Open;
+                            println!("chest:{chest:?}");
+                        }
                     }
                 },
             );

@@ -46,7 +46,7 @@
   at: c5
   look: left
 
-- sec: 10
+- sec: 9
   id: man_0
   act: idle
   at: c5
