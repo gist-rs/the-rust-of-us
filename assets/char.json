@@ -4,7 +4,7 @@
     "type": "player",
     "texture_path": "man.png",
     "width": 96,
-    "height": 96,
+    "height": 64,
     "animations": [
       {
         "action_name": "idle",
@@ -27,8 +27,8 @@
       {
         "action_name": "open",
         "x": 0,
-        "y": 1,
-        "count": 3
+        "y": 3,
+        "count": 8
       }
     ]
   },
@@ -37,7 +37,7 @@
     "type": "enemy",
     "texture_path": "skeleton.png",
     "width": 96,
-    "height": 96,
+    "height": 64,
     "animations": [
       {
         "action_name": "idle",

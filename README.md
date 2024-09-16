@@ -32,6 +32,8 @@ cargo watch -c -w src -x run
 - [ ] Avoid fire. // walkable but hurt
 - [ ] Avoid arrow trap.
 - [ ] Learn from previously trap (don't step on it again!).
+- [ ] Use key to open chest.
+- [ ] Find the right key to open chest.
 
 ## Resources
 

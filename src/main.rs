@@ -14,6 +14,7 @@ use characters::{
     r#move::move_character,
 };
 use core::{
+    chest::{update_chest, Chests},
     layer::{y_sort, SpriteLayer},
     menu::button_system,
     play::schedule_timeline_actions,
@@ -46,6 +47,7 @@ fn main() {
         .register_type::<PlayerCharacter>()
         .add_statbar_component_observer::<Health>()
         .init_resource::<TimelineActions>()
+        .init_resource::<Chests>()
         .init_resource::<CharacterTimelines>()
         .add_systems(Startup, (setup_scene, init_timeline))
         .add_systems(
@@ -56,6 +58,7 @@ fn main() {
                 button_system,
                 schedule_timeline_actions,
                 move_character,
+                update_chest,
             ),
         )
         .run();

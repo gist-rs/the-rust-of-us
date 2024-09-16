@@ -5,6 +5,7 @@ use bevy_spritesheet_animation::prelude::*;
 use serde_json::from_str;
 
 use super::{
+    chest::{Chest, ChestId, ChestState, Chests},
     layer::{SpriteLayer, YSort},
     library::{build_library, Ani},
     map::get_position_from_map,
@@ -30,6 +31,7 @@ pub fn build_scene(
     atlas_layouts: &mut ResMut<Assets<TextureAtlasLayout>>,
     library: &mut ResMut<AnimationLibrary>,
     map: GameMap,
+    mut chests: ResMut<Chests>,
 ) {
     // Spawn the background
     commands.spawn((
@@ -48,7 +50,7 @@ pub fn build_scene(
 
     // Load decor from JSON file
     let decor_json = fs::read_to_string("assets/decor.json").expect("Unable to read file");
-    let object_animations: Vec<Ani> = from_str(&decor_json).expect("Unable to parse JSON");
+    let decor_animations: Vec<Ani> = from_str(&decor_json).expect("Unable to parse JSON");
 
     // Spawn obstacles based on the map
     let cell_size = 46usize;
@@ -86,11 +88,11 @@ pub fn build_scene(
                     });
                 }
                 "💰" => {
-                    let ani = object_animations
+                    let ani = decor_animations
                         .iter()
                         .find(|ani| ani.name == "chest")
                         .expect("Expected chest");
-                    let deco_bundle = build_decor_bundle(
+                    let deco_bundle = build_ani_decor_bundle(
                         asset_server,
                         atlas_layouts,
                         library,
@@ -98,7 +100,19 @@ pub fn build_scene(
                         transform.with_scale(Vec3::splat(2.0)),
                     );
 
-                    commands.spawn(deco_bundle);
+                    let chest_id = format!("chest_{}", chests.0.len());
+                    commands
+                        .spawn(deco_bundle)
+                        .insert(ChestId(chest_id.clone()));
+
+                    // Add the chest to the Chests resource
+                    chests.0.insert(
+                        chest_id,
+                        Chest {
+                            status: ChestState::Close,
+                            key: None,
+                        },
+                    );
                 }
                 _ => (),
             }
@@ -116,7 +130,7 @@ pub struct AniDecorBundle {
     ysort: YSort,
 }
 
-pub fn build_decor_bundle(
+pub fn build_ani_decor_bundle(
     asset_server: &Res<AssetServer>,
     atlas_layouts: &mut ResMut<Assets<TextureAtlasLayout>>,
     library: &mut ResMut<AnimationLibrary>,
@@ -140,7 +154,9 @@ pub fn build_decor_bundle(
             layout: libs[0].1.clone(),
             ..default()
         },
-        spritesheet_animation: SpritesheetAnimation::from_id(libs[0].0),
+        spritesheet_animation: SpritesheetAnimation::from_id(
+            library.animation_with_name("chest_close").unwrap(),
+        ),
         sprite_layer: SpriteLayer::Ground,
         marker: Decor,
         ysort: YSort(0.0),

@@ -44,6 +44,7 @@ pub fn build_library(
             let animation = Animation::from_clip(clip_id);
             let animation_id = library.register_animation(animation);
             let animation_name = format!("{}_{}", ani.name, &anim.action_name);
+            println!("+animation_name:{}", animation_name);
             library
                 .name_animation(animation_id, animation_name)
                 .unwrap();

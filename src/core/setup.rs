@@ -5,6 +5,7 @@ use serde_json::from_str;
 use std::fs;
 
 use super::{
+    chest::Chests,
     layer::YSort,
     library::{build_library, Ani},
     map::load_map_from_csv,
@@ -112,6 +113,7 @@ pub fn setup_scene(
     asset_server: Res<AssetServer>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     mut library: ResMut<AnimationLibrary>,
+    mut chests: ResMut<Chests>,
 ) {
     commands.spawn(Camera2dBundle::default());
 
@@ -138,6 +140,7 @@ pub fn setup_scene(
         &mut atlas_layouts,
         &mut library,
         map,
+        chests,
     );
 
     // Load characters from JSON file

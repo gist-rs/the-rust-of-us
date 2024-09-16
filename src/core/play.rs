@@ -2,11 +2,12 @@ use bevy::prelude::*;
 use bevy_spritesheet_animation::prelude::*;
 
 use crate::{
-    characters::r#move::MovementState, core::map::convert_map_to_screen,
+    characters::r#move::MovementState,
+    core::{chest::ChestState, map::convert_map_to_screen},
     timeline::init::CharacterTimelines,
 };
 
-use super::{map::get_position_from_map, setup::CharacterId};
+use super::{chest::Chests, map::get_position_from_map, setup::CharacterId};
 
 #[derive(Component)]
 pub struct Action(pub Act);
@@ -16,6 +17,7 @@ pub enum Act {
     Idle,
     Walk,
     Attack,
+    Open,
     Hurt,
     Die,
 }
@@ -36,6 +38,7 @@ pub fn schedule_timeline_actions(
         Option<&mut MovementState>,
     )>,
     mut character_timelines: ResMut<CharacterTimelines>,
+    mut chests: ResMut<Chests>,
 ) {
     let cell_size = 46usize;
     let half_width = 320. / 2.;
@@ -137,6 +140,24 @@ pub fn schedule_timeline_actions(
                             }
                             commands.entity(entity).insert(Action(Act::Attack));
                             sprite.flip_x = is_flip_x;
+                        }
+                        "open" => {
+                            if let Some(movement_state) = movement_state.as_mut() {
+                                movement_state.is_moving = false;
+                            }
+                            if let Some(attack_animation_id) =
+                                library.animation_with_name(format!("{subject}_open"))
+                            {
+                                animation.switch(attack_animation_id);
+                            }
+                            commands.entity(entity).insert(Action(Act::Open));
+                            sprite.flip_x = is_flip_x;
+
+                            // Update the chest state
+                            if let Some(chest) = chests.0.get_mut("chest_0") {
+                                chest.status = ChestState::Open;
+                                println!("chest:{chest:?}");
+                            }
                         }
                         "hurt" => {
                             if let Some(movement_state) = movement_state.as_mut() {
