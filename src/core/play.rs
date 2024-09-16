@@ -215,9 +215,15 @@ pub fn schedule_timeline_actions(
                     if library.is_animation_name(*animation_id, format!("{subject}_attack")) {
                         commands.entity(*entity).remove::<Action>();
                     }
+                    if library.is_animation_name(*animation_id, format!("{subject}_hurt")) {
+                        commands.entity(*entity).remove::<Action>();
+                    }
                     if library.is_animation_name(*animation_id, format!("{subject}_die")) {
                         commands.entity(*entity).remove::<Action>();
                         commands.entity(*entity).despawn();
+                    }
+                    if library.is_animation_name(*animation_id, format!("{subject}_open")) {
+                        commands.entity(*entity).remove::<Action>();
                     }
                 },
             );

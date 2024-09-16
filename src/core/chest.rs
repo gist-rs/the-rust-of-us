@@ -28,11 +28,9 @@ pub fn update_chest(
     chests: Res<Chests>,
 ) {
     for (entity, chest_id, mut animation) in chest.iter_mut() {
-        // println!("chest_id:{chest_id:?}");
         if let Some(chest) = chests.0.get(&chest_id.0) {
             if chest.status == ChestState::Open {
                 if let Some(open_animation_id) = library.animation_with_name("chest_open") {
-                    println!("chest:{chest:?}");
                     animation.switch(open_animation_id);
                 }
             }
