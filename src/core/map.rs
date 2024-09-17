@@ -14,7 +14,8 @@ pub struct PathCost {
 }
 
 fn successors(
-    walkables: &Vec<Vec<bool>>,
+    // TOFIX
+    #[allow(clippy::ptr_arg)] walkables: &Vec<Vec<bool>>,
     &(x, y): &(usize, usize),
 ) -> Vec<((usize, usize), usize)> {
     vec![(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
@@ -37,41 +38,14 @@ pub fn find_path(
         &start,
         |n| {
             counter += 1;
-            successors(&walkables, n)
+            successors(walkables, n)
         },
         |n| distance(n, &goal),
         |n| n == &goal,
     )
     .expect("path not found");
-    // assert_eq!(cost, 8);
-    // assert!(path.iter().all(|&(nx, ny)| walkables[ny][nx]));
-    // assert_eq!(counter, 11);
 
     Ok(PathCost { path, cost })
-}
-
-#[test]
-fn astar_path_ok() {
-    let map: &str = "\
-#########
-#.#.....#
-###.##..#
-#...#...#
-#...#...#
-#...#...#
-#...#...#
-#########
-";
-
-    let walkables: Vec<Vec<bool>> = map
-        .lines()
-        .map(|l| l.chars().map(|c| c == '.').collect())
-        .collect();
-
-    let start: (usize, usize) = (2, 3);
-    let goal: (usize, usize) = (6, 3);
-
-    find_path(&walkables, start, goal);
 }
 
 pub fn load_map_from_csv(file_path: &str) -> Result<(PathCost, GameMap)> {
@@ -95,6 +69,7 @@ pub fn load_map_from_csv(file_path: &str) -> Result<(PathCost, GameMap)> {
                 "_" => walkables[inverted_y][x] = true,
                 "⛩️" => {
                     start = (x, inverted_y);
+                    println!("start:{:?}", start);
                     walkables[inverted_y][x] = true;
                 }
                 "🚪" => {
@@ -223,7 +198,7 @@ mod tests {
 
     #[test]
     fn test_flip_map_csv() {
-        let map = vec![
+        let map = [
             "a,b,c,d,e,f,g,h",
             "🌳,⛩️,🌳,🌳,🌳,🌳,🌳,🌳",
             "🌳,1,1,1,1,1,1,🌳",

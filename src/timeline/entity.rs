@@ -5,6 +5,7 @@ use super::init::LookDirection;
 #[derive(Debug, Clone)]
 pub struct TimelineAction {
     pub sec: f32,
+    #[allow(dead_code)]
     pub id: String,
     pub act: String,
     pub at: String,

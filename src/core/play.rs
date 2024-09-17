@@ -10,7 +10,8 @@ use crate::{
 use super::{chest::Chests, map::get_position_from_map, setup::CharacterId};
 
 #[derive(Component)]
-pub struct Action(pub Act);
+#[allow(dead_code)]
+pub struct Action(Act);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Act {

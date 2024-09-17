@@ -6,6 +6,8 @@ use extol_sprite_layer::LayerIndex;
 pub enum SpriteLayer {
     Background,
     Ground,
+    // TODO
+    #[allow(dead_code)]
     Ui,
 }
 

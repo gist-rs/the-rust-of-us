@@ -9,6 +9,8 @@ pub struct Chests(pub HashMap<String, Chest>);
 #[derive(Debug, Clone)]
 pub struct Chest {
     pub status: ChestState,
+    // TODO
+    #[allow(dead_code)]
     pub key: Option<String>,
 }
 

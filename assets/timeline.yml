@@ -1,7 +1,7 @@
 - sec: 1
   id: man_0
   act: idle
-  at: f1
+  at: f2
   look: left
 
 - sec: 1
@@ -13,7 +13,7 @@
 - sec: 2
   id: man_0
   act: walk
-  at: f1
+  at: f2
   to: e5
 
 - sec: 4

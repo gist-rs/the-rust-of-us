@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+// TODO
+#[allow(dead_code)]
 pub fn setup_ui(mut commands: Commands) {
     commands
         .spawn(ButtonBundle {
