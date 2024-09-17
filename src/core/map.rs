@@ -126,6 +126,7 @@ pub fn get_position_from_map(
     )
 }
 
+#[allow(dead_code)]
 pub fn get_map_from_position(
     cell_size: usize,
     half_width: f32,
@@ -139,8 +140,8 @@ pub fn get_map_from_position(
     let pos_y = transform.translation.y;
 
     // Reverse the transformation to get the map coordinates
-    let x = ((pos_x + half_width - offset_x) / cell_size as f32).ceil() as usize;
-    let y = ((pos_y + half_height - offset_y) / cell_size as f32).ceil() as usize;
+    let x = ((pos_x + half_width - offset_x) / cell_size as f32).round() as usize;
+    let y = ((pos_y + half_height - offset_y) / cell_size as f32).round() as usize;
 
     (x, y)
 }

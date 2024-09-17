@@ -1,5 +1,5 @@
 use crate::core::{
-    map::{get_map_from_position, PathCost},
+    map::{get_position_from_map, PathCost},
     setup::{CharacterId, Player},
 };
 use bevy::prelude::*;
@@ -18,17 +18,12 @@ pub struct CharacterPath {
 }
 
 impl CharacterPath {
-    pub fn new() -> Self {
-        Self {
-            paths: HashMap::new(),
-        }
-    }
-
     pub fn get_path_mut(&mut self, character_id: &str) -> Option<&mut PathCost> {
         self.paths.get_mut(character_id)
     }
 
     pub fn set_path(&mut self, character_id: &CharacterId, path_cost: PathCost) {
+        self.paths = HashMap::new();
         self.paths.insert(character_id.0.clone(), path_cost);
     }
 
@@ -37,6 +32,7 @@ impl CharacterPath {
     }
 }
 
+#[allow(clippy::type_complexity)]
 #[allow(clippy::type_complexity)]
 pub fn move_character(
     library: Res<AnimationLibrary>,
@@ -53,7 +49,7 @@ pub fn move_character(
     >,
     mut character_paths: ResMut<CharacterPath>,
 ) {
-    const CHARACTER_SPEED: f32 = 150.0;
+    const CHARACTER_SPEED: f32 = 320.; // Adjust this to 10 pixels per second
     const CELL_SIZE: usize = 46;
     const HALF_WIDTH: f32 = 320. / 2.;
     const HALF_HEIGHT: f32 = 320. / 2.;
@@ -66,56 +62,47 @@ pub fn move_character(
                 // Get the path for the character
                 if let Some(path_cost) = character_paths.get_path_mut(&character_id.0) {
                     // Move to the next position in the path
-                    let current_map_position = get_map_from_position(
-                        CELL_SIZE,
-                        HALF_WIDTH,
-                        HALF_HEIGHT,
-                        OFFSET_X,
-                        OFFSET_Y,
-                        Transform {
-                            translation: transform.translation,
-                            ..Default::default()
-                        },
-                    );
-                    let target_map_position = get_map_from_position(
-                        CELL_SIZE,
-                        HALF_WIDTH,
-                        HALF_HEIGHT,
-                        OFFSET_X,
-                        OFFSET_Y,
-                        Transform {
-                            translation: movement_state.target_position,
-                            ..Default::default()
-                        },
-                    );
+                    if let Some((next_x, next_y)) = path_cost.path.first() {
+                        let next_position = get_position_from_map(
+                            CELL_SIZE,
+                            HALF_WIDTH,
+                            HALF_HEIGHT,
+                            OFFSET_X,
+                            OFFSET_Y,
+                            *next_x,
+                            *next_y,
+                        );
 
-                    // Check if the character has reached the target position
-                    if current_map_position == target_map_position {
-                        // Move to the next position in the path
-                        if let Some((next_x, next_y)) = path_cost.path.first() {
-                            let next_position = Vec3::new(
-                                *next_x as f32 * CELL_SIZE as f32 - HALF_WIDTH + OFFSET_X,
-                                *next_y as f32 * CELL_SIZE as f32 - HALF_HEIGHT + OFFSET_Y,
-                                0.0,
-                            );
-                            movement_state.target_position = next_position;
+                        // Remove z
+                        let mut a = next_position.translation;
+                        a.z = 0.;
+                        let mut b = transform.translation;
+                        b.z = 0.;
+                        let distance = (a - b).length();
+
+                        // If the character is close enough to the target position, consider it reached
+                        if distance < 2.0 {
+                            // Adjust this threshold as needed
+                            transform.translation = next_position.translation;
                             path_cost.path.remove(0);
                         } else {
-                            // No more positions in the path, stop moving
-                            movement_state.is_moving = false;
-                            character_paths.remove_path(&character_id.0);
-                            let subject = &character_id.0.split('_').next().expect("subject");
-                            if let Some(idle_animation_id) =
-                                library.animation_with_name(format!("{subject}_idle"))
-                            {
-                                animation.switch(idle_animation_id);
-                            }
+                            // Move smoothly towards the next position
+                            let direction = (next_position.translation - transform.translation)
+                                .normalize_or_zero();
+                            transform.translation +=
+                                direction * time.delta_seconds() * CHARACTER_SPEED;
+                        }
+                    } else {
+                        // No more positions in the path, stop moving
+                        movement_state.is_moving = false;
+                        character_paths.remove_path(&character_id.0);
+                        let subject = &character_id.0.split('_').next().expect("subject");
+                        if let Some(idle_animation_id) =
+                            library.animation_with_name(format!("{subject}_idle"))
+                        {
+                            animation.switch(idle_animation_id);
                         }
                     }
-
-                    let direction = (movement_state.target_position - transform.translation)
-                        .normalize_or_zero();
-                    transform.translation += direction * time.delta_seconds() * CHARACTER_SPEED;
                 } else {
                     // No path found, stop moving
                     movement_state.is_moving = false;

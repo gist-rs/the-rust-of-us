@@ -88,7 +88,7 @@ pub fn schedule_timeline_actions(
                     transform.translation = current_transform.translation;
 
                     // Target position
-                    let mut to = at.clone();
+                    let mut to = at;
                     let mut target_transform = *transform;
                     if let Some(to_string) = &action.to {
                         to = convert_map_to_screen(to_string.clone()).expect("x,y");
@@ -109,7 +109,7 @@ pub fn schedule_timeline_actions(
                         None => current_transform.translation.x > target_transform.translation.x,
                     };
 
-                    println!("{:?} at {:?}", action.act.as_str(), action.at.clone(),);
+                    println!("{:?} at {:?}", action.act.as_str(), action.at.clone());
                     match action.act.as_str() {
                         "idle" => {
                             if let Some(movement_state) = movement_state.as_mut() {
@@ -141,7 +141,7 @@ pub fn schedule_timeline_actions(
                                 }
 
                                 // Find path
-                                println!("{:?}→{:?}", at, to);
+                                println!("{:?} → {:?}", at, to);
                                 match find_path(&current_walkables.0, at, to) {
                                     Ok(path_cost) => {
                                         println!("set_path: {:?}→{:?}", character_id.0, path_cost);
