@@ -18,7 +18,7 @@ use core::{
     menu::button_system,
     play::schedule_timeline_actions,
     scene::MainPath,
-    setup::setup_scene,
+    setup::{setup_scene, Walkable},
 };
 use extol_sprite_layer::SpriteLayerPlugin;
 use timeline::{
@@ -51,6 +51,7 @@ fn main() {
         .init_resource::<CharacterTimelines>()
         .init_resource::<MainPath>()
         .init_resource::<CharacterPath>()
+        .init_resource::<Walkable>()
         .add_systems(Startup, (setup_scene, init_timeline))
         .add_systems(
             Update,

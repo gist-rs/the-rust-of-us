@@ -48,7 +48,7 @@ pub fn find_path(
     Ok(PathCost { path, cost })
 }
 
-pub fn load_map_from_csv(file_path: &str) -> Result<(PathCost, GameMap)> {
+pub fn load_map_from_csv(file_path: &str) -> Result<(Vec<Vec<bool>>, PathCost, GameMap)> {
     // Read the CSV file
     let file_content = fs::read_to_string(file_path)?;
     let mut rdr = Reader::from_reader(file_content.as_bytes());
@@ -74,6 +74,7 @@ pub fn load_map_from_csv(file_path: &str) -> Result<(PathCost, GameMap)> {
                 }
                 "🚪" => {
                     goal = (x, inverted_y);
+                    println!("goal:{:?}", goal);
                     walkables[inverted_y][x] = true;
                 }
                 _ => (),
@@ -85,7 +86,7 @@ pub fn load_map_from_csv(file_path: &str) -> Result<(PathCost, GameMap)> {
     match find_path(&walkables, start, goal) {
         Ok(path_cost) => {
             println!("{:?}", path_cost);
-            Ok((path_cost, GameMap(map)))
+            Ok((walkables, path_cost, GameMap(map)))
         }
         Err(error) => bail!(error),
     }

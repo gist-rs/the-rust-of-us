@@ -2,12 +2,19 @@ use bevy::prelude::*;
 use bevy_spritesheet_animation::prelude::*;
 
 use crate::{
-    characters::r#move::MovementState,
-    core::{chest::ChestState, map::convert_map_to_screen},
+    characters::r#move::{CharacterPath, MovementState},
+    core::{
+        chest::ChestState,
+        map::{convert_map_to_screen, find_path},
+    },
     timeline::init::{CharacterTimelines, LookDirection},
 };
 
-use super::{chest::Chests, map::get_position_from_map, setup::CharacterId};
+use super::{
+    chest::Chests,
+    map::get_position_from_map,
+    setup::{CharacterId, Walkable},
+};
 
 #[derive(Component)]
 #[allow(dead_code)]
@@ -40,6 +47,8 @@ pub fn schedule_timeline_actions(
     )>,
     mut character_timelines: ResMut<CharacterTimelines>,
     mut chests: ResMut<Chests>,
+    mut character_path: ResMut<CharacterPath>,
+    current_walkables: ResMut<Walkable>,
 ) {
     let cell_size = 46usize;
     let half_width = 320. / 2.;
@@ -65,31 +74,32 @@ pub fn schedule_timeline_actions(
                     actions_to_remove.push(i);
 
                     // Subject position
-                    let (x, y) = convert_map_to_screen(action.at.clone()).expect("x,y");
+                    let at = convert_map_to_screen(action.at.clone()).expect("x,y");
                     let current_transform = get_position_from_map(
                         cell_size,
                         half_width,
                         half_height,
                         offset_x,
                         offset_y,
-                        x,
-                        y,
+                        at.0,
+                        at.1,
                     );
 
                     transform.translation = current_transform.translation;
 
                     // Target position
+                    let mut to = at.clone();
                     let mut target_transform = *transform;
-                    if let Some(to) = &action.to {
-                        let (x, y) = convert_map_to_screen(to.clone()).expect("x,y");
+                    if let Some(to_string) = &action.to {
+                        to = convert_map_to_screen(to_string.clone()).expect("x,y");
                         target_transform = get_position_from_map(
                             cell_size,
                             half_width,
                             half_height,
                             offset_x,
                             offset_y,
-                            x,
-                            y,
+                            to.0,
+                            to.1,
                         );
                     }
 
@@ -99,12 +109,7 @@ pub fn schedule_timeline_actions(
                         None => current_transform.translation.x > target_transform.translation.x,
                     };
 
-                    println!(
-                        "{:?} at {:?} look left {:?}",
-                        action.act.as_str(),
-                        action.at.clone(),
-                        is_flip_x
-                    );
+                    println!("{:?} at {:?}", action.act.as_str(), action.at.clone(),);
                     match action.act.as_str() {
                         "idle" => {
                             if let Some(movement_state) = movement_state.as_mut() {
@@ -134,6 +139,16 @@ pub fn schedule_timeline_actions(
                                         is_moving: true,
                                     });
                                 }
+
+                                // Find path
+                                println!("{:?}→{:?}", at, to);
+                                match find_path(&current_walkables.0, at, to) {
+                                    Ok(path_cost) => {
+                                        println!("set_path: {:?}→{:?}", character_id.0, path_cost);
+                                        character_path.set_path(character_id, path_cost)
+                                    }
+                                    Err(error) => println!("{error:?}"),
+                                };
                             }
                             commands.entity(entity).insert(Action(Act::Walk));
                             sprite.flip_x = is_flip_x;

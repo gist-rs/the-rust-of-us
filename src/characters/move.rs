@@ -28,8 +28,8 @@ impl CharacterPath {
         self.paths.get_mut(character_id)
     }
 
-    pub fn set_path(&mut self, character_id: String, path_cost: PathCost) {
-        self.paths.insert(character_id, path_cost);
+    pub fn set_path(&mut self, character_id: &CharacterId, path_cost: PathCost) {
+        self.paths.insert(character_id.0.clone(), path_cost);
     }
 
     pub fn remove_path(&mut self, character_id: &str) {

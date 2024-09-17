@@ -108,6 +108,9 @@ fn build_enemy(
 use crate::characters::bar::*;
 use bevy_stat_bars::*;
 
+#[derive(Resource, Default, Debug)]
+pub struct Walkable(pub Vec<Vec<bool>>);
+
 pub fn setup_scene(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -115,6 +118,7 @@ pub fn setup_scene(
     mut library: ResMut<AnimationLibrary>,
     chests: ResMut<Chests>,
     mut main_path: ResMut<MainPath>,
+    mut current_walkables: ResMut<Walkable>,
 ) {
     commands.spawn(Camera2dBundle::default());
 
@@ -134,7 +138,10 @@ pub fn setup_scene(
     ));
 
     // Load map
-    let (path_cost, map) = load_map_from_csv("assets/map.csv").unwrap();
+    let (walkables, path_cost, map) = load_map_from_csv("assets/map.csv").unwrap();
+
+    // Update walkables
+    *current_walkables = Walkable(walkables);
 
     // Update MainPath with the data from PathCost
     main_path.0.path = path_cost.path;
