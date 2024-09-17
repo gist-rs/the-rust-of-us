@@ -1,6 +1,5 @@
 mod characters;
 mod core;
-mod pathfinder;
 mod timeline;
 
 use bevy::{
@@ -11,13 +10,14 @@ use bevy_spritesheet_animation::prelude::*;
 use bevy_stat_bars::RegisterStatbarSubject;
 use characters::{
     bar::{adjust_stats, Health, PlayerCharacter},
-    r#move::move_character,
+    r#move::{move_character, CharacterPath},
 };
 use core::{
     chest::{update_chest, Chests},
     layer::{y_sort, SpriteLayer},
     menu::button_system,
     play::schedule_timeline_actions,
+    scene::MainPath,
     setup::setup_scene,
 };
 use extol_sprite_layer::SpriteLayerPlugin;
@@ -49,6 +49,8 @@ fn main() {
         .init_resource::<TimelineActions>()
         .init_resource::<Chests>()
         .init_resource::<CharacterTimelines>()
+        .init_resource::<MainPath>()
+        .init_resource::<CharacterPath>()
         .add_systems(Startup, (setup_scene, init_timeline))
         .add_systems(
             Update,

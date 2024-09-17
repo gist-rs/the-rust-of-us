@@ -24,10 +24,10 @@ pub enum ChestState {
 #[allow(clippy::type_complexity)]
 pub fn update_chest(
     library: Res<AnimationLibrary>,
-    mut chest: Query<(Entity, &ChestId, &mut SpritesheetAnimation), With<Decor>>,
+    mut chest: Query<(&ChestId, &mut SpritesheetAnimation), With<Decor>>,
     chests: Res<Chests>,
 ) {
-    for (entity, chest_id, mut animation) in chest.iter_mut() {
+    for (chest_id, mut animation) in chest.iter_mut() {
         if let Some(chest) = chests.0.get(&chest_id.0) {
             if chest.status == ChestState::Open {
                 if let Some(open_animation_id) = library.animation_with_name("chest_open") {

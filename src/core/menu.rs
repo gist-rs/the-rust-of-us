@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-pub fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn setup_ui(mut commands: Commands) {
     commands
         .spawn(ButtonBundle {
             style: Style {
@@ -29,8 +29,8 @@ pub fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
         });
 }
 
+#[allow(clippy::type_complexity)]
 pub fn button_system(
-    mut commands: Commands,
     mut interaction_query: Query<
         (&Interaction, &mut BackgroundColor),
         (Changed<Interaction>, With<Button>),

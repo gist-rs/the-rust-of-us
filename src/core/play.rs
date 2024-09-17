@@ -230,7 +230,6 @@ pub fn schedule_timeline_actions(
                         // Update the chest state after the player's "open" animation ends
                         if let Some(chest) = chests.0.get_mut("chest_0") {
                             chest.status = ChestState::Open;
-                            println!("chest:{chest:?}");
                         }
                     }
                 },

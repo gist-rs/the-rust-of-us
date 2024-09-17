@@ -9,7 +9,7 @@ use super::{
     layer::YSort,
     library::{build_library, Ani},
     map::load_map_from_csv,
-    scene::build_scene,
+    scene::{build_scene, MainPath},
 };
 
 #[derive(Component)]
@@ -113,7 +113,8 @@ pub fn setup_scene(
     asset_server: Res<AssetServer>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     mut library: ResMut<AnimationLibrary>,
-    mut chests: ResMut<Chests>,
+    chests: ResMut<Chests>,
+    mut main_path: ResMut<MainPath>,
 ) {
     commands.spawn(Camera2dBundle::default());
 
@@ -133,7 +134,12 @@ pub fn setup_scene(
     ));
 
     // Load map
-    let (mut _grid, map) = load_map_from_csv("assets/map.csv").unwrap();
+    let (path_cost, map) = load_map_from_csv("assets/map.csv").unwrap();
+
+    // Update MainPath with the data from PathCost
+    main_path.0.path = path_cost.path;
+    main_path.0.cost = path_cost.cost;
+
     build_scene(
         &mut commands,
         &asset_server,

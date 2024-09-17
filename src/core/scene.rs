@@ -8,11 +8,14 @@ use super::{
     chest::{Chest, ChestId, ChestState, Chests},
     layer::{SpriteLayer, YSort},
     library::{build_library, Ani},
-    map::get_position_from_map,
+    map::{get_position_from_map, PathCost},
 };
 
-#[derive(Resource)]
+#[derive(Resource, Default, Debug)]
 pub struct GameMap(pub Vec<Vec<String>>);
+
+#[derive(Resource, Default, Debug)]
+pub struct MainPath(pub PathCost);
 
 #[derive(Component)]
 pub struct Decor;

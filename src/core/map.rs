@@ -1,21 +1,89 @@
 use std::fs;
 
-use anyhow::Result;
+use anyhow::{bail, Result};
 use bevy::prelude::Transform;
 use csv::*;
-
-use crate::pathfinder::astar::Grid;
+use pathfinding::prelude::*;
 
 use super::scene::GameMap;
 
-pub fn load_map_from_csv(file_path: &str) -> Result<(Grid, GameMap)> {
+#[derive(Clone, Default, Debug)]
+pub struct PathCost {
+    pub path: Vec<(usize, usize)>,
+    pub cost: usize,
+}
+
+fn successors(
+    walkables: &Vec<Vec<bool>>,
+    &(x, y): &(usize, usize),
+) -> Vec<((usize, usize), usize)> {
+    vec![(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
+        .into_iter()
+        .filter_map(|(nx, ny)| walkables[ny][nx].then_some(((nx, ny), 1)))
+        .collect()
+}
+
+fn distance(&(x1, y1): &(usize, usize), &(x2, y2): &(usize, usize)) -> usize {
+    x1.abs_diff(x2) + y1.abs_diff(y2)
+}
+
+pub fn find_path(
+    walkables: &Vec<Vec<bool>>,
+    start: (usize, usize),
+    goal: (usize, usize),
+) -> Result<PathCost> {
+    let mut counter = 0;
+    let (path, cost) = astar(
+        &start,
+        |n| {
+            counter += 1;
+            successors(&walkables, n)
+        },
+        |n| distance(n, &goal),
+        |n| n == &goal,
+    )
+    .expect("path not found");
+    // assert_eq!(cost, 8);
+    // assert!(path.iter().all(|&(nx, ny)| walkables[ny][nx]));
+    // assert_eq!(counter, 11);
+
+    Ok(PathCost { path, cost })
+}
+
+#[test]
+fn astar_path_ok() {
+    let map: &str = "\
+#########
+#.#.....#
+###.##..#
+#...#...#
+#...#...#
+#...#...#
+#...#...#
+#########
+";
+
+    let walkables: Vec<Vec<bool>> = map
+        .lines()
+        .map(|l| l.chars().map(|c| c == '.').collect())
+        .collect();
+
+    let start: (usize, usize) = (2, 3);
+    let goal: (usize, usize) = (6, 3);
+
+    find_path(&walkables, start, goal);
+}
+
+pub fn load_map_from_csv(file_path: &str) -> Result<(PathCost, GameMap)> {
     // Read the CSV file
     let file_content = fs::read_to_string(file_path)?;
     let mut rdr = Reader::from_reader(file_content.as_bytes());
 
     // Initialize the grid
-    let mut grid = Grid::new(8, 8);
+    let mut walkables = vec![vec![false; 8]; 8];
     let mut map = vec![vec![String::new(); 8]; 8];
+    let mut start = (0, 0);
+    let mut goal = (0, 0);
 
     // Parse the CSV data and set obstacles
     for (y, result) in rdr.records().enumerate() {
@@ -24,15 +92,28 @@ pub fn load_map_from_csv(file_path: &str) -> Result<(Grid, GameMap)> {
             let inverted_y = 7 - y; // Invert the y-coordinate
             map[inverted_y][x] = cell.to_string();
             match cell {
-                "🌳" => grid.set_obstacle(x, inverted_y),
-                "🚪" => grid.set_start(x, inverted_y),
-                "💰" => grid.set_goal(x, inverted_y),
+                "_" => walkables[inverted_y][x] = true,
+                "⛩️" => {
+                    start = (x, inverted_y);
+                    walkables[inverted_y][x] = true;
+                }
+                "🚪" => {
+                    goal = (x, inverted_y);
+                    walkables[inverted_y][x] = true;
+                }
                 _ => (),
             }
         }
     }
 
-    Ok((grid, GameMap(map)))
+    // Find the path
+    match find_path(&walkables, start, goal) {
+        Ok(path_cost) => {
+            println!("{:?}", path_cost);
+            Ok((path_cost, GameMap(map)))
+        }
+        Err(error) => bail!(error),
+    }
 }
 
 pub fn convert_map_to_screen(map_coord: String) -> Option<(usize, usize)> {
@@ -129,16 +210,16 @@ mod tests {
         assert_eq!(convert_map_to_screen("".to_string()), None);
     }
 
-    #[test]
-    fn test_map_csv() {
-        use crate::pathfinder::astar::Heuristic;
+    // #[test]
+    // fn test_map_csv() {
+    //     use crate::pathfinder::astar::Heuristic;
 
-        let (mut grid, _) = load_map_from_csv("assets/map.csv").unwrap();
-        grid.solve(&Heuristic::Manhattan);
+    //     let (mut grid, _) = load_map_from_csv("assets/map.csv").unwrap();
+    //     grid.solve(&Heuristic::Manhattan);
 
-        println!("Goal: {:?}", grid.goal.unwrap());
-        println!("Path: {:?}", grid.path);
-    }
+    //     println!("Goal: {:?}", grid.goal.unwrap());
+    //     println!("Path: {:?}", grid.path);
+    // }
 
     #[test]
     fn test_flip_map_csv() {
