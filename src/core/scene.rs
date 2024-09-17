@@ -82,7 +82,7 @@ pub fn build_scene(
                     commands.spawn(DecorBundle {
                         sprite_bundle: SpriteBundle {
                             texture: asset_server.load("crab.png"),
-                            transform: transform.with_scale(Vec3::splat(1.0)),
+                            transform: transform.with_scale(Vec3::splat(2.0)),
                             ..default()
                         },
                         sprite_layer: SpriteLayer::Ground,
