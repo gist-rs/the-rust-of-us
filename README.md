@@ -14,6 +14,18 @@ cargo install cargo-watch
 cargo watch -c -w src -x run
 ```
 
+```mermaid
+sequenceDiagram
+    Client->>+Server: play
+    Note right of Client: id, model_name
+    Server->>-Client: game info (session)
+    Note left of Server:  stage_id<br>map<br>decor<br>char<br>quests<br>routines<br>rules<br>instructions
+    Client->>+Server: commit
+    Note right of Client: activity<br>-----------<br>man_0,walk,skeleton_0<br>man_0,attack,skeleton_0<br>man_0,open,chest_0<br>man_0,open,gate_0
+    Server->>-Client: timelines
+     Note left of Server: <br>0,man_0,idle,entrance<br>1,man_0,walk,skeleton_0<br>2,man_0,attack,skeleton_0<br>3,skeleton_0,hurt<br>4,skeleton_0,attack<br>5,man_0,hurt<br>6,man_0,attack,skeleton_0<br>7,skeleton_0,die<br>8,man_0,walk,chest_0<br>9,man_0,open,chest_0<br>10,man_0,walk,exit<br>11,man_0,open,gate_1
+```
+
 ## TODO
 
 - [ ] Gen next stage map via llm.
@@ -28,7 +40,6 @@ cargo watch -c -w src -x run
 - [ ] Logic gates quiz
 - [ ] Move stone to open path way.
 - [ ] Move stone to toggle switch.
-- [ ] Jump to cross cliff.
 - [ ] Avoid fire. // walkable but hurt
 - [ ] Avoid arrow trap.
 - [ ] Learn from previously trap (don't step on it again!).
