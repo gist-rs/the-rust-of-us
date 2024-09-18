@@ -14,6 +14,7 @@ use characters::{
 };
 use core::{
     chest::{update_chest, Chests},
+    gate::{update_gate, Gates},
     layer::{y_sort, SpriteLayer},
     menu::button_system,
     play::schedule_timeline_actions,
@@ -48,6 +49,7 @@ fn main() {
         .add_statbar_component_observer::<Health>()
         .init_resource::<TimelineActions>()
         .init_resource::<Chests>()
+        .init_resource::<Gates>()
         .init_resource::<CharacterTimelines>()
         .init_resource::<MainPath>()
         .init_resource::<CharacterPath>()
@@ -62,6 +64,7 @@ fn main() {
                 schedule_timeline_actions,
                 move_character,
                 update_chest,
+                update_gate,
             ),
         )
         .run();

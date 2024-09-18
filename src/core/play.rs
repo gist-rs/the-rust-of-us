@@ -12,6 +12,7 @@ use crate::{
 
 use super::{
     chest::Chests,
+    gate::{GateState, Gates},
     map::get_position_from_map,
     setup::{CharacterId, Walkable},
 };
@@ -47,6 +48,7 @@ pub fn schedule_timeline_actions(
     )>,
     mut character_timelines: ResMut<CharacterTimelines>,
     mut chests: ResMut<Chests>,
+    mut gates: ResMut<Gates>,
     mut character_path: ResMut<CharacterPath>,
     current_walkables: ResMut<Walkable>,
 ) {
@@ -246,6 +248,11 @@ pub fn schedule_timeline_actions(
                         // Update the chest state after the player's "open" animation ends
                         if let Some(chest) = chests.0.get_mut("chest_0") {
                             chest.status = ChestState::Open;
+                        }
+
+                        // Update the chest state after the player's "open" animation ends
+                        if let Some(gate) = gates.0.get_mut("gate_0") {
+                            gate.status = GateState::Open;
                         }
                     }
                 },

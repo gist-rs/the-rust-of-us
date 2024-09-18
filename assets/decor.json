@@ -19,5 +19,26 @@
         "count": 1
       }
     ]
+  },
+  {
+    "name": "gate",
+    "type": "decor",
+    "texture_path": "gate.png",
+    "width": 42,
+    "height": 18,
+    "animations": [
+      {
+        "action_name": "close",
+        "x": 0,
+        "y": 0,
+        "count": 1
+      },
+      {
+        "action_name": "open",
+        "x": 0,
+        "y": 1,
+        "count": 1
+      }
+    ]
   }
 ]

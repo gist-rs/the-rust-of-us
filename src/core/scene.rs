@@ -6,6 +6,7 @@ use serde_json::from_str;
 
 use super::{
     chest::{Chest, ChestId, ChestState, Chests},
+    gate::{Gate, GateState, Gates},
     layer::{SpriteLayer, YSort},
     library::{build_library, Ani},
     map::{get_position_from_map, PathCost},
@@ -35,6 +36,7 @@ pub fn build_scene(
     library: &mut ResMut<AnimationLibrary>,
     map: GameMap,
     mut chests: ResMut<Chests>,
+    mut gates: ResMut<Gates>,
 ) {
     // Spawn the background
     commands.spawn((
@@ -90,12 +92,38 @@ pub fn build_scene(
                         ysort: YSort(0.0),
                     });
                 }
+                "🚪" => {
+                    let ani = decor_animations
+                        .iter()
+                        .find(|ani| ani.name == "gate")
+                        .expect("Expected gate");
+                    let deco_bundle = build_ani_decor_bundle(
+                        "gate_close".to_owned(),
+                        asset_server,
+                        atlas_layouts,
+                        library,
+                        ani,
+                        transform.with_scale(Vec3::splat(2.0)),
+                    );
+
+                    let gate_id = format!("gate_{}", gates.0.len());
+                    commands.spawn(deco_bundle).insert(ChestId(gate_id.clone()));
+
+                    gates.0.insert(
+                        gate_id,
+                        Gate {
+                            status: GateState::Close,
+                            key: None,
+                        },
+                    );
+                }
                 "💰" => {
                     let ani = decor_animations
                         .iter()
                         .find(|ani| ani.name == "chest")
                         .expect("Expected chest");
                     let deco_bundle = build_ani_decor_bundle(
+                        "chest_close".to_owned(),
                         asset_server,
                         atlas_layouts,
                         library,
@@ -108,7 +136,6 @@ pub fn build_scene(
                         .spawn(deco_bundle)
                         .insert(ChestId(chest_id.clone()));
 
-                    // Add the chest to the Chests resource
                     chests.0.insert(
                         chest_id,
                         Chest {
@@ -134,6 +161,7 @@ pub struct AniDecorBundle {
 }
 
 pub fn build_ani_decor_bundle(
+    animation_name: String,
     asset_server: &Res<AssetServer>,
     atlas_layouts: &mut ResMut<Assets<TextureAtlasLayout>>,
     library: &mut ResMut<AnimationLibrary>,
@@ -158,7 +186,7 @@ pub fn build_ani_decor_bundle(
             ..default()
         },
         spritesheet_animation: SpritesheetAnimation::from_id(
-            library.animation_with_name("chest_close").unwrap(),
+            library.animation_with_name(animation_name).unwrap(),
         ),
         sprite_layer: SpriteLayer::Ground,
         marker: Decor,

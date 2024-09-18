@@ -67,17 +67,19 @@ pub fn load_map_from_csv(file_path: &str) -> Result<(Vec<Vec<bool>>, PathCost, G
             map[inverted_y][x] = cell.to_string();
             match cell {
                 "_" => walkables[inverted_y][x] = true,
-                "⛩️" => {
+                "▶️" => {
                     start = (x, inverted_y);
                     println!("start:{:?}", start);
                     walkables[inverted_y][x] = true;
                 }
-                "🚪" => {
+                "⏹" => {
                     goal = (x, inverted_y);
                     println!("goal:{:?}", goal);
                     walkables[inverted_y][x] = true;
                 }
-                _ => (),
+                _ => {
+                    walkables[inverted_y][x] = false;
+                }
             }
         }
     }

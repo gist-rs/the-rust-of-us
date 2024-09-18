@@ -6,6 +6,7 @@ use std::fs;
 
 use super::{
     chest::Chests,
+    gate::Gates,
     layer::YSort,
     library::{build_library, Ani},
     map::load_map_from_csv,
@@ -117,6 +118,7 @@ pub fn setup_scene(
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     mut library: ResMut<AnimationLibrary>,
     chests: ResMut<Chests>,
+    gates: ResMut<Gates>,
     mut main_path: ResMut<MainPath>,
     mut current_walkables: ResMut<Walkable>,
 ) {
@@ -154,6 +156,7 @@ pub fn setup_scene(
         &mut library,
         map,
         chests,
+        gates,
     );
 
     // Load characters from JSON file

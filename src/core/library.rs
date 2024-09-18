@@ -42,14 +42,26 @@ pub fn build_library(
                 .with_duration(AnimationDuration::PerFrame(fps));
             let clip_id = library.register_clip(clip);
             let animation = Animation::from_clip(clip_id);
-            let animation_id = library.register_animation(animation);
             let animation_name = format!("{}_{}", ani.name, &anim.action_name);
-            library
-                .name_animation(animation_id, animation_name)
-                .unwrap();
 
-            let handle = atlas_layouts.add(spritesheet.atlas_layout(sprite_width, sprite_height));
-            (animation_id, handle)
+            // Check if the animation with the same name already exists
+            if let Some(existing_animation_id) = library.animation_with_name(&animation_name) {
+                println!("Reusing existing animation: {:?}", animation_name);
+                (
+                    existing_animation_id,
+                    atlas_layouts.add(spritesheet.atlas_layout(sprite_width, sprite_height)),
+                )
+            } else {
+                let animation_id = library.register_animation(animation);
+                println!("Registering new animation: {:?}", animation_name);
+                library
+                    .name_animation(animation_id, animation_name)
+                    .unwrap();
+                (
+                    animation_id,
+                    atlas_layouts.add(spritesheet.atlas_layout(sprite_width, sprite_height)),
+                )
+            }
         })
         .collect::<Vec<_>>()
 }
