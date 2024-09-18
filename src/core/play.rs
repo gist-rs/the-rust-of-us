@@ -32,6 +32,7 @@ pub enum Act {
 }
 
 #[allow(clippy::type_complexity)]
+#[allow(clippy::too_many_arguments)]
 pub fn schedule_timeline_actions(
     mut commands: Commands,
     time: Res<Time>,
