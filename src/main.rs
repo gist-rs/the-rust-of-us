@@ -23,7 +23,7 @@ use core::{
 };
 use extol_sprite_layer::SpriteLayerPlugin;
 use timeline::{
-    entity::TimelineActions,
+    entity::{TimelineActions, TimelineClock},
     init::{init_timeline, CharacterTimelines},
 };
 
@@ -47,6 +47,7 @@ fn main() {
         .register_type::<Health>()
         .register_type::<PlayerCharacter>()
         .add_statbar_component_observer::<Health>()
+        .insert_resource(TimelineClock::default())
         .init_resource::<TimelineActions>()
         .init_resource::<Chests>()
         .init_resource::<Gates>()

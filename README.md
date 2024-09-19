@@ -57,3 +57,33 @@ sequenceDiagram
 - [x] 2d tiled map: https://github.com/443eb9/bevy_entitiles
 - [x] CSV: https://github.com/BurntSushi/rust-csv
 - [x] A\* Pathfinding: https://github.com/nikhilhenry/astar.rs
+
+## TBD
+
+```
+- id: man_0
+  act: idle
+  at: f2
+  look: left
+  for: 1.0
+
+- id: skeleton_0
+  act: idle
+  at: d5
+  look: right
+
+- id: man_0
+  act: walk
+  at: f2
+  to: c5
+
+- id: man_0
+  act: open
+  at: c5
+  look: left
+
+- id: man_0
+  act: idle
+  at: c5
+  look: right
+```

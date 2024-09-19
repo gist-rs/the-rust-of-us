@@ -33,7 +33,6 @@ impl CharacterPath {
 }
 
 #[allow(clippy::type_complexity)]
-#[allow(clippy::type_complexity)]
 pub fn move_character(
     library: Res<AnimationLibrary>,
     time: Res<Time>,

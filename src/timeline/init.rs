@@ -5,7 +5,7 @@ use serde_yaml::from_str;
 use std::collections::HashMap;
 use std::fs;
 
-use super::entity::{TimelineAction, TimelineActions};
+use super::entity::{TimelineAction, TimelineActions, TimelineClock};
 
 #[derive(Resource, Default, Debug)]
 pub struct CharacterTimelines(pub HashMap<String, TimelineActions>);
@@ -19,12 +19,11 @@ pub enum LookDirection {
 
 #[derive(Deserialize, Debug)]
 pub struct YamlTimelineAction {
-    sec: f32,
-    id: String,
-    act: String,
-    at: String,
-    to: Option<String>,
-    look: Option<LookDirection>,
+    pub id: String,
+    pub act: String,
+    pub at: String,
+    pub to: Option<String>,
+    pub look: Option<LookDirection>,
 }
 
 pub fn load_timeline_from_yaml(file_path: &str) -> Result<CharacterTimelines> {
@@ -35,7 +34,6 @@ pub fn load_timeline_from_yaml(file_path: &str) -> Result<CharacterTimelines> {
 
     for yaml_action in yaml_actions {
         let action = TimelineAction {
-            sec: yaml_action.sec,
             id: yaml_action.id.clone(),
             act: yaml_action.act,
             at: yaml_action.at,
@@ -58,7 +56,14 @@ pub fn load_timeline_from_yaml(file_path: &str) -> Result<CharacterTimelines> {
     Ok(CharacterTimelines(wrapped_timelines))
 }
 
-pub fn init_timeline(_commands: Commands, mut character_timelines: ResMut<CharacterTimelines>) {
+pub fn init_timeline(mut commands: Commands, mut character_timelines: ResMut<CharacterTimelines>) {
     let timelines = load_timeline_from_yaml("assets/timeline.yml").expect("timeline.yml");
     *character_timelines = timelines;
+
+    // Initialize the TimelineClock
+    let mut timeline_clock = TimelineClock::default();
+    for character_id in character_timelines.0.keys() {
+        timeline_clock.set_time(character_id, 0.0);
+    }
+    commands.insert_resource(timeline_clock);
 }
