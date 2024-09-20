@@ -110,16 +110,9 @@ pub fn schedule_timeline_actions(
             ..
         } = event
         {
-            characters.iter_mut().for_each(
-                |(
-                    _entity,
-                    character_id,
-                    mut _transform,
-                    mut _sprite,
-                    mut _animation,
-                    _action,
-                    mut _movement_state,
-                )| {
+            characters
+                .iter_mut()
+                .for_each(|(_entity, character_id, ..)| {
                     let subject = &character_id.0.split('_').next().expect("subject");
                     if library.is_animation_name(*animation_id, format!("{subject}_attack")) {
                         commands.entity(*entity).remove::<Action>();
@@ -144,8 +137,7 @@ pub fn schedule_timeline_actions(
                             gate.status = GateState::Open;
                         }
                     }
-                },
-            );
+                });
         }
     }
 }
