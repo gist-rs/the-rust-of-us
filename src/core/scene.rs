@@ -39,10 +39,15 @@ pub fn build_scene(
     mut gates: ResMut<Gates>,
 ) {
     // Spawn the background
+    let transform = Transform::from_scale(Vec3::splat(11.5));
     commands.spawn((
         SpriteBundle {
-            transform: Transform::from_scale(Vec3::splat(10.0)),
             texture: asset_server.load("grass.png"),
+            transform: transform.with_translation(Vec3::new(
+                transform.translation.x,
+                transform.translation.y + 20.,
+                transform.translation.z,
+            )),
             ..default()
         },
         SpriteLayer::Background,
@@ -84,7 +89,13 @@ pub fn build_scene(
                     commands.spawn(DecorBundle {
                         sprite_bundle: SpriteBundle {
                             texture: asset_server.load("crab.png"),
-                            transform: transform.with_scale(Vec3::splat(2.0)),
+                            transform: transform.with_scale(Vec3::splat(2.0)).with_translation(
+                                Vec3::new(
+                                    transform.translation.x,
+                                    transform.translation.y - 8.,
+                                    transform.translation.z,
+                                ),
+                            ),
                             ..default()
                         },
                         sprite_layer: SpriteLayer::Ground,
@@ -128,7 +139,13 @@ pub fn build_scene(
                         atlas_layouts,
                         library,
                         ani,
-                        transform.with_scale(Vec3::splat(2.0)),
+                        transform
+                            .with_scale(Vec3::splat(2.0))
+                            .with_translation(Vec3::new(
+                                transform.translation.x,
+                                transform.translation.y - 8.,
+                                transform.translation.z,
+                            )),
                     );
 
                     let chest_id = format!("chest_{}", chests.0.len());
@@ -143,6 +160,24 @@ pub fn build_scene(
                             key: None,
                         },
                     );
+                }
+                "🪦" => {
+                    commands.spawn(DecorBundle {
+                        sprite_bundle: SpriteBundle {
+                            texture: asset_server.load("grave.png"),
+                            transform: transform.with_scale(Vec3::splat(2.0)).with_translation(
+                                Vec3::new(
+                                    transform.translation.x,
+                                    transform.translation.y - 4.,
+                                    transform.translation.z,
+                                ),
+                            ),
+                            ..default()
+                        },
+                        sprite_layer: SpriteLayer::Ground,
+                        marker: Decor,
+                        ysort: YSort(0.0),
+                    });
                 }
                 _ => (),
             }

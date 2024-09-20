@@ -124,21 +124,6 @@ pub fn setup_scene(
 ) {
     commands.spawn(Camera2dBundle::default());
 
-    // Background
-    commands.spawn((
-        SpriteBundle {
-            transform: Transform::from_scale(Vec3::splat(10.0)),
-            texture: asset_server.load("grass.png"),
-            ..default()
-        },
-        SpriteLayer::Background,
-        ImageScaleMode::Tiled {
-            tile_x: true,
-            tile_y: true,
-            stretch_value: 0.25,
-        },
-    ));
-
     // Load map
     let (walkables, path_cost, map) = load_map_from_csv("assets/map.csv").unwrap();
 
