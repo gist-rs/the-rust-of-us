@@ -48,7 +48,7 @@ pub fn move_character(
     >,
     mut character_paths: ResMut<CharacterPath>,
 ) {
-    const CHARACTER_SPEED: f32 = 320.; // Adjust this to 10 pixels per second
+    const CHARACTER_SPEED: f32 = 320.;
     const CELL_SIZE: usize = 46;
     const HALF_WIDTH: f32 = 320. / 2.;
     const HALF_HEIGHT: f32 = 320. / 2.;
