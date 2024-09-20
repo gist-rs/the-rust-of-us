@@ -114,7 +114,13 @@ pub fn build_scene(
                         atlas_layouts,
                         library,
                         ani,
-                        transform.with_scale(Vec3::splat(2.0)),
+                        transform
+                            .with_scale(Vec3::splat(2.0))
+                            .with_translation(Vec3::new(
+                                transform.translation.x,
+                                transform.translation.y - 16.,
+                                transform.translation.z,
+                            )),
                     );
 
                     let gate_id = format!("gate_{}", gates.0.len());

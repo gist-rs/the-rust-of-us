@@ -1,4 +1,4 @@
-use crate::core::layer::SpriteLayer;
+use crate::{core::layer::SpriteLayer, get_thinker, Position, Thirst};
 use bevy::prelude::*;
 use bevy_spritesheet_animation::prelude::*;
 use serde_json::from_str;
@@ -194,7 +194,11 @@ pub fn setup_scene(
                     .spawn(enemy_bundle)
                     .insert(CharacterId("skeleton_0".to_owned()))
                     .insert((
-                        EnemyCharacter,
+                        Thirst::new(75.0, 2.0),
+                        Position {
+                            position: Vec2::new(0.0, 0.0),
+                        },
+                        get_thinker(),
                         Health::new_full(100.0),
                         Statbar::<Health> {
                             color: Color::from(bevy::color::palettes::css::YELLOW),

@@ -1145,6 +1145,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "big-brain"
+version = "0.21.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6d63be86096c124b994d3319bf90fa5cfce24f6b785e5f14b3f00a1fad7c4049"
+dependencies = [
+ "bevy",
+ "big-brain-derive",
+]
+
+[[package]]
+name = "big-brain-derive"
+version = "0.21.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3d3075957305018e206ef1b845e134248ad2058f1676597fd61d79bbb42fae31"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "bindgen"
 version = "0.70.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3532,6 +3553,7 @@ dependencies = [
  "bevy",
  "bevy_spritesheet_animation",
  "bevy_stat_bars",
+ "big-brain",
  "csv",
  "extol_sprite_layer",
  "lazy_static",
