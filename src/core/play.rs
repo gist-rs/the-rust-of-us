@@ -132,7 +132,7 @@ pub fn schedule_timeline_actions(
                             chest.status = ChestState::Open;
                         }
 
-                        // Update the chest state after the player's "open" animation ends
+                        // Update the gate state after the player's "open" animation ends
                         if let Some(gate) = gates.0.get_mut("gate_0") {
                             gate.status = GateState::Open;
                         }
