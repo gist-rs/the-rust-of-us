@@ -1,2 +1,2 @@
-pub mod enemies;
+pub mod enemy;
 pub mod skeleton;

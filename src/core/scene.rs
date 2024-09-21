@@ -10,6 +10,7 @@ use super::{
     layer::{SpriteLayer, YSort},
     library::{build_library, Ani},
     map::{get_position_from_map, PathCost},
+    position::Position,
 };
 
 #[derive(Resource, Default, Debug)]
@@ -106,7 +107,7 @@ pub fn build_scene(
                 "🚪" => {
                     let ani = decor_animations
                         .iter()
-                        .find(|ani| ani.name == "gate")
+                        .find(|ani| ani.id == "gate")
                         .expect("Expected gate");
                     let deco_bundle = build_ani_decor_bundle(
                         "gate_close".to_owned(),
@@ -137,7 +138,7 @@ pub fn build_scene(
                 "💰" => {
                     let ani = decor_animations
                         .iter()
-                        .find(|ani| ani.name == "chest")
+                        .find(|ani| ani.id == "chest")
                         .expect("Expected chest");
                     let deco_bundle = build_ani_decor_bundle(
                         "chest_close".to_owned(),
@@ -155,17 +156,24 @@ pub fn build_scene(
                     );
 
                     let chest_id = format!("chest_{}", chests.0.len());
+                    let chest = Chest {
+                        status: ChestState::Close,
+                        key: None,
+                    };
                     commands
-                        .spawn(deco_bundle)
+                        .spawn((
+                            deco_bundle,
+                            chest.clone(),
+                            Position {
+                                position: Vec2::new(
+                                    transform.translation.x,
+                                    transform.translation.y,
+                                ),
+                            },
+                        ))
                         .insert(ChestId(chest_id.clone()));
 
-                    chests.0.insert(
-                        chest_id,
-                        Chest {
-                            status: ChestState::Close,
-                            key: None,
-                        },
-                    );
+                    chests.0.insert(chest_id, chest);
                 }
                 "🪦" => {
                     commands.spawn(DecorBundle {

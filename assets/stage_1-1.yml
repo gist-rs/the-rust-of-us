@@ -1,0 +1,37 @@
+id: 1-1
+name: "hello world!"
+players:
+  - type: man
+    character_id: "man_0"
+    position: f2
+    attack: 2
+    defend: 2
+    health: 100
+    tasks:
+      - "find the chest"
+    mindsets:
+      - "when idle, do task"
+      - "when no task, find exit"
+      - "when beside (<1 block) enemy, attack enemy"
+      - "when lost, find unvisited place"
+      - "when hurt, attack the attacker"
+      - "when low(<50%) health and has potion, drink potion"
+enemies:
+  - type: skeleton
+    character_id: "skeleton_0"
+    position: f4
+    attack: 1
+    defend: 1
+    health: 10
+    mindsets:
+      - "when idle, rally between grave and chest"
+      - "when near (<2 block) player, follow player"
+      - "when beside (<1 block) player, attack player"
+npcs:
+  - type: crab
+    character_id: "crab_0"
+    position: b2
+    prompt: |
+      You are a crab representing Rustaceans. 
+      Say only good things about Rust language, 
+      Nothing else.

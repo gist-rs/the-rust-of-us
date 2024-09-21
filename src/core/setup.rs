@@ -1,8 +1,7 @@
-use crate::{core::layer::SpriteLayer, get_thinker, Position, Thirst};
+use crate::core::layer::SpriteLayer;
 use bevy::prelude::*;
 use bevy_spritesheet_animation::prelude::*;
-use serde_json::from_str;
-use std::fs;
+use serde::Deserialize;
 
 use super::{
     chest::Chests,
@@ -29,17 +28,7 @@ struct PlayerBundle {
     ysort: YSort,
 }
 
-#[derive(Bundle)]
-struct EnemyBundle {
-    sprite_bundle: SpriteBundle,
-    texture_atlas: TextureAtlas,
-    spritesheet_animation: SpritesheetAnimation,
-    sprite_layer: SpriteLayer,
-    marker: Enemy,
-    ysort: YSort,
-}
-
-#[derive(Component)]
+#[derive(Component, Deserialize, Debug, Eq, PartialEq)]
 pub struct CharacterId(pub String);
 
 fn build_player(
@@ -74,41 +63,6 @@ fn build_player(
     }
 }
 
-fn build_enemy(
-    asset_server: &Res<AssetServer>,
-    atlas_layouts: &mut ResMut<Assets<TextureAtlasLayout>>,
-    library: &mut ResMut<AnimationLibrary>,
-    ani: Ani,
-) -> EnemyBundle {
-    let clip_fps = 30;
-
-    let libs = build_library(atlas_layouts, library, &ani, clip_fps);
-
-    let texture_path = ani.texture_path.clone();
-    let texture = asset_server.load(texture_path);
-
-    EnemyBundle {
-        sprite_bundle: SpriteBundle {
-            texture,
-            transform: Transform::from_xyz(0.0, 0.0, 0.0).with_scale(Vec3::splat(2.0)),
-            ..default()
-        },
-        texture_atlas: TextureAtlas {
-            layout: libs[0].1.clone(),
-            ..default()
-        },
-        spritesheet_animation: SpritesheetAnimation::from_id(
-            library.animation_with_name("skeleton_idle").unwrap(),
-        ),
-        sprite_layer: SpriteLayer::Ground,
-        marker: Enemy,
-        ysort: YSort(0.0),
-    }
-}
-
-use crate::characters::bar::*;
-use bevy_stat_bars::*;
-
 #[derive(Resource, Default, Debug)]
 pub struct Walkable(pub Vec<Vec<bool>>);
 
@@ -125,14 +79,15 @@ pub fn setup_scene(
     commands.spawn(Camera2dBundle::default());
 
     // Load map
-    let (walkables, path_cost, map) = load_map_from_csv("assets/map.csv").unwrap();
+    let (_walkables, _path_cost, map) = load_map_from_csv("assets/map.csv").unwrap();
 
-    // Update walkables
-    *current_walkables = Walkable(walkables);
+    // TODO: move to stage main mission.
+    // // Update walkables
+    // *current_walkables = Walkable(walkables);
 
-    // Update MainPath with the data from PathCost
-    main_path.0.path = path_cost.path;
-    main_path.0.cost = path_cost.cost;
+    // // Update MainPath with the data from PathCost
+    // main_path.0.path = path_cost.path;
+    // main_path.0.cost = path_cost.cost;
 
     build_scene(
         &mut commands,
@@ -143,91 +98,4 @@ pub fn setup_scene(
         chests,
         gates,
     );
-
-    // Load characters from JSON file
-    let char_json = fs::read_to_string("assets/char.json").expect("Unable to read file");
-    let characters: Vec<Ani> = from_str(&char_json).expect("Unable to parse JSON");
-
-    for ani in characters {
-        match ani.r#type.as_str() {
-            "player" => {
-                let player_bundle =
-                    build_player(&asset_server, &mut atlas_layouts, &mut library, ani);
-
-                let player_id = commands
-                    .spawn(player_bundle)
-                    .insert(CharacterId("man_0".to_owned()))
-                    .insert((
-                        PlayerCharacter,
-                        Health::new_full(100.0),
-                        Statbar::<Health> {
-                            color: Color::from(bevy::color::palettes::css::RED),
-                            empty_color: Color::from(bevy::color::palettes::css::BLACK),
-                            length: 32.0,
-                            thickness: 6.0,
-                            displacement: 40. * Vec2::Y,
-                            ..Default::default()
-                        },
-                    ))
-                    .id();
-
-                commands
-                    .spawn((
-                        Statbar::<Health> {
-                            color: Color::WHITE,
-                            empty_color: Color::BLACK,
-                            length: 500.0,
-                            thickness: 50.0,
-                            ..Default::default()
-                        },
-                        StatbarObserveEntity(player_id),
-                    ))
-                    .insert(SpatialBundle {
-                        transform: Transform::from_translation(-200. * Vec3::Y),
-                        ..Default::default()
-                    });
-            }
-            "enemy" => {
-                let enemy_bundle =
-                    build_enemy(&asset_server, &mut atlas_layouts, &mut library, ani);
-                let enemy_id = commands
-                    .spawn(enemy_bundle)
-                    .insert(CharacterId("skeleton_0".to_owned()))
-                    .insert((
-                        Thirst::new(75.0, 2.0),
-                        Position {
-                            position: Vec2::new(0.0, 0.0),
-                        },
-                        get_thinker(),
-                        Health::new_full(100.0),
-                        Statbar::<Health> {
-                            color: Color::from(bevy::color::palettes::css::YELLOW),
-                            empty_color: Color::from(bevy::color::palettes::css::BLACK),
-                            length: 32.0,
-                            thickness: 6.0,
-                            displacement: 40. * Vec2::Y,
-                            ..Default::default()
-                        },
-                    ))
-                    .id();
-
-                commands
-                    .spawn((
-                        Statbar::<Health> {
-                            color: Color::WHITE,
-                            empty_color: Color::BLACK,
-                            length: 500.0,
-                            thickness: 50.0,
-                            ..Default::default()
-                        },
-                        StatbarObserveEntity(enemy_id),
-                    ))
-                    .insert(SpatialBundle {
-                        transform: Transform::from_translation(-200. * Vec3::Y),
-                        ..Default::default()
-                    });
-            }
-            _ => (),
-        }
-    }
 }

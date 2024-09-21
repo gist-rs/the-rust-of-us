@@ -2,11 +2,12 @@ use bevy::{prelude::*, utils::HashMap};
 use bevy_spritesheet_animation::prelude::*;
 
 use super::scene::Decor;
+use crate::core::position::Position;
 
 #[derive(Resource, Default, Debug)]
 pub struct Chests(pub HashMap<String, Chest>);
 
-#[derive(Debug, Clone)]
+#[derive(Component, Debug, Clone)]
 pub struct Chest {
     pub status: ChestState,
     // TODO

@@ -11,7 +11,10 @@ use bevy::{
 use bevy_spritesheet_animation::prelude::*;
 use bevy_stat_bars::RegisterStatbarSubject;
 use big_brain::{BigBrainPlugin, BigBrainSet};
-use brains::{enemies::update_enemy, skeleton::*};
+use brains::{
+    enemy::{init_enemy, update_enemy},
+    skeleton::*,
+};
 use characters::{
     bar::{adjust_stats, Health, PlayerCharacter},
     r#move::{move_character, CharacterPath},
@@ -24,7 +27,7 @@ use core::{
     play::schedule_timeline_actions,
     scene::MainPath,
     setup::{setup_scene, Walkable},
-    stage::init_stage,
+    stage::{init_stage, GameStage},
 };
 use extol_sprite_layer::SpriteLayerPlugin;
 use timeline::{
@@ -66,9 +69,17 @@ fn main() {
         .init_resource::<MainPath>()
         .init_resource::<CharacterPath>()
         .init_resource::<Walkable>()
+        .init_resource::<GameStage>()
         .add_systems(
             Startup,
-            (init_stage, setup_scene, init_entities, init_timeline),
+            ((
+                setup_scene,
+                init_stage,
+                init_enemy,
+                // init_entities,
+                init_timeline,
+            )
+                .chain(),),
         )
         .add_systems(
             Update,

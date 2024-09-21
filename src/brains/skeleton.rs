@@ -2,15 +2,8 @@ use bevy::prelude::*;
 use bevy::utils::tracing::{debug, trace};
 use big_brain::prelude::*;
 
-/// First, we make a simple Position component.
-#[derive(Component, Debug, Copy, Clone)]
-pub struct Position {
-    pub position: Vec2,
-}
-
-/// A marker component for an entity that describes a chest.
-#[derive(Component, Debug)]
-pub struct Chest;
+use crate::core::chest::Chest;
+use crate::core::position::Position;
 
 /// We steal the Guard component from the guard example.
 #[derive(Component, Debug)]
@@ -53,7 +46,7 @@ pub struct MoveToChest {
 }
 
 /// Closest distance to a chest to be able to drink from it.
-const MAX_DISTANCE: f32 = 0.1;
+const MAX_DISTANCE: f32 = 32.;
 
 pub fn move_to_chest_action_system(
     time: Res<Time>,
@@ -166,6 +159,7 @@ pub fn drink_action_system(
                 *state = ActionState::Executing;
             }
             ActionState::Executing => {
+                // TODO: can be no chest
                 let closest_chest = find_closest_chest(&chests, actor_position);
                 let distance = (closest_chest.position - actor_position.position).length();
                 if distance < MAX_DISTANCE {
@@ -205,28 +199,28 @@ pub fn guarding_scorer_system(
     }
 }
 
-pub fn init_entities(mut cmd: Commands) {
-    // Spawn two chests.
-    cmd.spawn((
-        Chest,
-        Position {
-            position: Vec2::new(10.0, 10.0),
-        },
-    ));
+// pub fn init_entities(mut cmd: Commands) {
+//     // Spawn two chests.
+//     cmd.spawn((
+//         Chest,
+//         Position {
+//             position: Vec2::new(10.0, 10.0),
+//         },
+//     ));
 
-    cmd.spawn((
-        Chest,
-        Position {
-            position: Vec2::new(-10.0, 0.0),
-        },
-    ));
-}
+//     cmd.spawn((
+//         Chest,
+//         Position {
+//             position: Vec2::new(-10.0, 0.0),
+//         },
+//     ));
+// }
 
 pub fn get_thinker() -> ThinkerBuilder {
     let move_and_drink = Steps::build()
         .label("MoveAndGuard")
         // ...move to the chest...
-        .step(MoveToChest { speed: 1.0 })
+        .step(MoveToChest { speed: 32.0 })
         // ...and then drink.
         .step(Look { per_second: 10.0 });
 
