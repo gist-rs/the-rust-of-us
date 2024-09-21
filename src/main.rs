@@ -11,7 +11,7 @@ use bevy::{
 use bevy_spritesheet_animation::prelude::*;
 use bevy_stat_bars::RegisterStatbarSubject;
 use big_brain::{BigBrainPlugin, BigBrainSet};
-use brains::skeleton::*;
+use brains::{enemies::update_enemy, skeleton::*};
 use characters::{
     bar::{adjust_stats, Health, PlayerCharacter},
     r#move::{move_character, CharacterPath},
@@ -24,6 +24,7 @@ use core::{
     play::schedule_timeline_actions,
     scene::MainPath,
     setup::{setup_scene, Walkable},
+    stage::init_stage,
 };
 use extol_sprite_layer::SpriteLayerPlugin;
 use timeline::{
@@ -47,8 +48,8 @@ fn main() {
                     ..default()
                 })
                 .set(LogPlugin {
-                    // Use `RUST_LOG=big_brain=trace,sequence=trace cargo run --example sequence --features=trace` to see extra tracing output.
-                    filter: "big_brain=debug,sequence=debug".to_string(),
+                    // Use `RUST_LOG=big_brain=trace,main=trace cargo run --example main --features=trace` to see extra tracing output.
+                    filter: "big_brain=debug,the_rust_of_us=debug".to_string(),
                     ..default()
                 })
                 .set(ImagePlugin::default_nearest()),
@@ -65,24 +66,28 @@ fn main() {
         .init_resource::<MainPath>()
         .init_resource::<CharacterPath>()
         .init_resource::<Walkable>()
-        .add_systems(Startup, (setup_scene, init_entities, init_timeline))
+        .add_systems(
+            Startup,
+            (init_stage, setup_scene, init_entities, init_timeline),
+        )
         .add_systems(
             Update,
             (
                 y_sort,
                 adjust_stats,
                 button_system,
-                thirst_system,
+                guard_system,
                 schedule_timeline_actions,
                 move_character,
                 update_chest,
                 update_gate,
+                update_enemy,
             ),
         )
         .add_systems(
             PreUpdate,
-            (drink_action_system, move_to_water_source_action_system).in_set(BigBrainSet::Actions),
+            (drink_action_system, move_to_chest_action_system).in_set(BigBrainSet::Actions),
         )
-        .add_systems(First, thirsty_scorer_system)
+        .add_systems(First, guarding_scorer_system)
         .run();
 }

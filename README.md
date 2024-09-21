@@ -12,6 +12,9 @@ cargo install cargo-watch
 
 ```
 cargo watch -c -w src -x run
+
+# or more trace
+cargo watch -c -w src -s "RUST_LOG=the_rust_of_us=trace cargo run --features=trace"
 ```
 
 ```mermaid

@@ -17,7 +17,7 @@ pathfinding = "4.11.0"
 lazy_static = "1.5.0"
 strum = { version = "0.26.2", features = ["derive"] }
 strum_macros = "0.26.4"
-big-brain = "0.21.1"
+big-brain = { version = "0.21.1", features = ["trace"] }
 
 [profile.dev]
 opt-level = 1
@@ -28,3 +28,6 @@ opt-level = 3
 codegen-units = 1
 incremental = false
 debug = false
+
+[features]
+trace = []

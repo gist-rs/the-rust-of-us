@@ -8,58 +8,61 @@ pub struct Position {
     pub position: Vec2,
 }
 
-/// A marker component for an entity that describes a water source.
+/// A marker component for an entity that describes a chest.
 #[derive(Component, Debug)]
-pub struct WaterSource;
+pub struct Chest;
 
-/// We steal the Thirst component from the thirst example.
+/// We steal the Guard component from the guard example.
 #[derive(Component, Debug)]
-pub struct Thirst {
-    /// How much thirstier the entity gets over time.
+pub struct Guard {
+    /// How much duration the entity gets over time.
     pub per_second: f32,
-    /// How much thirst the entity currently has.
-    pub thirst: f32,
+    /// How much duration the entity currently has.
+    pub satisfaction: f32,
 }
 
-impl Thirst {
-    pub fn new(thirst: f32, per_second: f32) -> Self {
-        Self { thirst, per_second }
+impl Guard {
+    pub fn new(watch: f32, per_second: f32) -> Self {
+        Self {
+            satisfaction: watch,
+            per_second,
+        }
     }
 }
 
-/// A simple system that just pushes the thirst value up over time.
+/// A simple system that just pushes the guard value up over time.
 /// Just a plain old Bevy system, big-brain is not involved yet.
-pub fn thirst_system(time: Res<Time>, mut thirsts: Query<&mut Thirst>) {
-    for mut thirst in &mut thirsts {
-        thirst.thirst += thirst.per_second * time.delta_seconds();
+pub fn guard_system(time: Res<Time>, mut guards: Query<&mut Guard>) {
+    for mut guard in &mut guards {
+        guard.satisfaction += guard.per_second * time.delta_seconds();
 
-        // Thirst is capped at 100.0
-        if thirst.thirst >= 100.0 {
-            thirst.thirst = 100.0;
+        // Satisfaction is capped at 100.0
+        if guard.satisfaction >= 100.0 {
+            guard.satisfaction = 100.0;
         }
 
-        trace!("Thirst: {}", thirst.thirst);
+        trace!("Guard.duration: {}", guard.satisfaction);
     }
 }
 
-/// An action where the actor moves to the closest water source
+/// An action where the actor moves to the closest chest
 #[derive(Clone, Component, Debug, ActionBuilder)]
-pub struct MoveToWaterSource {
+pub struct MoveToChest {
     // The movement speed of the actor.
     speed: f32,
 }
 
-/// Closest distance to a water source to be able to drink from it.
+/// Closest distance to a chest to be able to drink from it.
 const MAX_DISTANCE: f32 = 0.1;
 
-pub fn move_to_water_source_action_system(
+pub fn move_to_chest_action_system(
     time: Res<Time>,
-    // Find all water sources
-    waters: Query<&Position, With<WaterSource>>,
+    // Find all chests
+    chests: Query<&Position, With<Chest>>,
     // We use Without to make disjoint queries.
-    mut positions: Query<&mut Position, Without<WaterSource>>,
-    // A query on all current MoveToWaterSource actions.
-    mut action_query: Query<(&Actor, &mut ActionState, &MoveToWaterSource, &ActionSpan)>,
+    mut positions: Query<&mut Position, Without<Chest>>,
+    // A query on all current MoveToChest actions.
+    mut action_query: Query<(&Actor, &mut ActionState, &MoveToChest, &ActionSpan)>,
 ) {
     // Loop through all actions, just like you'd loop over all entities in any other query.
     for (actor, mut action_state, move_to, span) in &mut action_query {
@@ -69,7 +72,7 @@ pub fn move_to_water_source_action_system(
         match *action_state {
             // Action was just requested; it hasn't been seen before.
             ActionState::Requested => {
-                debug!("Let's go find some water!");
+                debug!("🔥 Let's go find some chest!");
                 // We don't really need any initialization code here, since the queries are cheap enough.
                 *action_state = ActionState::Executing;
             }
@@ -79,11 +82,11 @@ pub fn move_to_water_source_action_system(
 
                 trace!("Actor position: {:?}", actor_position.position);
 
-                // Look up the water source closest to them.
-                let closest_water_source = find_closest_water_source(&waters, &actor_position);
+                // Look up the chest closest to them.
+                let closest_chest = find_closest_chest(&chests, &actor_position);
 
                 // Find how far we are from it.
-                let delta = closest_water_source.position - actor_position.position;
+                let delta = closest_chest.position - actor_position.position;
 
                 let distance = delta.length();
 
@@ -96,7 +99,7 @@ pub fn move_to_water_source_action_system(
 
                     // How far can we travel during this frame?
                     let step_size = time.delta_seconds() * move_to.speed;
-                    // Travel towards the water-source position, but make sure to not overstep it.
+                    // Travel towards the chest-source position, but make sure to not overstep it.
                     let step = delta.normalize() * step_size.min(distance);
 
                     // Move the actor.
@@ -104,7 +107,7 @@ pub fn move_to_water_source_action_system(
                 } else {
                     // We're within the required distance! We can declare success.
 
-                    debug!("We got there!");
+                    debug!("🔥 We got there!");
 
                     // The action will be cleaned up automatically.
                     *action_state = ActionState::Success;
@@ -122,83 +125,64 @@ pub fn move_to_water_source_action_system(
     }
 }
 
-/// A utility function that finds the closest water source to the actor.
-fn find_closest_water_source(
-    waters: &Query<&Position, With<WaterSource>>,
+/// A utility function that finds the closest chest to the actor.
+fn find_closest_chest(
+    chests: &Query<&Position, With<Chest>>,
     actor_position: &Position,
 ) -> Position {
-    *(waters
+    *(chests
         .iter()
         .min_by(|a, b| {
             let da = (a.position - actor_position.position).length_squared();
             let db = (b.position - actor_position.position).length_squared();
             da.partial_cmp(&db).unwrap()
         })
-        .expect("no water sources"))
+        .expect("no chests"))
 }
 
-/// A simple action: the actor's thirst shall decrease, but only if they are near a water source.
+/// A simple action: the actor's guard shall decrease, but only if they are near a chest.
 #[derive(Clone, Component, Debug, ActionBuilder)]
-pub struct Drink {
+pub struct Look {
     per_second: f32,
 }
 
 pub fn drink_action_system(
     time: Res<Time>,
-    mut thirsts: Query<(&Position, &mut Thirst), Without<WaterSource>>,
-    waters: Query<&Position, With<WaterSource>>,
-    mut query: Query<(&Actor, &mut ActionState, &Drink, &ActionSpan)>,
+    mut guards: Query<(&Position, &mut Guard), Without<Chest>>,
+    chests: Query<&Position, With<Chest>>,
+    mut query: Query<(&Actor, &mut ActionState, &Look, &ActionSpan)>,
 ) {
     // Loop through all actions, just like you'd loop over all entities in any other query.
-    for (Actor(actor), mut state, drink, span) in &mut query {
+    for (Actor(actor), mut state, look, span) in &mut query {
         let _guard = span.span().enter();
 
-        // Look up the actor's position and thirst from the Actor component in the action entity.
-        let (actor_position, mut thirst) = thirsts.get_mut(*actor).expect("actor has no thirst");
+        // Look up the actor's position and guard from the Actor component in the action entity.
+        let (actor_position, mut guard) = guards.get_mut(*actor).expect("actor has no guard");
 
         match *state {
             ActionState::Requested => {
-                // We'll start drinking as soon as we're requested to do so.
-                debug!("Drinking the water.");
+                // We'll start guarding as soon as we're requested to do so.
+                debug!("Guarding the chest.");
                 *state = ActionState::Executing;
             }
             ActionState::Executing => {
-                // Look up the closest water source.
-                // Note that there is no explicit passing of a selected water source from the GoToWaterSource action,
-                // so we look it up again. Note that this decouples the actions from each other,
-                // so if the actor is already close to a water source, the GoToWaterSource action
-                // will not be necessary (though it will not harm either).
-                //
-                // Essentially, being close to a water source would be a precondition for the Drink action.
-                // How this precondition was fulfilled is not this code's concern.
-                let closest_water_source = find_closest_water_source(&waters, actor_position);
-
-                // Find how far we are from it.
-                let distance = (closest_water_source.position - actor_position.position).length();
-
-                // Are we close enough?
+                let closest_chest = find_closest_chest(&chests, actor_position);
+                let distance = (closest_chest.position - actor_position.position).length();
                 if distance < MAX_DISTANCE {
-                    trace!("Drinking!");
+                    trace!("Guarding!");
+                    guard.satisfaction -= look.per_second * time.delta_seconds();
 
-                    // Start reducing the thirst. Alternatively, you could send out some kind of
-                    // DrinkFromSource event that indirectly decreases thirst.
-                    thirst.thirst -= drink.per_second * time.delta_seconds();
-
-                    // Once we hit 0 thirst, we stop drinking and report success.
-                    if thirst.thirst <= 0.0 {
-                        thirst.thirst = 0.0;
+                    // Once we hit 0 duration, we stop guarding and report success.
+                    if guard.satisfaction <= 0.0 {
+                        guard.satisfaction = 0.0;
                         *state = ActionState::Success;
                     }
                 } else {
-                    // The actor was told to drink, but they can't drink when they're so far away!
-                    // The action doesn't know how to deal with this case, it's the overarching system's
-                    // to fulfill the precondition.
                     debug!("We're too far away!");
                     *state = ActionState::Failure;
                 }
             }
-            // All Actions should make sure to handle cancellations!
-            // Drinking is not a complicated action, so we can just interrupt it immediately.
+
             ActionState::Cancelled => {
                 *state = ActionState::Failure;
             }
@@ -207,32 +191,31 @@ pub fn drink_action_system(
     }
 }
 
-// Scorers are the same as in the thirst example.
 #[derive(Clone, Component, Debug, ScorerBuilder)]
-pub struct Thirsty;
+pub struct Guarding;
 
-pub fn thirsty_scorer_system(
-    thirsts: Query<&Thirst>,
-    mut query: Query<(&Actor, &mut Score), With<Thirsty>>,
+pub fn guarding_scorer_system(
+    guards: Query<&Guard>,
+    mut query: Query<(&Actor, &mut Score), With<Guarding>>,
 ) {
     for (Actor(actor), mut score) in &mut query {
-        if let Ok(thirst) = thirsts.get(*actor) {
-            score.set(thirst.thirst / 100.);
+        if let Ok(guard) = guards.get(*actor) {
+            score.set(guard.satisfaction / 100.);
         }
     }
 }
 
 pub fn init_entities(mut cmd: Commands) {
-    // Spawn two water sources.
+    // Spawn two chests.
     cmd.spawn((
-        WaterSource,
+        Chest,
         Position {
             position: Vec2::new(10.0, 10.0),
         },
     ));
 
     cmd.spawn((
-        WaterSource,
+        Chest,
         Position {
             position: Vec2::new(-10.0, 0.0),
         },
@@ -241,15 +224,15 @@ pub fn init_entities(mut cmd: Commands) {
 
 pub fn get_thinker() -> ThinkerBuilder {
     let move_and_drink = Steps::build()
-        .label("MoveAndDrink")
-        // ...move to the water source...
-        .step(MoveToWaterSource { speed: 1.0 })
+        .label("MoveAndGuard")
+        // ...move to the chest...
+        .step(MoveToChest { speed: 1.0 })
         // ...and then drink.
-        .step(Drink { per_second: 10.0 });
+        .step(Look { per_second: 10.0 });
 
     Thinker::build()
-        .label("ThirstyThinker")
-        // We don't do anything unless we're thirsty enough.
+        .label("GuardingThinker")
+        // We don't do anything unless we're guardy enough.
         .picker(FirstToScore { threshold: 0.8 })
-        .when(Thirsty, move_and_drink)
+        .when(Guarding, move_and_drink)
 }
