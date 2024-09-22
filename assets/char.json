@@ -1,6 +1,6 @@
 [
   {
-    "id": "man",
+    "type": "man",
     "texture_path": "man.png",
     "width": 96,
     "height": 64,
@@ -44,7 +44,7 @@
     ]
   },
   {
-    "id": "skeleton",
+    "type": "skeleton",
     "texture_path": "skeleton.png",
     "width": 96,
     "height": 64,

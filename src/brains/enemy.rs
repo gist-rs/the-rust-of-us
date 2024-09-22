@@ -73,7 +73,7 @@ pub fn init_enemy(
 
     for enemy in stage.enemies.iter() {
         println!("🔥 enemy:{:?}", enemy);
-        if let Some(ani) = characters.iter().find(|&c| c.id == enemy.r#type) {
+        if let Some(ani) = characters.iter().find(|&c| c.r#type == enemy.r#type) {
             let enemy_bundle =
                 build_enemy(&asset_server, &mut atlas_layouts, &mut library, ani.clone());
 

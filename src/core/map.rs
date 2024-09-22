@@ -10,6 +10,7 @@ use super::scene::GameMap;
 #[derive(Clone, Default, Debug)]
 pub struct PathCost {
     pub path: Vec<(usize, usize)>,
+    #[allow(unused)]
     pub cost: usize,
 }
 

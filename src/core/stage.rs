@@ -6,6 +6,7 @@ use std::fs;
 
 use super::setup::CharacterId;
 
+#[allow(unused)]
 #[derive(Deserialize, Default, Debug, Resource)]
 pub struct Stage {
     pub id: String,
@@ -15,6 +16,7 @@ pub struct Stage {
     pub npcs: Vec<Npc>,
 }
 
+#[allow(unused)]
 #[derive(Deserialize, Debug)]
 pub struct Player {
     pub r#type: String,
@@ -27,6 +29,7 @@ pub struct Player {
     pub mindsets: Vec<String>,
 }
 
+#[allow(unused)]
 #[derive(Deserialize, Debug)]
 pub struct Enemy {
     pub r#type: String,
@@ -38,6 +41,7 @@ pub struct Enemy {
     pub mindsets: Vec<String>,
 }
 
+#[allow(unused)]
 #[derive(Deserialize, Debug)]
 pub struct Npc {
     pub r#type: String,

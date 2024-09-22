@@ -16,6 +16,7 @@ use super::{
 #[derive(Resource, Default, Debug)]
 pub struct GameMap(pub Vec<Vec<String>>);
 
+#[allow(unused)]
 #[derive(Resource, Default, Debug)]
 pub struct MainPath(pub PathCost);
 
@@ -107,7 +108,7 @@ pub fn build_scene(
                 "🚪" => {
                     let ani = decor_animations
                         .iter()
-                        .find(|ani| ani.id == "gate")
+                        .find(|ani| ani.r#type == "gate")
                         .expect("Expected gate");
                     let deco_bundle = build_ani_decor_bundle(
                         "gate_close".to_owned(),
@@ -138,7 +139,7 @@ pub fn build_scene(
                 "💰" => {
                     let ani = decor_animations
                         .iter()
-                        .find(|ani| ani.id == "chest")
+                        .find(|ani| ani.r#type == "chest")
                         .expect("Expected chest");
                     let deco_bundle = build_ani_decor_bundle(
                         "chest_close".to_owned(),

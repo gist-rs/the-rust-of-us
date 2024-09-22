@@ -9,7 +9,7 @@ use super::{
     layer::YSort,
     library::{build_library, Ani},
     map::load_map_from_csv,
-    scene::{build_scene, MainPath},
+    scene::build_scene,
 };
 
 #[derive(Component)]
@@ -19,7 +19,7 @@ pub struct Player;
 pub struct Enemy;
 
 #[derive(Bundle)]
-struct PlayerBundle {
+pub struct PlayerBundle {
     sprite_bundle: SpriteBundle,
     texture_atlas: TextureAtlas,
     spritesheet_animation: SpritesheetAnimation,
@@ -31,7 +31,8 @@ struct PlayerBundle {
 #[derive(Component, Deserialize, Debug, Eq, PartialEq)]
 pub struct CharacterId(pub String);
 
-fn build_player(
+#[allow(unused)]
+pub fn build_player(
     asset_server: &Res<AssetServer>,
     atlas_layouts: &mut ResMut<Assets<TextureAtlasLayout>>,
     library: &mut ResMut<AnimationLibrary>,
@@ -73,8 +74,8 @@ pub fn setup_scene(
     mut library: ResMut<AnimationLibrary>,
     chests: ResMut<Chests>,
     gates: ResMut<Gates>,
-    mut main_path: ResMut<MainPath>,
-    mut current_walkables: ResMut<Walkable>,
+    // mut main_path: ResMut<MainPath>,
+    // mut current_walkables: ResMut<Walkable>,
 ) {
     commands.spawn(Camera2dBundle::default());
 
