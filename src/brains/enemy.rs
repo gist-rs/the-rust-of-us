@@ -19,7 +19,6 @@ use crate::{
     core::{
         layer::{SpriteLayer, YSort},
         library::{build_library, Ani},
-        map::get_position_from_map,
         position::Position,
         setup::{CharacterId, Enemy},
         stage::GameStage,
