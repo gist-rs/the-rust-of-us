@@ -1,6 +1,6 @@
 [
   {
-    "id": "chest",
+    "type": "chest",
     "texture_path": "chest.png",
     "width": 18,
     "height": 29,
@@ -20,7 +20,7 @@
     ]
   },
   {
-    "id": "gate",
+    "type": "gate",
     "texture_path": "gate.png",
     "width": 42,
     "height": 18,
