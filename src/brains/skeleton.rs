@@ -149,6 +149,7 @@ pub struct Look {
     per_second: f32,
 }
 
+#[allow(clippy::type_complexity)]
 pub fn drink_action_system(
     time: Res<Time>,
     mut guards: Query<(&Position, &mut Guard), (With<Enemy>, Without<Chest>)>,
