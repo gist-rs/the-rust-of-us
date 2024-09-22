@@ -199,11 +199,11 @@ pub fn guard_action_system(
 }
 
 #[derive(Clone, Component, Debug, ScorerBuilder)]
-pub struct Guarding;
+pub struct Duty;
 
 pub fn guarding_scorer_system(
     guards: Query<&Guard>,
-    mut query: Query<(&Actor, &mut Score), With<Guarding>>,
+    mut query: Query<(&Actor, &mut Score), With<Duty>>,
 ) {
     for (Actor(actor), mut score) in &mut query {
         if let Ok(guard) = guards.get(*actor) {
@@ -224,5 +224,5 @@ pub fn get_thinker() -> ThinkerBuilder {
         .label("GuardingThinker")
         // We don't do anything unless we're satisfy enough.
         .picker(FirstToScore { threshold: 0.8 })
-        .when(Guarding, move_and_guard)
+        .when(Duty, move_and_guard)
 }
