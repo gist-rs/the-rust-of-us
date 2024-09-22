@@ -60,9 +60,9 @@ sequenceDiagram
 - [x] 2d tiled map: https://github.com/443eb9/bevy_entitiles
 - [x] CSV: https://github.com/BurntSushi/rust-csv
 - [x] A\* Pathfinding: https://github.com/nikhilhenry/astar.rs
+- [x] [big-brain] Utility AI library for the Bevy game engine: https://github.com/zkat/big-brain
 - [ ] [🍃 Bevy Tweening]: https://github.com/djeedai/bevy_tweening
 - [ ] [🎚️ Moonshine Behavior] Minimalistic state machine for Bevy game engine: https://github.com/Zeenobit/moonshine_behavior
-- [ ] [big-brain] Utility AI library for the Bevy game engine: https://github.com/zkat/big-brain
 
 ## TBD
 
