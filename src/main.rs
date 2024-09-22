@@ -96,7 +96,7 @@ fn main() {
         )
         .add_systems(
             PreUpdate,
-            (drink_action_system, move_to_chest_action_system).in_set(BigBrainSet::Actions),
+            (guard_action_system, move_to_chest_action_system).in_set(BigBrainSet::Actions),
         )
         .add_systems(First, guarding_scorer_system)
         .run();

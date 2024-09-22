@@ -13,13 +13,13 @@ pub struct Guard {
     /// How much duration the entity gets over time.
     pub per_second: f32,
     /// How much duration the entity currently has.
-    pub satisfaction: f32,
+    pub satisfy: f32,
 }
 
 impl Guard {
-    pub fn new(watch: f32, per_second: f32) -> Self {
+    pub fn new(satisfy: f32, per_second: f32) -> Self {
         Self {
-            satisfaction: watch,
+            satisfy,
             per_second,
         }
     }
@@ -29,14 +29,14 @@ impl Guard {
 /// Just a plain old Bevy system, big-brain is not involved yet.
 pub fn guard_system(time: Res<Time>, mut guards: Query<&mut Guard>) {
     for mut guard in &mut guards {
-        guard.satisfaction += guard.per_second * time.delta_seconds();
+        guard.satisfy += guard.per_second * time.delta_seconds();
 
         // Satisfaction is capped at 100.0
-        if guard.satisfaction >= 100.0 {
-            guard.satisfaction = 100.0;
+        if guard.satisfy >= 100.0 {
+            guard.satisfy = 100.0;
         }
 
-        trace!("Guard.duration: {}", guard.satisfaction);
+        trace!("Guard.duration: {}", guard.satisfy);
     }
 }
 
@@ -47,7 +47,7 @@ pub struct MoveToChest {
     speed: f32,
 }
 
-/// Closest distance to a chest to be able to drink from it.
+/// Closest distance to a chest to be able to guard from it.
 const MAX_DISTANCE: f32 = 32.;
 #[allow(clippy::complexity)]
 pub fn move_to_chest_action_system(
@@ -145,16 +145,16 @@ fn find_closest_chest(
 
 /// A simple action: the actor's guard shall decrease, but only if they are near a chest.
 #[derive(Clone, Component, Debug, ActionBuilder)]
-pub struct Look {
+pub struct LookAround {
     per_second: f32,
 }
 
 #[allow(clippy::type_complexity)]
-pub fn drink_action_system(
+pub fn guard_action_system(
     time: Res<Time>,
     mut guards: Query<(&Position, &mut Guard), (With<Enemy>, Without<Chest>)>,
     chests: Query<&Position, With<Chest>>,
-    mut query: Query<(&Actor, &mut ActionState, &Look, &ActionSpan)>,
+    mut query: Query<(&Actor, &mut ActionState, &LookAround, &ActionSpan)>,
 ) {
     // Loop through all actions, just like you'd loop over all entities in any other query.
     for (Actor(actor), mut state, look, span) in &mut query {
@@ -175,21 +175,15 @@ pub fn drink_action_system(
                 let distance = (closest_chest.position - actor_position.position).length();
                 if distance < MAX_DISTANCE {
                     trace!("Guarding!");
-                    guard.satisfaction -= look.per_second * time.delta_seconds();
+                    guard.satisfy -= look.per_second * time.delta_seconds();
 
                     // Once we hit 0 duration, we stop guarding and report success.
-                    if guard.satisfaction <= 0.0 {
-                        guard.satisfaction = 0.0;
+                    if guard.satisfy <= 0.0 {
+                        guard.satisfy = 0.0;
                         *state = ActionState::Success;
 
                         debug!("🔥 Guarding success!");
-
-                        // Action
-                        // *actor_action = crate::core::play::Action(Act::Idle);
                     }
-
-                    // Action
-                    // *actor_action = crate::core::play::Action(Act::Attack);
                 } else {
                     debug!("We're too far away!");
                     *state = ActionState::Failure;
@@ -213,39 +207,22 @@ pub fn guarding_scorer_system(
 ) {
     for (Actor(actor), mut score) in &mut query {
         if let Ok(guard) = guards.get(*actor) {
-            score.set(guard.satisfaction / 100.);
+            score.set(guard.satisfy / 100.);
         }
     }
 }
 
-// pub fn init_entities(mut cmd: Commands) {
-//     // Spawn two chests.
-//     cmd.spawn((
-//         Chest,
-//         Position {
-//             position: Vec2::new(10.0, 10.0),
-//         },
-//     ));
-
-//     cmd.spawn((
-//         Chest,
-//         Position {
-//             position: Vec2::new(-10.0, 0.0),
-//         },
-//     ));
-// }
-
 pub fn get_thinker() -> ThinkerBuilder {
-    let move_and_drink = Steps::build()
+    let move_and_guard = Steps::build()
         .label("MoveAndGuard")
         // ...move to the chest...
         .step(MoveToChest { speed: 32.0 })
-        // ...and then drink.
-        .step(Look { per_second: 10.0 });
+        // ...and then guard.
+        .step(LookAround { per_second: 25.0 });
 
     Thinker::build()
         .label("GuardingThinker")
-        // We don't do anything unless we're guardy enough.
+        // We don't do anything unless we're satisfy enough.
         .picker(FirstToScore { threshold: 0.8 })
-        .when(Guarding, move_and_drink)
+        .when(Guarding, move_and_guard)
 }
