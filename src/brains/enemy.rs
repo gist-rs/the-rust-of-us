@@ -20,6 +20,7 @@ use crate::{
         layer::{SpriteLayer, YSort},
         library::{build_library, Ani},
         map::{convert_map_to_screen, get_position_from_map},
+        play::Action,
         position::Position,
         setup::CharacterId,
         stage::{Enemy, GameStage},
@@ -106,6 +107,7 @@ pub fn init_enemy(
                 .spawn(enemy_bundle)
                 .insert(CharacterId(enemy.character_id.0.clone()))
                 .insert((
+                    Action(enemy.act),
                     Guard::new(75.0, 2.0),
                     Position {
                         position: Vec2::new(position.translation.x, position.translation.y),
@@ -142,22 +144,50 @@ pub fn init_enemy(
     }
 }
 
+#[allow(clippy::complexity)]
 pub fn update_enemy(
     game_stage: Res<GameStage>,
-    mut enemy_positions: Query<
-        (&CharacterId, &mut Position, &mut Transform, &mut Sprite),
+    mut enemies: Query<
+        (
+            &CharacterId,
+            &mut Position,
+            &mut Transform,
+            &mut Sprite,
+            &mut SpritesheetAnimation,
+            &mut Action,
+        ),
         With<Enemy>,
     >,
+    library: Res<AnimationLibrary>,
 ) {
     for enemy in game_stage.0.enemies.iter() {
-        for (character_id, enemy_position, mut enemy_transform, mut sprite) in
-            enemy_positions.iter_mut()
+        for (
+            character_id,
+            enemy_position,
+            mut enemy_transform,
+            mut sprite,
+            mut animation,
+            action,
+        ) in enemies.iter_mut()
         {
             if enemy.character_id == *character_id {
+                // Look direction
                 sprite.flip_x = enemy_transform.translation.x > enemy_position.position.x;
 
+                // Position
                 enemy_transform.translation.x = enemy_position.position.x;
                 enemy_transform.translation.y = enemy_position.position.y;
+
+                // Action
+                let subject = character_id.0.split('_').next().expect("subject");
+                let act = action.0;
+                let animation_name = format!("{subject}_{act}");
+
+                if let Some(animation_id) = library.animation_with_name(animation_name) {
+                    if animation.animation_id != animation_id {
+                        animation.switch(animation_id);
+                    }
+                }
             }
         }
     }

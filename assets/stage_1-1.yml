@@ -2,9 +2,10 @@ id: 1-1
 name: "hello world!"
 players:
   - type: man
-    character_id: "man_0"
+    character_id: man_0
     position: f2
     look_direction: left
+    act: idle
     attack: 2
     defend: 2
     health: 100
@@ -19,9 +20,10 @@ players:
       - "when low(<50%) health and has potion, drink potion"
 enemies:
   - type: skeleton
-    character_id: "skeleton_0"
+    character_id: skeleton_0
     position: e5
     look_direction: right
+    act: idle
     attack: 1
     defend: 1
     health: 10
@@ -31,9 +33,10 @@ enemies:
       - "when beside (<1 block) player, attack player"
 npcs:
   - type: crab
-    character_id: "crab_0"
+    character_id: crab_0
     position: b2
     look_direction: left
+    act: idle
     prompt: |
       You are a crab representing Rustaceans. 
       Say only good things about Rust language, 

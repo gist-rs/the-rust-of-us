@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_spritesheet_animation::prelude::*;
+use serde::Deserialize;
 use std::str::FromStr;
 use strum_macros::{Display, EnumString};
 
@@ -22,11 +23,12 @@ use super::{
     setup::{CharacterId, Walkable},
 };
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 #[allow(dead_code)]
-pub struct Action(Act);
+pub struct Action(pub Act);
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, EnumString, Display)]
+#[derive(Deserialize, Debug, Clone, Copy, PartialEq, Eq, EnumString, Display)]
+#[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
 pub enum Act {
     Idle,

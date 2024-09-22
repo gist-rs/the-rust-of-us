@@ -6,7 +6,7 @@ use std::fs;
 
 use crate::timeline::init::LookDirection;
 
-use super::setup::CharacterId;
+use super::{play::Act, setup::CharacterId};
 
 #[allow(unused)]
 #[cfg_attr(feature = "bevy", derive(Resource))]
@@ -27,6 +27,7 @@ pub struct Player {
     pub character_id: CharacterId,
     pub position: String,
     pub look_direction: LookDirection,
+    pub act: Act,
     pub attack: u32,
     pub defend: u32,
     pub health: u32,
@@ -42,6 +43,7 @@ pub struct Enemy {
     pub character_id: CharacterId,
     pub position: String,
     pub look_direction: LookDirection,
+    pub act: Act,
     pub attack: u32,
     pub defend: u32,
     pub health: u32,
@@ -56,6 +58,7 @@ pub struct Npc {
     pub character_id: CharacterId,
     pub position: String,
     pub look_direction: LookDirection,
+    pub act: Act,
     pub prompt: String,
 }
 

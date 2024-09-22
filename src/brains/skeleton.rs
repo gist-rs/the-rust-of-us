@@ -3,7 +3,9 @@ use bevy::utils::tracing::{debug, trace};
 use big_brain::prelude::*;
 
 use crate::core::chest::Chest;
+use crate::core::play::Act;
 use crate::core::position::Position;
+use crate::core::stage::Enemy;
 
 /// We steal the Guard component from the guard example.
 #[derive(Component, Debug)]
@@ -47,13 +49,16 @@ pub struct MoveToChest {
 
 /// Closest distance to a chest to be able to drink from it.
 const MAX_DISTANCE: f32 = 32.;
-
+#[allow(clippy::complexity)]
 pub fn move_to_chest_action_system(
     time: Res<Time>,
     // Find all chests
     chests: Query<&Position, With<Chest>>,
     // We use Without to make disjoint queries.
-    mut positions: Query<&mut Position, Without<Chest>>,
+    mut enemies: Query<
+        (&mut Position, &mut crate::core::play::Action),
+        (With<Enemy>, Without<Chest>),
+    >,
     // A query on all current MoveToChest actions.
     mut action_query: Query<(&Actor, &mut ActionState, &MoveToChest, &ActionSpan)>,
 ) {
@@ -71,9 +76,8 @@ pub fn move_to_chest_action_system(
             }
             ActionState::Executing => {
                 // Look up the actor's position.
-                let mut actor_position = positions.get_mut(actor.0).expect("actor has no position");
-
-                trace!("Actor position: {:?}", actor_position.position);
+                let actor_position = enemies.get_mut(actor.0).expect("actor has no position");
+                let (mut actor_position, mut actor_action) = actor_position;
 
                 // Look up the chest closest to them.
                 let closest_chest = find_closest_chest(&chests, &actor_position);
@@ -97,6 +101,9 @@ pub fn move_to_chest_action_system(
 
                     // Move the actor.
                     actor_position.position += step;
+
+                    // Action
+                    *actor_action = crate::core::play::Action(Act::Walk);
                 } else {
                     // We're within the required distance! We can declare success.
 
@@ -104,6 +111,9 @@ pub fn move_to_chest_action_system(
 
                     // The action will be cleaned up automatically.
                     *action_state = ActionState::Success;
+
+                    // Action
+                    *actor_action = crate::core::play::Action(Act::Idle);
                 }
             }
             ActionState::Cancelled => {
@@ -141,7 +151,7 @@ pub struct Look {
 
 pub fn drink_action_system(
     time: Res<Time>,
-    mut guards: Query<(&Position, &mut Guard), Without<Chest>>,
+    mut guards: Query<(&Position, &mut Guard), (With<Enemy>, Without<Chest>)>,
     chests: Query<&Position, With<Chest>>,
     mut query: Query<(&Actor, &mut ActionState, &Look, &ActionSpan)>,
 ) {
@@ -155,12 +165,12 @@ pub fn drink_action_system(
         match *state {
             ActionState::Requested => {
                 // We'll start guarding as soon as we're requested to do so.
-                debug!("Guarding the chest.");
+                debug!("🔥 Guarding the chest.");
                 *state = ActionState::Executing;
             }
             ActionState::Executing => {
                 // TODO: can be no chest
-                let closest_chest = find_closest_chest(&chests, actor_position);
+                let closest_chest = find_closest_chest(&chests, &actor_position);
                 let distance = (closest_chest.position - actor_position.position).length();
                 if distance < MAX_DISTANCE {
                     trace!("Guarding!");
@@ -170,7 +180,15 @@ pub fn drink_action_system(
                     if guard.satisfaction <= 0.0 {
                         guard.satisfaction = 0.0;
                         *state = ActionState::Success;
+
+                        debug!("🔥 Guarding success!");
+
+                        // Action
+                        // *actor_action = crate::core::play::Action(Act::Idle);
                     }
+
+                    // Action
+                    // *actor_action = crate::core::play::Action(Act::Attack);
                 } else {
                     debug!("We're too far away!");
                     *state = ActionState::Failure;
