@@ -81,7 +81,7 @@ pub fn move_to_chest_action_system(
                 let (mut actor_position, mut actor_action) = actor_position;
 
                 // Look up the chest closest to them.
-                let closest_chest = find_closest_chest(&chests, &actor_position);
+                let closest_chest = find_closest_target::<Chest>(&chests, &actor_position);
 
                 // Find how far we are from it.
                 let delta = closest_chest.position - actor_position.position;
@@ -129,21 +129,6 @@ pub fn move_to_chest_action_system(
     }
 }
 
-/// A utility function that finds the closest chest to the actor.
-fn find_closest_chest(
-    chests: &Query<&Position, With<Chest>>,
-    actor_position: &Position,
-) -> Position {
-    *(chests
-        .iter()
-        .min_by(|a, b| {
-            let da = (a.position - actor_position.position).length_squared();
-            let db = (b.position - actor_position.position).length_squared();
-            da.partial_cmp(&db).unwrap()
-        })
-        .expect("no chests"))
-}
-
 /// A simple action: the actor's guard shall decrease, but only if they are near a chest.
 #[derive(Clone, Component, Debug, ActionBuilder)]
 pub struct LookAround {
@@ -172,7 +157,7 @@ pub fn guard_action_system(
             }
             ActionState::Executing => {
                 // TODO: can be no chest
-                let closest_chest = find_closest_chest(&chests, &actor_position);
+                let closest_chest = find_closest_target::<Chest>(&chests, actor_position);
                 let distance = (closest_chest.position - actor_position.position).length();
                 if distance < MAX_DISTANCE {
                     trace!("Guarding!");
@@ -246,7 +231,7 @@ pub struct Sleep {
 }
 
 #[derive(Debug, Clone, Component, ActionBuilder)]
-#[action_label = "MyGenericLabel"]
+#[action_label = "RallyPoint"]
 pub struct MoveToNearest<T: Component + std::fmt::Debug + Clone> {
     // We use a PhantomData to store the type of the component we're moving to.
     _marker: std::marker::PhantomData<T>,
@@ -262,31 +247,24 @@ impl<T: Component + std::fmt::Debug + Clone> MoveToNearest<T> {
     }
 }
 
-// TODO: generic
-fn find_closest_grave<T: Component + std::fmt::Debug + Clone>(
-    graves: &Query<&Position, With<T>>,
+fn find_closest_target<T: Component + std::fmt::Debug + Clone>(
+    targets: &Query<&Position, With<T>>,
     actor_position: &Position,
 ) -> Position {
-    *(graves
+    *(targets
         .iter()
         .min_by(|a, b| {
             let da = (a.position - actor_position.position).length_squared();
             let db = (b.position - actor_position.position).length_squared();
             da.partial_cmp(&db).unwrap()
         })
-        .expect("no graves"))
+        .unwrap_or_else(|| panic!("no {:?}", std::any::type_name::<T>())))
 }
 
+#[allow(clippy::type_complexity)]
 pub fn move_to_nearest_system<T: Component + std::fmt::Debug + Clone>(
     time: Res<Time>,
-    // This will be generic over 'T', so we can look up any marker component we want.
-    mut graves: Query<&Position, With<T>>,
-    // mut enemies: Query<
-    //     (&mut Position, &mut crate::core::play::Action),
-    //     (With<Enemy>, Without<Chest>),
-    // >,
-    // We filter on HasThinker since otherwise we'd be querying for every
-    // entity in the world with a transform!
+    graves: Query<&Position, With<T>>,
     mut enemies: Query<
         (&mut Position, &mut crate::core::play::Action),
         (With<HasThinker>, Without<T>),
@@ -307,35 +285,8 @@ pub fn move_to_nearest_system<T: Component + std::fmt::Debug + Clone>(
                 let actor_position = enemies.get_mut(actor.0).expect("actor has no position");
                 let (mut actor_position, mut actor_action) = actor_position;
 
-                // // let mut actor_transform = thinkers.get_mut(actor.0).unwrap();
-                // debug!("🔥 translation {:?}", actor_transform.translation);
-
-                // // The goal is the nearest entity with the specified component.
-                // let goal_transform = query
-                //     .iter_mut()
-                //     .map(|t| (t.translation, t))
-                //     .min_by(|(a, _), (b, _)| {
-                //         // We need partial_cmp here because f32 doesn't implement Ord.
-                //         let delta_a = *a - actor_transform.translation;
-                //         let delta_b = *b - actor_transform.translation;
-                //         delta_a.length().partial_cmp(&delta_b.length()).unwrap()
-                //     })
-                //     .and_then(|t| Some(t.1));
-
-                // let Some(goal_transform) = goal_transform else {
-                //     continue;
-                // };
-
-                // debug!("🔥 goal_transform {:?}", goal_transform.translation);
-                // debug!("🔥 move_to.speed {:?}", move_to.speed);
-
-                // let delta = goal_transform.translation - actor_transform.translation;
-                // let distance = delta.xy().length();
-
-                // trace!("Distance: {}", distance);
-
                 // Look up the chest closest to them.
-                let closest_chest = find_closest_grave::<T>(&graves, &actor_position);
+                let closest_chest = find_closest_target::<T>(&graves, &actor_position);
 
                 // Find how far we are from it.
                 let delta = closest_chest.position - actor_position.position;
