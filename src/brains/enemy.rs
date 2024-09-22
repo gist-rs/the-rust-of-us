@@ -108,7 +108,7 @@ pub fn init_enemy(
                 .insert(CharacterId(enemy.character_id.0.clone()))
                 .insert((
                     Action(enemy.act),
-                    Guard::new(75.0, 2.0),
+                    Guard::new(75.0, 10.0),
                     Position {
                         position: Vec2::new(position.translation.x, position.translation.y),
                     },

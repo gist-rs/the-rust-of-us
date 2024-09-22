@@ -10,36 +10,28 @@ use crate::core::stage::Enemy;
 
 const MAX_DISTANCE: f32 = 32.;
 
-/// We steal the Guard component from the guard example.
 #[derive(Component, Debug)]
 pub struct Guard {
-    /// How much duration the entity gets over time.
     pub per_second: f32,
-    /// How much duration the entity currently has.
-    pub satisfy: f32,
+    pub concern: f32,
 }
 
 impl Guard {
-    pub fn new(satisfy: f32, per_second: f32) -> Self {
+    pub fn new(concern: f32, per_second: f32) -> Self {
         Self {
-            satisfy,
+            concern,
             per_second,
         }
     }
 }
 
-/// A simple system that just pushes the guard value up over time.
-/// Just a plain old Bevy system, big-brain is not involved yet.
 pub fn guard_system(time: Res<Time>, mut guards: Query<&mut Guard>) {
     for mut guard in &mut guards {
-        guard.satisfy += guard.per_second * time.delta_seconds();
+        guard.concern += guard.per_second * time.delta_seconds();
 
-        // Satisfaction is capped at 100.0
-        if guard.satisfy >= 100.0 {
-            guard.satisfy = 100.0;
+        if guard.concern >= 100.0 {
+            guard.concern = 100.0;
         }
-
-        trace!("Guard.duration: {}", guard.satisfy);
     }
 }
 
@@ -56,7 +48,7 @@ pub fn guard_action_system(
     mut query: Query<(&Actor, &mut ActionState, &LookAround, &ActionSpan)>,
 ) {
     // Loop through all actions, just like you'd loop over all entities in any other query.
-    for (Actor(actor), mut state, look, span) in &mut query {
+    for (Actor(actor), mut state, look_around, span) in &mut query {
         let _guard = span.span().enter();
 
         // Look up the actor's position and guard from the Actor component in the action entity.
@@ -65,7 +57,7 @@ pub fn guard_action_system(
         match *state {
             ActionState::Requested => {
                 // We'll start guarding as soon as we're requested to do so.
-                debug!("🔥 Guarding the chest.");
+                debug!("🔥 Guarding...{}", guard.concern);
                 *state = ActionState::Executing;
             }
             ActionState::Executing => {
@@ -74,11 +66,11 @@ pub fn guard_action_system(
                 let distance = (closest_chest.position - actor_position.position).length();
                 if distance < MAX_DISTANCE {
                     trace!("Guarding!");
-                    guard.satisfy -= look.per_second * time.delta_seconds();
+                    guard.concern -= look_around.per_second * time.delta_seconds();
 
-                    // Once we hit 0 duration, we stop guarding and report success.
-                    if guard.satisfy <= 0.0 {
-                        guard.satisfy = 0.0;
+                    // Once we hit 0 concern, we stop guarding and report success.
+                    if guard.concern <= 0.0 {
+                        guard.concern = 0.0;
                         *state = ActionState::Success;
 
                         debug!("🔥 Guarding success!");
@@ -106,7 +98,7 @@ pub fn guarding_scorer_system(
 ) {
     for (Actor(actor), mut score) in &mut query {
         if let Ok(guard) = guards.get(*actor) {
-            score.set(guard.satisfy / 100.);
+            score.set(guard.concern / 100.);
         }
     }
 }
@@ -116,29 +108,14 @@ const MOVEMENT_SPEED: f32 = 32.;
 pub fn get_thinker() -> ThinkerBuilder {
     let move_and_guard = Steps::build()
         .label("MoveAndGuard")
-        // ...move to the chest...
         .step(MoveToNearest::<Chest>::new(MOVEMENT_SPEED))
-        // ...and then guard.
         .step(LookAround { per_second: 25.0 })
-        .step(MoveToNearest::<Grave>::new(MOVEMENT_SPEED))
-        .step(Sleep {
-            until: 10.0,
-            per_second: 15.0,
-        });
+        .step(MoveToNearest::<Grave>::new(MOVEMENT_SPEED));
 
     Thinker::build()
         .label("GuardingThinker")
-        // We don't do anything unless we're satisfy enough.
         .picker(FirstToScore { threshold: 0.8 })
         .when(Duty, move_and_guard)
-}
-
-#[derive(Clone, Component, Debug, ActionBuilder)]
-pub struct Sleep {
-    /// The fatigue level at which the entity will stop sleeping.
-    until: f32,
-    /// The rate at which the fatigue level decreases while sleeping.
-    per_second: f32,
 }
 
 #[derive(Debug, Clone, Component, ActionBuilder)]
