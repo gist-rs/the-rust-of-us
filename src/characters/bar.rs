@@ -2,13 +2,7 @@ use bevy::prelude::*;
 use bevy_stat_bars::*;
 use std::marker::PhantomData;
 
-#[derive(Component, Default, Reflect)]
-#[reflect(Component)]
-pub struct PlayerCharacter;
-
-#[derive(Component, Default, Reflect)]
-#[reflect(Component)]
-pub struct EnemyCharacter;
+use crate::core::stage::Enemy;
 
 #[derive(Component, Reflect)]
 #[reflect(Component)]
@@ -85,7 +79,7 @@ pub type Health = Stat<HealthValue>;
 pub fn adjust_stats(
     time: Res<Time>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut hp_query: Query<&mut Health, With<EnemyCharacter>>,
+    mut hp_query: Query<&mut Health, With<Enemy>>,
 ) {
     let delta = 5.0 * time.delta_seconds();
     hp_query.iter_mut().for_each(|mut hp| {

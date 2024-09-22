@@ -30,4 +30,6 @@ incremental = false
 debug = false
 
 [features]
+default = ["bevy"]
+bevy = []
 trace = []

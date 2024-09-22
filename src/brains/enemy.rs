@@ -19,11 +19,14 @@ use crate::{
     core::{
         layer::{SpriteLayer, YSort},
         library::{build_library, Ani},
+        map::{convert_map_to_screen, get_position_from_map},
         position::Position,
-        setup::{CharacterId, Enemy},
-        stage::GameStage,
+        setup::CharacterId,
+        stage::{Enemy, GameStage},
     },
-    get_thinker, Guard,
+    get_thinker,
+    timeline::init::LookDirection,
+    Guard,
 };
 
 fn build_enemy(
@@ -31,6 +34,7 @@ fn build_enemy(
     atlas_layouts: &mut ResMut<Assets<TextureAtlasLayout>>,
     library: &mut ResMut<AnimationLibrary>,
     ani: Ani,
+    enemy_stage_info: &Enemy,
 ) -> EnemyBundle {
     let clip_fps = 30;
 
@@ -39,10 +43,23 @@ fn build_enemy(
     let texture_path = ani.texture_path.clone();
     let texture = asset_server.load(texture_path);
 
+    let at = convert_map_to_screen(enemy_stage_info.position.clone()).expect("Valid position");
+    let position = get_position_from_map(at.0, at.1, None);
+
+    let is_flip_x = match enemy_stage_info.look_direction {
+        LookDirection::Left => true,
+        LookDirection::Right => false,
+    };
+
     EnemyBundle {
         sprite_bundle: SpriteBundle {
             texture,
-            transform: Transform::from_xyz(0.0, 0.0, 0.0).with_scale(Vec3::splat(2.0)),
+            sprite: Sprite {
+                flip_x: is_flip_x,
+                ..default()
+            },
+            transform: Transform::from_xyz(position.translation.x, position.translation.y, 0.0)
+                .with_scale(Vec3::splat(2.0)),
             ..default()
         },
         texture_atlas: TextureAtlas {
@@ -53,7 +70,7 @@ fn build_enemy(
             library.animation_with_name("skeleton_idle").unwrap(),
         ),
         sprite_layer: SpriteLayer::Ground,
-        marker: Enemy,
+        marker: enemy_stage_info.clone(),
         ysort: YSort(0.0),
     }
 }
@@ -74,8 +91,16 @@ pub fn init_enemy(
     for enemy in stage.enemies.iter() {
         println!("🔥 enemy:{:?}", enemy);
         if let Some(ani) = characters.iter().find(|&c| c.r#type == enemy.r#type) {
-            let enemy_bundle =
-                build_enemy(&asset_server, &mut atlas_layouts, &mut library, ani.clone());
+            let at = convert_map_to_screen(enemy.position.clone()).expect("Valid position");
+            let position = get_position_from_map(at.0, at.1, None);
+
+            let enemy_bundle = build_enemy(
+                &asset_server,
+                &mut atlas_layouts,
+                &mut library,
+                ani.clone(),
+                enemy,
+            );
 
             let enemy_id = commands
                 .spawn(enemy_bundle)
@@ -83,7 +108,7 @@ pub fn init_enemy(
                 .insert((
                     Guard::new(75.0, 2.0),
                     Position {
-                        position: Vec2::new(0.0, 0.0),
+                        position: Vec2::new(position.translation.x, position.translation.y),
                     },
                     get_thinker(),
                     Health::new_full(100.0),
@@ -119,11 +144,18 @@ pub fn init_enemy(
 
 pub fn update_enemy(
     game_stage: Res<GameStage>,
-    mut enemy_positions: Query<(&CharacterId, &mut Position, &mut Transform), With<Enemy>>,
+    mut enemy_positions: Query<
+        (&CharacterId, &mut Position, &mut Transform, &mut Sprite),
+        With<Enemy>,
+    >,
 ) {
     for enemy in game_stage.0.enemies.iter() {
-        for (character_id, enemy_position, mut enemy_transform) in enemy_positions.iter_mut() {
+        for (character_id, enemy_position, mut enemy_transform, mut sprite) in
+            enemy_positions.iter_mut()
+        {
             if enemy.character_id == *character_id {
+                sprite.flip_x = enemy_transform.translation.x > enemy_position.position.x;
+
                 enemy_transform.translation.x = enemy_position.position.x;
                 enemy_transform.translation.y = enemy_position.position.y;
             }

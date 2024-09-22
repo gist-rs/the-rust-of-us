@@ -4,6 +4,7 @@ players:
   - type: man
     character_id: "man_0"
     position: f2
+    look_direction: left
     attack: 2
     defend: 2
     health: 100
@@ -19,7 +20,8 @@ players:
 enemies:
   - type: skeleton
     character_id: "skeleton_0"
-    position: f4
+    position: e5
+    look_direction: right
     attack: 1
     defend: 1
     health: 10
@@ -31,6 +33,7 @@ npcs:
   - type: crab
     character_id: "crab_0"
     position: b2
+    look_direction: left
     prompt: |
       You are a crab representing Rustaceans. 
       Say only good things about Rust language, 

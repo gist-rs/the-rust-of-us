@@ -64,16 +64,9 @@ pub fn build_scene(
     let decor_json = fs::read_to_string("assets/decor.json").expect("Unable to read file");
     let decor_animations: Vec<Ani> = from_str(&decor_json).expect("Unable to parse JSON");
 
-    // Spawn obstacles based on the map
-    let cell_size = 46usize;
-    let half_width = 320. / 2.;
-    let half_height = 320. / 2.;
-    let (offset_x, offset_y) = (0., 0.);
-
     for (y, row) in map.0.iter().enumerate() {
         for (x, cell) in row.iter().enumerate() {
-            let transform =
-                get_position_from_map(cell_size, half_width, half_height, offset_x, offset_y, x, y);
+            let transform = get_position_from_map(x, y, None);
             match cell.as_str() {
                 "🌳" => {
                     commands.spawn(DecorBundle {

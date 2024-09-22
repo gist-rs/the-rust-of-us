@@ -172,39 +172,18 @@ fn process_action(
     character_path: &mut ResMut<CharacterPath>,
     timeline_clock: &mut ResMut<TimelineClock>,
 ) {
-    let cell_size = 46usize;
-    let half_width = 320. / 2.;
-    let half_height = 320. / 2.;
-    let (offset_x, offset_y) = (0., 0.);
-
     let subject = character_id.0.split('_').next().expect("subject");
 
     // Subject position
     let at = convert_map_to_screen(action.at.clone()).expect("x,y");
-    let current_transform = get_position_from_map(
-        cell_size,
-        half_width,
-        half_height,
-        offset_x,
-        offset_y,
-        at.0,
-        at.1,
-    );
+    let current_transform = get_position_from_map(at.0, at.1, None);
 
     // Target position
     let mut to = at;
     let mut target_transform = *transform;
     if let Some(to_string) = &action.to {
         to = convert_map_to_screen(to_string.clone()).expect("x,y");
-        target_transform = get_position_from_map(
-            cell_size,
-            half_width,
-            half_height,
-            offset_x,
-            offset_y,
-            to.0,
-            to.1,
-        );
+        target_transform = get_position_from_map(to.0, to.1, None);
     }
 
     let is_flip_x = match action.look {

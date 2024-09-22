@@ -4,10 +4,13 @@ use serde::Deserialize;
 use serde_yaml::from_str;
 use std::fs;
 
+use crate::timeline::init::LookDirection;
+
 use super::setup::CharacterId;
 
 #[allow(unused)]
-#[derive(Deserialize, Default, Debug, Resource)]
+#[cfg_attr(feature = "bevy", derive(Resource))]
+#[derive(Deserialize, Default, Debug)]
 pub struct Stage {
     pub id: String,
     pub name: String,
@@ -17,11 +20,13 @@ pub struct Stage {
 }
 
 #[allow(unused)]
+#[cfg_attr(feature = "bevy", derive(Component))]
 #[derive(Deserialize, Debug)]
 pub struct Player {
     pub r#type: String,
     pub character_id: CharacterId,
     pub position: String,
+    pub look_direction: LookDirection,
     pub attack: u32,
     pub defend: u32,
     pub health: u32,
@@ -30,11 +35,13 @@ pub struct Player {
 }
 
 #[allow(unused)]
-#[derive(Deserialize, Debug)]
+#[cfg_attr(feature = "bevy", derive(Component))]
+#[derive(Deserialize, Clone, Debug)]
 pub struct Enemy {
     pub r#type: String,
     pub character_id: CharacterId,
     pub position: String,
+    pub look_direction: LookDirection,
     pub attack: u32,
     pub defend: u32,
     pub health: u32,
@@ -42,15 +49,18 @@ pub struct Enemy {
 }
 
 #[allow(unused)]
+#[cfg_attr(feature = "bevy", derive(Component))]
 #[derive(Deserialize, Debug)]
 pub struct Npc {
     pub r#type: String,
     pub character_id: CharacterId,
     pub position: String,
+    pub look_direction: LookDirection,
     pub prompt: String,
 }
 
-#[derive(Resource, Default, Debug)]
+#[cfg_attr(feature = "bevy", derive(Resource))]
+#[derive(Default, Debug)]
 pub struct GameStage(pub Stage);
 
 pub fn load_stage_from_yaml(file_path: &str) -> Result<Stage> {

@@ -16,7 +16,7 @@ use brains::{
     skeleton::*,
 };
 use characters::{
-    bar::{adjust_stats, Health, PlayerCharacter},
+    bar::{adjust_stats, Health},
     r#move::{move_character, CharacterPath},
 };
 use core::{
@@ -59,7 +59,6 @@ fn main() {
         ))
         .add_plugins(BigBrainPlugin::new(PreUpdate))
         .register_type::<Health>()
-        .register_type::<PlayerCharacter>()
         .add_statbar_component_observer::<Health>()
         .init_resource::<TimelineClock>()
         .init_resource::<Chests>()

@@ -113,38 +113,51 @@ pub fn convert_map_to_screen(map_coord: String) -> Option<(usize, usize)> {
     Some((x, y))
 }
 
-pub fn get_position_from_map(
+pub struct MapConfig {
     cell_size: usize,
     half_width: f32,
     half_height: f32,
-    offset_x: f32,
-    offset_y: f32,
-    x: usize,
-    y: usize,
-) -> Transform {
+    offset: (f32, f32),
+}
+
+impl Default for MapConfig {
+    fn default() -> Self {
+        Self {
+            cell_size: 46,
+            half_width: 320. / 2.,
+            half_height: 320. / 2.,
+            offset: (0., 0.),
+        }
+    }
+}
+
+pub fn get_position_from_map(x: usize, y: usize, map_config: Option<MapConfig>) -> Transform {
+    let map_config = map_config.unwrap_or_else(MapConfig::default);
+    let (offset_x, offset_y) = map_config.offset;
     Transform::from_xyz(
-        cell_size as f32 * x as f32 - half_width + offset_x,
-        cell_size as f32 * y as f32 - half_height + offset_y,
+        map_config.cell_size as f32 * x as f32 - map_config.half_width + offset_x,
+        map_config.cell_size as f32 * y as f32 - map_config.half_height + offset_y,
         0.0,
     )
 }
 
 #[allow(dead_code)]
 pub fn get_map_from_position(
-    cell_size: usize,
-    half_width: f32,
-    half_height: f32,
-    offset_x: f32,
-    offset_y: f32,
     transform: Transform,
+    map_config: Option<MapConfig>,
 ) -> (usize, usize) {
+    // Use the provided map_config or create a default instance
+    let map_config = map_config.unwrap_or_else(MapConfig::default);
+
     // Extract the x and y coordinates from the transform
     let pos_x = transform.translation.x;
     let pos_y = transform.translation.y;
 
     // Reverse the transformation to get the map coordinates
-    let x = ((pos_x + half_width - offset_x) / cell_size as f32).round() as usize;
-    let y = ((pos_y + half_height - offset_y) / cell_size as f32).round() as usize;
+    let x = ((pos_x + map_config.half_width - map_config.offset.0) / map_config.cell_size as f32)
+        .round() as usize;
+    let y = ((pos_y + map_config.half_height - map_config.offset.1) / map_config.cell_size as f32)
+        .round() as usize;
 
     (x, y)
 }
@@ -235,28 +248,14 @@ mod tests {
 
     #[test]
     fn test_conversion_back_and_forth() {
-        let cell_size = 46usize;
-        let half_width = 320. / 2.;
-        let half_height = 320. / 2.;
-        let offset_x = 0.;
-        let offset_y = 0.;
-
         let x = 5;
         let y = 7;
 
         // Convert map coordinates to position
-        let transform =
-            get_position_from_map(cell_size, half_width, half_height, offset_x, offset_y, x, y);
+        let transform = get_position_from_map(x, y, None);
 
         // Convert position back to map coordinates
-        let (map_x, map_y) = get_map_from_position(
-            cell_size,
-            half_width,
-            half_height,
-            offset_x,
-            offset_y,
-            transform,
-        );
+        let (map_x, map_y) = get_map_from_position(transform, None);
 
         // Assert that the original map coordinates are recovered
         assert_eq!((x, y), (map_x, map_y));

@@ -15,9 +15,6 @@ use super::{
 #[derive(Component)]
 pub struct Player;
 
-#[derive(Component)]
-pub struct Enemy;
-
 #[derive(Bundle)]
 pub struct PlayerBundle {
     sprite_bundle: SpriteBundle,
@@ -28,7 +25,7 @@ pub struct PlayerBundle {
     ysort: YSort,
 }
 
-#[derive(Component, Deserialize, Debug, Eq, PartialEq)]
+#[derive(Component, Clone, Deserialize, Debug, Eq, PartialEq)]
 pub struct CharacterId(pub String);
 
 #[allow(unused)]

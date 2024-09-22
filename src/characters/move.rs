@@ -49,11 +49,6 @@ pub fn move_character(
     mut character_paths: ResMut<CharacterPath>,
 ) {
     const CHARACTER_SPEED: f32 = 320.;
-    const CELL_SIZE: usize = 46;
-    const HALF_WIDTH: f32 = 320. / 2.;
-    const HALF_HEIGHT: f32 = 320. / 2.;
-    const OFFSET_X: f32 = 0.;
-    const OFFSET_Y: f32 = 0.;
 
     for (_entity, character_id, mut transform, movement_state, mut animation) in &mut characters {
         if let Some(mut movement_state) = movement_state {
@@ -62,15 +57,7 @@ pub fn move_character(
                 if let Some(path_cost) = character_paths.get_path_mut(&character_id.0) {
                     // Move to the next position in the path
                     if let Some((next_x, next_y)) = path_cost.path.first() {
-                        let next_position = get_position_from_map(
-                            CELL_SIZE,
-                            HALF_WIDTH,
-                            HALF_HEIGHT,
-                            OFFSET_X,
-                            OFFSET_Y,
-                            *next_x,
-                            *next_y,
-                        );
+                        let next_position = get_position_from_map(*next_x, *next_y, None);
 
                         // Remove z
                         let mut a = next_position.translation;
