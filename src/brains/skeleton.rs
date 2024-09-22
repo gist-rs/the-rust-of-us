@@ -3,6 +3,7 @@ use bevy::utils::tracing::{debug, trace};
 use big_brain::prelude::*;
 
 use crate::core::chest::Chest;
+use crate::core::grave::Grave;
 use crate::core::play::Act;
 use crate::core::position::Position;
 use crate::core::stage::Enemy;
@@ -212,17 +213,161 @@ pub fn guarding_scorer_system(
     }
 }
 
+const MOVEMENT_SPEED: f32 = 32.;
+
 pub fn get_thinker() -> ThinkerBuilder {
     let move_and_guard = Steps::build()
         .label("MoveAndGuard")
         // ...move to the chest...
-        .step(MoveToChest { speed: 32.0 })
+        .step(MoveToChest {
+            speed: MOVEMENT_SPEED,
+        })
         // ...and then guard.
-        .step(LookAround { per_second: 25.0 });
+        .step(LookAround { per_second: 25.0 })
+        .step(MoveToNearest::<Grave>::new(MOVEMENT_SPEED))
+        .step(Sleep {
+            until: 10.0,
+            per_second: 15.0,
+        });
 
     Thinker::build()
         .label("GuardingThinker")
         // We don't do anything unless we're satisfy enough.
         .picker(FirstToScore { threshold: 0.8 })
         .when(Duty, move_and_guard)
+}
+
+#[derive(Clone, Component, Debug, ActionBuilder)]
+pub struct Sleep {
+    /// The fatigue level at which the entity will stop sleeping.
+    until: f32,
+    /// The rate at which the fatigue level decreases while sleeping.
+    per_second: f32,
+}
+
+#[derive(Debug, Clone, Component, ActionBuilder)]
+#[action_label = "MyGenericLabel"]
+pub struct MoveToNearest<T: Component + std::fmt::Debug + Clone> {
+    // We use a PhantomData to store the type of the component we're moving to.
+    _marker: std::marker::PhantomData<T>,
+    speed: f32,
+}
+
+impl<T: Component + std::fmt::Debug + Clone> MoveToNearest<T> {
+    pub fn new(speed: f32) -> Self {
+        Self {
+            _marker: std::marker::PhantomData,
+            speed,
+        }
+    }
+}
+
+// TODO: generic
+fn find_closest_grave<T: Component + std::fmt::Debug + Clone>(
+    graves: &Query<&Position, With<T>>,
+    actor_position: &Position,
+) -> Position {
+    *(graves
+        .iter()
+        .min_by(|a, b| {
+            let da = (a.position - actor_position.position).length_squared();
+            let db = (b.position - actor_position.position).length_squared();
+            da.partial_cmp(&db).unwrap()
+        })
+        .expect("no graves"))
+}
+
+pub fn move_to_nearest_system<T: Component + std::fmt::Debug + Clone>(
+    time: Res<Time>,
+    // This will be generic over 'T', so we can look up any marker component we want.
+    mut graves: Query<&Position, With<T>>,
+    // mut enemies: Query<
+    //     (&mut Position, &mut crate::core::play::Action),
+    //     (With<Enemy>, Without<Chest>),
+    // >,
+    // We filter on HasThinker since otherwise we'd be querying for every
+    // entity in the world with a transform!
+    mut enemies: Query<
+        (&mut Position, &mut crate::core::play::Action),
+        (With<HasThinker>, Without<T>),
+    >,
+    mut action_query: Query<(&Actor, &mut ActionState, &MoveToNearest<T>, &ActionSpan)>,
+) {
+    for (actor, mut action_state, move_to, span) in &mut action_query {
+        let _guard = span.span().enter();
+
+        match *action_state {
+            ActionState::Requested => {
+                debug!("🔥 Let's go find a {:?}", std::any::type_name::<T>());
+
+                *action_state = ActionState::Executing;
+            }
+            ActionState::Executing => {
+                // Look up the actor's position.
+                let actor_position = enemies.get_mut(actor.0).expect("actor has no position");
+                let (mut actor_position, mut actor_action) = actor_position;
+
+                // // let mut actor_transform = thinkers.get_mut(actor.0).unwrap();
+                // debug!("🔥 translation {:?}", actor_transform.translation);
+
+                // // The goal is the nearest entity with the specified component.
+                // let goal_transform = query
+                //     .iter_mut()
+                //     .map(|t| (t.translation, t))
+                //     .min_by(|(a, _), (b, _)| {
+                //         // We need partial_cmp here because f32 doesn't implement Ord.
+                //         let delta_a = *a - actor_transform.translation;
+                //         let delta_b = *b - actor_transform.translation;
+                //         delta_a.length().partial_cmp(&delta_b.length()).unwrap()
+                //     })
+                //     .and_then(|t| Some(t.1));
+
+                // let Some(goal_transform) = goal_transform else {
+                //     continue;
+                // };
+
+                // debug!("🔥 goal_transform {:?}", goal_transform.translation);
+                // debug!("🔥 move_to.speed {:?}", move_to.speed);
+
+                // let delta = goal_transform.translation - actor_transform.translation;
+                // let distance = delta.xy().length();
+
+                // trace!("Distance: {}", distance);
+
+                // Look up the chest closest to them.
+                let closest_chest = find_closest_grave::<T>(&graves, &actor_position);
+
+                // Find how far we are from it.
+                let delta = closest_chest.position - actor_position.position;
+
+                let distance = delta.length();
+
+                trace!("Distance: {}", distance);
+
+                if distance > MAX_DISTANCE {
+                    trace!("Stepping closer.");
+
+                    let step_size = time.delta_seconds() * move_to.speed;
+                    let step = delta.normalize() * step_size.min(distance);
+
+                    // Move the actor.
+                    actor_position.position += step;
+
+                    // Action
+                    *actor_action = crate::core::play::Action(Act::Walk);
+                } else {
+                    debug!("🔥 We got there!");
+
+                    *action_state = ActionState::Success;
+
+                    // Action
+                    *actor_action = crate::core::play::Action(Act::Idle);
+                }
+            }
+            ActionState::Cancelled => {
+                *action_state = ActionState::Failure;
+            }
+            _ => {}
+        }
+    }
 }

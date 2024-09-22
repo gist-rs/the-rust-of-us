@@ -1,5 +1,6 @@
 pub mod chest;
 pub mod gate;
+pub mod grave;
 pub mod layer;
 pub mod library;
 pub mod map;

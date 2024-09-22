@@ -22,6 +22,7 @@ use characters::{
 use core::{
     chest::{update_chest, Chests},
     gate::{update_gate, Gates},
+    grave::Grave,
     layer::{y_sort, SpriteLayer},
     menu::button_system,
     play::schedule_timeline_actions,
@@ -96,7 +97,12 @@ fn main() {
         )
         .add_systems(
             PreUpdate,
-            (guard_action_system, move_to_chest_action_system).in_set(BigBrainSet::Actions),
+            (
+                guard_action_system,
+                move_to_chest_action_system,
+                move_to_nearest_system::<Grave>,
+            )
+                .in_set(BigBrainSet::Actions),
         )
         .add_systems(First, guarding_scorer_system)
         .run();

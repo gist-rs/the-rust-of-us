@@ -7,6 +7,7 @@ use serde_json::from_str;
 use super::{
     chest::{Chest, ChestId, ChestState, Chests},
     gate::{Gate, GateState, Gates},
+    grave::Grave,
     layer::{SpriteLayer, YSort},
     library::{build_library, Ani},
     map::{get_position_from_map, PathCost},
@@ -170,22 +171,28 @@ pub fn build_scene(
                     chests.0.insert(chest_id, chest);
                 }
                 "🪦" => {
-                    commands.spawn(DecorBundle {
-                        sprite_bundle: SpriteBundle {
-                            texture: asset_server.load("grave.png"),
-                            transform: transform.with_scale(Vec3::splat(2.0)).with_translation(
-                                Vec3::new(
-                                    transform.translation.x,
-                                    transform.translation.y - 4.,
-                                    transform.translation.z,
+                    commands.spawn((
+                        DecorBundle {
+                            sprite_bundle: SpriteBundle {
+                                texture: asset_server.load("grave.png"),
+                                transform: transform.with_scale(Vec3::splat(2.0)).with_translation(
+                                    Vec3::new(
+                                        transform.translation.x,
+                                        transform.translation.y - 4.,
+                                        transform.translation.z,
+                                    ),
                                 ),
-                            ),
-                            ..default()
+                                ..default()
+                            },
+                            sprite_layer: SpriteLayer::Ground,
+                            marker: Decor,
+                            ysort: YSort(0.0),
                         },
-                        sprite_layer: SpriteLayer::Ground,
-                        marker: Decor,
-                        ysort: YSort(0.0),
-                    });
+                        Grave,
+                        Position {
+                            position: Vec2::new(transform.translation.x, transform.translation.y),
+                        },
+                    ));
                 }
                 _ => (),
             }

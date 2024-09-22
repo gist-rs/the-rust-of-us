@@ -59,12 +59,9 @@ pub fn move_character(
                     if let Some((next_x, next_y)) = path_cost.path.first() {
                         let next_position = get_position_from_map(*next_x, *next_y, None);
 
-                        // Remove z
-                        let mut a = next_position.translation;
-                        a.z = 0.;
-                        let mut b = transform.translation;
-                        b.z = 0.;
-                        let distance = (a - b).length();
+                        // Distance
+                        let delta = next_position.translation - transform.translation;
+                        let distance = delta.xy().length();
 
                         // If the character is close enough to the target position, consider it reached
                         if distance < 2.0 {
