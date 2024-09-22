@@ -27,18 +27,13 @@ use super::{
 pub struct Action(Act);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, EnumString, Display)]
+#[strum(serialize_all = "snake_case")]
 pub enum Act {
-    #[strum(serialize = "idle")]
     Idle,
-    #[strum(serialize = "walk")]
     Walk,
-    #[strum(serialize = "attack")]
     Attack,
-    #[strum(serialize = "open")]
     Open,
-    #[strum(serialize = "hurt")]
     Hurt,
-    #[strum(serialize = "die")]
     Die,
 }
 
