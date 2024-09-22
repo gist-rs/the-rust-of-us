@@ -20,7 +20,7 @@ use characters::{
     r#move::{move_character, CharacterPath},
 };
 use core::{
-    chest::{update_chest, Chests},
+    chest::{update_chest, Chest, Chests},
     gate::{update_gate, Gates},
     grave::Grave,
     layer::{y_sort, SpriteLayer},
@@ -99,7 +99,7 @@ fn main() {
             PreUpdate,
             (
                 guard_action_system,
-                move_to_chest_action_system,
+                move_to_nearest_system::<Chest>,
                 move_to_nearest_system::<Grave>,
             )
                 .in_set(BigBrainSet::Actions),

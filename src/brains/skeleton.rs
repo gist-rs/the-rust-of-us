@@ -8,6 +8,8 @@ use crate::core::play::Act;
 use crate::core::position::Position;
 use crate::core::stage::Enemy;
 
+const MAX_DISTANCE: f32 = 32.;
+
 /// We steal the Guard component from the guard example.
 #[derive(Component, Debug)]
 pub struct Guard {
@@ -41,95 +43,6 @@ pub fn guard_system(time: Res<Time>, mut guards: Query<&mut Guard>) {
     }
 }
 
-/// An action where the actor moves to the closest chest
-#[derive(Clone, Component, Debug, ActionBuilder)]
-pub struct MoveToChest {
-    // The movement speed of the actor.
-    speed: f32,
-}
-
-/// Closest distance to a chest to be able to guard from it.
-const MAX_DISTANCE: f32 = 32.;
-#[allow(clippy::complexity)]
-pub fn move_to_chest_action_system(
-    time: Res<Time>,
-    // Find all chests
-    chests: Query<&Position, With<Chest>>,
-    // We use Without to make disjoint queries.
-    mut enemies: Query<
-        (&mut Position, &mut crate::core::play::Action),
-        (With<Enemy>, Without<Chest>),
-    >,
-    // A query on all current MoveToChest actions.
-    mut action_query: Query<(&Actor, &mut ActionState, &MoveToChest, &ActionSpan)>,
-) {
-    // Loop through all actions, just like you'd loop over all entities in any other query.
-    for (actor, mut action_state, move_to, span) in &mut action_query {
-        let _guard = span.span().enter();
-
-        // Different behavior depending on action state.
-        match *action_state {
-            // Action was just requested; it hasn't been seen before.
-            ActionState::Requested => {
-                debug!("🔥 Let's go find some chest!");
-                // We don't really need any initialization code here, since the queries are cheap enough.
-                *action_state = ActionState::Executing;
-            }
-            ActionState::Executing => {
-                // Look up the actor's position.
-                let actor_position = enemies.get_mut(actor.0).expect("actor has no position");
-                let (mut actor_position, mut actor_action) = actor_position;
-
-                // Look up the chest closest to them.
-                let closest_chest = find_closest_target::<Chest>(&chests, &actor_position);
-
-                // Find how far we are from it.
-                let delta = closest_chest.position - actor_position.position;
-
-                let distance = delta.length();
-
-                trace!("Distance: {}", distance);
-
-                if distance > MAX_DISTANCE {
-                    // We're still too far, take a step toward it!
-
-                    trace!("Stepping closer.");
-
-                    // How far can we travel during this frame?
-                    let step_size = time.delta_seconds() * move_to.speed;
-                    // Travel towards the chest-source position, but make sure to not overstep it.
-                    let step = delta.normalize() * step_size.min(distance);
-
-                    // Move the actor.
-                    actor_position.position += step;
-
-                    // Action
-                    *actor_action = crate::core::play::Action(Act::Walk);
-                } else {
-                    // We're within the required distance! We can declare success.
-
-                    debug!("🔥 We got there!");
-
-                    // The action will be cleaned up automatically.
-                    *action_state = ActionState::Success;
-
-                    // Action
-                    *actor_action = crate::core::play::Action(Act::Idle);
-                }
-            }
-            ActionState::Cancelled => {
-                // Always treat cancellations, or we might keep doing this forever!
-                // You don't need to terminate immediately, by the way, this is only a flag that
-                // the cancellation has been requested. If the actor is balancing on a tightrope,
-                // for instance, you may let them walk off before ending the action.
-                *action_state = ActionState::Failure;
-            }
-            _ => {}
-        }
-    }
-}
-
-/// A simple action: the actor's guard shall decrease, but only if they are near a chest.
 #[derive(Clone, Component, Debug, ActionBuilder)]
 pub struct LookAround {
     per_second: f32,
@@ -204,9 +117,7 @@ pub fn get_thinker() -> ThinkerBuilder {
     let move_and_guard = Steps::build()
         .label("MoveAndGuard")
         // ...move to the chest...
-        .step(MoveToChest {
-            speed: MOVEMENT_SPEED,
-        })
+        .step(MoveToNearest::<Chest>::new(MOVEMENT_SPEED))
         // ...and then guard.
         .step(LookAround { per_second: 25.0 })
         .step(MoveToNearest::<Grave>::new(MOVEMENT_SPEED))
@@ -264,7 +175,7 @@ fn find_closest_target<T: Component + std::fmt::Debug + Clone>(
 #[allow(clippy::type_complexity)]
 pub fn move_to_nearest_system<T: Component + std::fmt::Debug + Clone>(
     time: Res<Time>,
-    graves: Query<&Position, With<T>>,
+    targets: Query<&Position, With<T>>,
     mut enemies: Query<
         (&mut Position, &mut crate::core::play::Action),
         (With<HasThinker>, Without<T>),
@@ -286,7 +197,7 @@ pub fn move_to_nearest_system<T: Component + std::fmt::Debug + Clone>(
                 let (mut actor_position, mut actor_action) = actor_position;
 
                 // Look up the chest closest to them.
-                let closest_chest = find_closest_target::<T>(&graves, &actor_position);
+                let closest_chest = find_closest_target::<T>(&targets, &actor_position);
 
                 // Find how far we are from it.
                 let delta = closest_chest.position - actor_position.position;
