@@ -57,7 +57,6 @@ pub fn load_timeline_from_yaml(file_path: &str) -> Result<CharacterTimelines> {
 }
 
 pub fn init_timeline(mut commands: Commands, mut character_timelines: ResMut<CharacterTimelines>) {
-    println!("🔥 init_timeline");
     let timelines = load_timeline_from_yaml("assets/timeline.yml").expect("timeline.yml");
     *character_timelines = timelines;
 

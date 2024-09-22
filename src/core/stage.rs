@@ -60,7 +60,6 @@ pub fn load_stage_from_yaml(file_path: &str) -> Result<Stage> {
 }
 
 pub fn init_stage(mut commands: Commands) {
-    println!("🔥 init_stage");
     let stage = load_stage_from_yaml("assets/stage_1-1.yml").expect("stage_1-1.yml");
     commands.insert_resource(GameStage(stage));
 }

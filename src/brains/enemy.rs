@@ -77,7 +77,6 @@ pub fn init_enemy(
             let enemy_bundle =
                 build_enemy(&asset_server, &mut atlas_layouts, &mut library, ani.clone());
 
-            println!("🔥 enemy_id");
             let enemy_id = commands
                 .spawn(enemy_bundle)
                 .insert(CharacterId(enemy.character_id.0.clone()))
@@ -99,7 +98,6 @@ pub fn init_enemy(
                 ))
                 .id();
 
-            println!("🔥 commands");
             commands
                 .spawn((
                     Statbar::<Health> {
