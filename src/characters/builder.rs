@@ -1,8 +1,7 @@
 use std::fs;
 
 use crate::{
-    brains::actions::Action,
-    characters::bar::Health,
+    characters::{actions::Action, bar::Health},
     core::{
         layer::{SpriteLayer, YSort},
         library::{build_library, Ani},

@@ -2,10 +2,8 @@ use bevy::prelude::*;
 use bevy::utils::tracing::{debug, trace};
 use big_brain::prelude::*;
 
-use crate::brains::actions::{Act, Action};
-use crate::core::chest::Chest;
-use crate::core::grave::Grave;
-use crate::core::position::Position;
+use crate::characters::actions::{Act, Action};
+use crate::core::{chest::Chest, grave::Grave, position::Position};
 
 const MAX_DISTANCE: f32 = 32.;
 
@@ -152,10 +150,7 @@ fn find_closest_target<T: Component + std::fmt::Debug + Clone>(
 pub fn move_to_nearest_system<T: Component + std::fmt::Debug + Clone>(
     time: Res<Time>,
     targets: Query<&Position, With<T>>,
-    mut enemies: Query<
-        (&mut Position, &mut crate::brains::actions::Action),
-        (With<HasThinker>, Without<T>),
-    >,
+    mut enemies: Query<(&mut Position, &mut Action), (With<HasThinker>, Without<T>)>,
     mut action_query: Query<(&Actor, &mut ActionState, &MoveToNearest<T>, &ActionSpan)>,
 ) {
     for (actor, mut action_state, move_to, span) in &mut action_query {

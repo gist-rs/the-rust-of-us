@@ -11,12 +11,11 @@ use bevy::{
 use bevy_spritesheet_animation::prelude::*;
 use bevy_stat_bars::RegisterStatbarSubject;
 use big_brain::{BigBrainPlugin, BigBrainSet};
-use brains::{
-    enemy::{init_character, update_character},
-    human::{init_human, update_human},
-    skeleton::*,
+use brains::skeleton::*;
+use characters::{
+    bar::{adjust_stats, Health},
+    builder::{init_character, update_character},
 };
-use characters::bar::{adjust_stats, Health};
 use core::{
     chest::{update_chest, Chest, Chests},
     gate::{update_gate, Gates},

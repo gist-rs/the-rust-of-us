@@ -4,7 +4,7 @@ use serde::Deserialize;
 use serde_yaml::from_str;
 use std::{fs, slice::Iter};
 
-use crate::{brains::actions::Act, timeline::init::LookDirection};
+use crate::{characters::actions::Act, timeline::init::LookDirection};
 
 use super::setup::CharacterId;
 
