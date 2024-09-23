@@ -3,7 +3,7 @@ name: "hello world!"
 humans:
   - type: man
     character_id: man_0
-    position: e5
+    position: f2
     look_direction: left
     act: idle
     attack: 2

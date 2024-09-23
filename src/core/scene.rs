@@ -10,7 +10,8 @@ use super::{
     grave::Grave,
     layer::{SpriteLayer, YSort},
     library::{build_library, Ani},
-    map::{get_position_from_map, PathCost},
+    map::{get_position_from_map, MapPosition, PathCost},
+    point::{Entrance, Exit},
     position::Position,
 };
 
@@ -40,6 +41,8 @@ pub fn build_scene(
     map: GameMap,
     mut chests: ResMut<Chests>,
     mut gates: ResMut<Gates>,
+    entrance: MapPosition,
+    exit: MapPosition,
 ) {
     // Spawn the background
     let transform = Transform::from_scale(Vec3::splat(11.5));
@@ -198,6 +201,22 @@ pub fn build_scene(
             }
         }
     }
+
+    // Add entrance, exit
+    let position = get_position_from_map(entrance.x, entrance.y, None);
+    commands.spawn((
+        Entrance,
+        Position {
+            position: Vec2::new(position.translation.x, position.translation.y),
+        },
+    ));
+    let position = get_position_from_map(exit.x, exit.y, None);
+    commands.spawn((
+        Exit,
+        Position {
+            position: Vec2::new(position.translation.x, position.translation.y),
+        },
+    ));
 }
 
 #[derive(Bundle)]

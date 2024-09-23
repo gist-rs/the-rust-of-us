@@ -136,7 +136,7 @@ pub fn init_character<T>(
                         Position {
                             position: Vec2::new(position.translation.x, position.translation.y),
                         },
-                        get_thinker(),
+                        get_thinker::<T>(),
                         Health::new_full(100.0),
                         Statbar::<Health> {
                             color: Color::from(bevy::color::palettes::css::YELLOW),

@@ -5,6 +5,7 @@ pub mod layer;
 pub mod library;
 pub mod map;
 pub mod menu;
+pub mod point;
 pub mod position;
 pub mod scene;
 pub mod setup;

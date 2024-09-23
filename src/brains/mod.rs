@@ -1,1 +1,1 @@
-pub mod skeleton;
+pub mod thinker;

@@ -3,6 +3,8 @@ use bevy::utils::tracing::{debug, trace};
 use big_brain::prelude::*;
 
 use crate::characters::actions::{Act, Action};
+use crate::core::point::Exit;
+use crate::core::stage::{CharacterInfo, Enemy, Human, Npc};
 use crate::core::{chest::Chest, grave::Grave, position::Position};
 use std::fmt::Debug;
 
@@ -103,17 +105,40 @@ pub fn guarding_scorer_system(
 
 const MOVEMENT_SPEED: f32 = 32.;
 
-pub fn get_thinker() -> ThinkerBuilder {
-    let move_and_guard = Steps::build()
-        .label("MoveAndGuard")
-        .step(MoveToNearest::<Chest>::new(MOVEMENT_SPEED))
-        .step(LookAround { per_second: 25.0 })
-        .step(MoveToNearest::<Grave>::new(MOVEMENT_SPEED));
+pub fn get_thinker<T>() -> ThinkerBuilder
+where
+    T: CharacterInfo + Clone + Debug + 'static,
+{
+    match std::any::TypeId::of::<T>() {
+        id if id == std::any::TypeId::of::<Human>() => {
+            let move_and_guard = Steps::build()
+                .label("MoveAndGuard")
+                .step(MoveToNearest::<Chest>::new(MOVEMENT_SPEED))
+                .step(LookAround { per_second: 25.0 })
+                .step(MoveToNearest::<Exit>::new(MOVEMENT_SPEED));
 
-    Thinker::build()
-        .label("GuardingThinker")
-        .picker(FirstToScore { threshold: 0.8 })
-        .when(Duty, move_and_guard)
+            Thinker::build()
+                .label("GuardingThinker")
+                .picker(FirstToScore { threshold: 0.8 })
+                .when(Duty, move_and_guard)
+        }
+        id if id == std::any::TypeId::of::<Enemy>() => {
+            let move_and_guard = Steps::build()
+                .label("MoveAndGuard")
+                .step(MoveToNearest::<Chest>::new(MOVEMENT_SPEED))
+                .step(LookAround { per_second: 25.0 })
+                .step(MoveToNearest::<Grave>::new(MOVEMENT_SPEED));
+
+            Thinker::build()
+                .label("GuardingThinker")
+                .picker(FirstToScore { threshold: 0.8 })
+                .when(Duty, move_and_guard)
+        }
+        id if id == std::any::TypeId::of::<Npc>() => {
+            todo!()
+        }
+        _ => todo!(),
+    }
 }
 
 #[derive(Debug, Clone, Component, ActionBuilder)]
@@ -151,9 +176,13 @@ fn find_closest_target<T: Component + Debug + Clone>(
 pub fn move_to_nearest_system<T: Component + Debug + Clone>(
     time: Res<Time>,
     targets: Query<&Position, With<T>>,
-    mut enemies: Query<(&mut Position, &mut Action), (With<HasThinker>, Without<T>)>,
+    mut characters: Query<(&mut Position, &mut Action), (With<HasThinker>, Without<T>)>,
     mut action_query: Query<(&Actor, &mut ActionState, &MoveToNearest<T>, &ActionSpan)>,
 ) {
+    if targets.is_empty() {
+        return;
+    };
+
     for (actor, mut action_state, move_to, span) in &mut action_query {
         let _guard = span.span().enter();
 
@@ -165,7 +194,7 @@ pub fn move_to_nearest_system<T: Component + Debug + Clone>(
             }
             ActionState::Executing => {
                 // Look up the actor's position.
-                let actor_position = enemies.get_mut(actor.0).expect("actor has no position");
+                let actor_position = characters.get_mut(actor.0).expect("actor has no position");
                 let (mut actor_position, mut actor_action) = actor_position;
 
                 // Look up the chest closest to them.

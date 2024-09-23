@@ -11,7 +11,7 @@ use bevy::{
 use bevy_spritesheet_animation::prelude::*;
 use bevy_stat_bars::RegisterStatbarSubject;
 use big_brain::{BigBrainPlugin, BigBrainSet};
-use brains::skeleton::*;
+use brains::thinker::*;
 use characters::{
     bar::{adjust_stats, Health},
     builder::{init_character, update_character},
@@ -22,6 +22,7 @@ use core::{
     grave::Grave,
     layer::{y_sort, SpriteLayer},
     menu::button_system,
+    point::Exit,
     scene::MainPath,
     setup::{setup_scene, Walkable},
     stage::{init_stage, Enemy, GameStage, Human},
@@ -96,6 +97,7 @@ fn main() {
                 guard_action_system::<Chest>,
                 move_to_nearest_system::<Chest>,
                 move_to_nearest_system::<Grave>,
+                move_to_nearest_system::<Exit>,
             )
                 .in_set(BigBrainSet::Actions),
         )

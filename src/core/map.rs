@@ -50,7 +50,25 @@ pub fn find_path(
     Ok(PathCost { path, cost })
 }
 
-pub fn load_map_from_csv(file_path: &str) -> Result<(Vec<Vec<bool>>, PathCost, GameMap)> {
+#[derive(Default, Debug, Clone)]
+pub struct MapPosition {
+    pub x: usize,
+    pub y: usize,
+}
+
+impl MapPosition {
+    fn new(x: usize, y: usize) -> Self {
+        Self { x, y }
+    }
+
+    fn to_tuple(&self) -> (usize, usize) {
+        (self.x, self.y)
+    }
+}
+
+pub fn load_map_from_csv(
+    file_path: &str,
+) -> Result<(Vec<Vec<bool>>, MapPosition, MapPosition, PathCost, GameMap)> {
     // Read the CSV file
     let file_content = fs::read_to_string(file_path)?;
     let mut rdr = Reader::from_reader(file_content.as_bytes());
@@ -58,8 +76,8 @@ pub fn load_map_from_csv(file_path: &str) -> Result<(Vec<Vec<bool>>, PathCost, G
     // Initialize the grid
     let mut walkables = vec![vec![false; 8]; 8];
     let mut map = vec![vec![String::new(); 8]; 8];
-    let mut start = (0, 0);
-    let mut goal = (0, 0);
+    let mut start = MapPosition::default();
+    let mut goal = MapPosition::default();
 
     // Parse the CSV data and set obstacles
     for (y, result) in rdr.records().enumerate() {
@@ -70,12 +88,12 @@ pub fn load_map_from_csv(file_path: &str) -> Result<(Vec<Vec<bool>>, PathCost, G
             match cell {
                 "_" => walkables[inverted_y][x] = true,
                 "▶️" => {
-                    start = (x, inverted_y);
+                    start = MapPosition::new(x, inverted_y);
                     println!("start:{:?}", start);
                     walkables[inverted_y][x] = true;
                 }
                 "⏹" => {
-                    goal = (x, inverted_y);
+                    goal = MapPosition::new(x, inverted_y);
                     println!("goal:{:?}", goal);
                     walkables[inverted_y][x] = true;
                 }
@@ -87,10 +105,14 @@ pub fn load_map_from_csv(file_path: &str) -> Result<(Vec<Vec<bool>>, PathCost, G
     }
 
     // Find the path
-    match find_path(&walkables, start, goal) {
+    match find_path(
+        &walkables,
+        start.clone().to_tuple(),
+        goal.clone().to_tuple(),
+    ) {
         Ok(path_cost) => {
             println!("{:?}", path_cost);
-            Ok((walkables, path_cost, GameMap(map)))
+            Ok((walkables, start, goal, path_cost, GameMap(map)))
         }
         Err(error) => bail!(error),
     }

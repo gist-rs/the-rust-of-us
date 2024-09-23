@@ -77,7 +77,7 @@ pub fn setup_scene(
     commands.spawn(Camera2dBundle::default());
 
     // Load map
-    let (_walkables, _path_cost, map) = load_map_from_csv("assets/map.csv").unwrap();
+    let (_walkables, start, goal, _path_cost, map) = load_map_from_csv("assets/map.csv").unwrap();
 
     // TODO: move to stage main mission.
     // // Update walkables
@@ -95,5 +95,7 @@ pub fn setup_scene(
         map,
         chests,
         gates,
+        start,
+        goal,
     );
 }
