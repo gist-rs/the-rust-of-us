@@ -4,6 +4,7 @@ use big_brain::prelude::*;
 
 use crate::characters::actions::{Act, Action};
 use crate::core::{chest::Chest, grave::Grave, position::Position};
+use std::fmt::Debug;
 
 const MAX_DISTANCE: f32 = 32.;
 
@@ -38,10 +39,10 @@ pub struct LookAround {
 }
 
 #[allow(clippy::type_complexity)]
-pub fn guard_action_system(
+pub fn guard_action_system<T: Component + Debug + Clone>(
     time: Res<Time>,
-    mut guards: Query<(&Position, &mut Guard), Without<Chest>>,
-    chests: Query<&Position, With<Chest>>,
+    mut guards: Query<(&Position, &mut Guard), Without<T>>,
+    targets: Query<&Position, With<T>>,
     mut query: Query<(&Actor, &mut ActionState, &LookAround, &ActionSpan)>,
 ) {
     // Loop through all actions, just like you'd loop over all entities in any other query.
@@ -59,7 +60,7 @@ pub fn guard_action_system(
             }
             ActionState::Executing => {
                 // TODO: can be no chest
-                let closest_chest = find_closest_target::<Chest>(&chests, actor_position);
+                let closest_chest = find_closest_target::<T>(&targets, actor_position);
                 let distance = (closest_chest.position - actor_position.position).length();
                 if distance < MAX_DISTANCE {
                     trace!("Guarding!");
@@ -117,13 +118,13 @@ pub fn get_thinker() -> ThinkerBuilder {
 
 #[derive(Debug, Clone, Component, ActionBuilder)]
 #[action_label = "RallyPoint"]
-pub struct MoveToNearest<T: Component + std::fmt::Debug + Clone> {
+pub struct MoveToNearest<T: Component + Debug + Clone> {
     // We use a PhantomData to store the type of the component we're moving to.
     _marker: std::marker::PhantomData<T>,
     speed: f32,
 }
 
-impl<T: Component + std::fmt::Debug + Clone> MoveToNearest<T> {
+impl<T: Component + Debug + Clone> MoveToNearest<T> {
     pub fn new(speed: f32) -> Self {
         Self {
             _marker: std::marker::PhantomData,
@@ -132,7 +133,7 @@ impl<T: Component + std::fmt::Debug + Clone> MoveToNearest<T> {
     }
 }
 
-fn find_closest_target<T: Component + std::fmt::Debug + Clone>(
+fn find_closest_target<T: Component + Debug + Clone>(
     targets: &Query<&Position, With<T>>,
     actor_position: &Position,
 ) -> Position {
@@ -147,7 +148,7 @@ fn find_closest_target<T: Component + std::fmt::Debug + Clone>(
 }
 
 #[allow(clippy::type_complexity)]
-pub fn move_to_nearest_system<T: Component + std::fmt::Debug + Clone>(
+pub fn move_to_nearest_system<T: Component + Debug + Clone>(
     time: Res<Time>,
     targets: Query<&Position, With<T>>,
     mut enemies: Query<(&mut Position, &mut Action), (With<HasThinker>, Without<T>)>,

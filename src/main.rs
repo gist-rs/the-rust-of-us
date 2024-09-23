@@ -93,7 +93,7 @@ fn main() {
         .add_systems(
             PreUpdate,
             (
-                guard_action_system,
+                guard_action_system::<Chest>,
                 move_to_nearest_system::<Chest>,
                 move_to_nearest_system::<Grave>,
             )
