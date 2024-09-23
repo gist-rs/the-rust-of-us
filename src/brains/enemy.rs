@@ -171,6 +171,7 @@ pub fn init_character<T>(
     }
 }
 
+#[allow(clippy::complexity)]
 pub fn update_character<T>(
     game_stage: Res<GameStage>,
     mut characters: Query<
