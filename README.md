@@ -62,7 +62,7 @@ sequenceDiagram
 - [x] A\* Pathfinding: https://github.com/nikhilhenry/astar.rs
 - [x] [big-brain] Utility AI library for the Bevy game engine: https://github.com/zkat/big-brain
 - [ ] [🍃 Bevy Tweening]: https://github.com/djeedai/bevy_tweening
-- [ ] [🎚️ Moonshine Behavior] Minimalistic state machine for Bevy game engine: https://github.com/Zeenobit/moonshine_behavior
+- [ ] [bevy-inspector-egui]: https://github.com/jakobhellermann/bevy-inspector-egui
 
 ## TBD
 
