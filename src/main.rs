@@ -72,7 +72,7 @@ fn main() {
                 setup_scene,
                 init_stage,
                 init_character::<Human>,
-                // init_character::<Enemy>,
+                init_character::<Enemy>,
                 // init_entities,
                 init_timeline,
             )
@@ -88,7 +88,7 @@ fn main() {
                 update_chest,
                 update_gate,
                 update_character::<Human>,
-                // update_character::<Enemy>,
+                update_character::<Enemy>,
             ),
         )
         .add_systems(
