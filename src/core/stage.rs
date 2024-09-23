@@ -2,11 +2,11 @@ use anyhow::*;
 use bevy::prelude::*;
 use serde::Deserialize;
 use serde_yaml::from_str;
-use std::fs;
+use std::{fs, slice::Iter};
 
-use crate::timeline::init::LookDirection;
+use crate::{brains::actions::Act, timeline::init::LookDirection};
 
-use super::{play::Act, setup::CharacterId};
+use super::setup::CharacterId;
 
 #[allow(unused)]
 #[cfg_attr(feature = "bevy", derive(Resource))]
@@ -14,15 +14,53 @@ use super::{play::Act, setup::CharacterId};
 pub struct Stage {
     pub id: String,
     pub name: String,
-    pub players: Vec<Player>,
+    pub humans: Vec<Human>,
     pub enemies: Vec<Enemy>,
     pub npcs: Vec<Npc>,
 }
 
+pub trait StageInfo {
+    fn get_characters_iter_by_type<T>(&self) -> Option<Iter<T>>
+    where
+        T: 'static;
+}
+
+impl StageInfo for Stage {
+    fn get_characters_iter_by_type<T>(&self) -> Option<Iter<T>>
+    where
+        T: 'static,
+    {
+        match std::any::TypeId::of::<T>() {
+            id if id == std::any::TypeId::of::<Human>() => {
+                let humans: &[T] = unsafe { std::mem::transmute(&self.humans[..]) };
+                Some(humans.iter())
+            }
+            id if id == std::any::TypeId::of::<Enemy>() => {
+                let enemies: &[T] = unsafe { std::mem::transmute(&self.enemies[..]) };
+                Some(enemies.iter())
+            }
+            id if id == std::any::TypeId::of::<Npc>() => {
+                let npcs: &[T] = unsafe { std::mem::transmute(&self.npcs[..]) };
+                Some(npcs.iter())
+            }
+            _ => None,
+        }
+    }
+}
+
+pub trait CharacterInfo: Component {
+    fn r#type(&self) -> &String;
+    fn character_id(&self) -> &CharacterId;
+    fn position(&self) -> &String;
+    fn look_direction(&self) -> &LookDirection;
+    fn act(&self) -> &Act;
+    fn get_clone(&self) -> Self;
+}
+
 #[allow(unused)]
 #[cfg_attr(feature = "bevy", derive(Component))]
-#[derive(Deserialize, Debug)]
-pub struct Player {
+#[derive(Deserialize, Clone, Debug)]
+pub struct Human {
     pub r#type: String,
     pub character_id: CharacterId,
     pub position: String,
@@ -33,6 +71,28 @@ pub struct Player {
     pub health: u32,
     pub tasks: Vec<String>,
     pub mindsets: Vec<String>,
+}
+
+impl CharacterInfo for Human {
+    fn r#type(&self) -> &String {
+        &self.r#type
+    }
+    fn character_id(&self) -> &CharacterId {
+        &self.character_id
+    }
+    fn position(&self) -> &String {
+        &self.position
+    }
+    fn look_direction(&self) -> &LookDirection {
+        &self.look_direction
+    }
+    fn act(&self) -> &Act {
+        &self.act
+    }
+
+    fn get_clone(&self) -> Self {
+        self.clone()
+    }
 }
 
 #[allow(unused)]
@@ -48,6 +108,28 @@ pub struct Enemy {
     pub defend: u32,
     pub health: u32,
     pub mindsets: Vec<String>,
+}
+
+impl CharacterInfo for Enemy {
+    fn r#type(&self) -> &String {
+        &self.r#type
+    }
+    fn character_id(&self) -> &CharacterId {
+        &self.character_id
+    }
+    fn position(&self) -> &String {
+        &self.position
+    }
+    fn look_direction(&self) -> &LookDirection {
+        &self.look_direction
+    }
+    fn act(&self) -> &Act {
+        &self.act
+    }
+
+    fn get_clone(&self) -> Self {
+        self.clone()
+    }
 }
 
 #[allow(unused)]

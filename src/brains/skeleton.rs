@@ -2,11 +2,10 @@ use bevy::prelude::*;
 use bevy::utils::tracing::{debug, trace};
 use big_brain::prelude::*;
 
+use crate::brains::actions::{Act, Action};
 use crate::core::chest::Chest;
 use crate::core::grave::Grave;
-use crate::core::play::Act;
 use crate::core::position::Position;
-use crate::core::stage::Enemy;
 
 const MAX_DISTANCE: f32 = 32.;
 
@@ -43,7 +42,7 @@ pub struct LookAround {
 #[allow(clippy::type_complexity)]
 pub fn guard_action_system(
     time: Res<Time>,
-    mut guards: Query<(&Position, &mut Guard), (With<Enemy>, Without<Chest>)>,
+    mut guards: Query<(&Position, &mut Guard), Without<Chest>>,
     chests: Query<&Position, With<Chest>>,
     mut query: Query<(&Actor, &mut ActionState, &LookAround, &ActionSpan)>,
 ) {
@@ -154,7 +153,7 @@ pub fn move_to_nearest_system<T: Component + std::fmt::Debug + Clone>(
     time: Res<Time>,
     targets: Query<&Position, With<T>>,
     mut enemies: Query<
-        (&mut Position, &mut crate::core::play::Action),
+        (&mut Position, &mut crate::brains::actions::Action),
         (With<HasThinker>, Without<T>),
     >,
     mut action_query: Query<(&Actor, &mut ActionState, &MoveToNearest<T>, &ActionSpan)>,
@@ -193,14 +192,14 @@ pub fn move_to_nearest_system<T: Component + std::fmt::Debug + Clone>(
                     actor_position.position += step;
 
                     // Action
-                    *actor_action = crate::core::play::Action(Act::Walk);
+                    *actor_action = Action(Act::Walk);
                 } else {
                     debug!("🔥 We got there!");
 
                     *action_state = ActionState::Success;
 
                     // Action
-                    *actor_action = crate::core::play::Action(Act::Idle);
+                    *actor_action = Action(Act::Idle);
                 }
             }
             ActionState::Cancelled => {

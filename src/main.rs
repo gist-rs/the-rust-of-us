@@ -12,23 +12,20 @@ use bevy_spritesheet_animation::prelude::*;
 use bevy_stat_bars::RegisterStatbarSubject;
 use big_brain::{BigBrainPlugin, BigBrainSet};
 use brains::{
-    enemy::{init_enemy, update_enemy},
+    enemy::{init_character, update_character},
+    human::{init_human, update_human},
     skeleton::*,
 };
-use characters::{
-    bar::{adjust_stats, Health},
-    r#move::{move_character, CharacterPath},
-};
+use characters::bar::{adjust_stats, Health};
 use core::{
     chest::{update_chest, Chest, Chests},
     gate::{update_gate, Gates},
     grave::Grave,
     layer::{y_sort, SpriteLayer},
     menu::button_system,
-    play::schedule_timeline_actions,
     scene::MainPath,
     setup::{setup_scene, Walkable},
-    stage::{init_stage, GameStage},
+    stage::{init_stage, Enemy, GameStage, Human},
 };
 use extol_sprite_layer::SpriteLayerPlugin;
 use timeline::{
@@ -67,7 +64,7 @@ fn main() {
         .init_resource::<TimelineActions>()
         .init_resource::<CharacterTimelines>()
         .init_resource::<MainPath>()
-        .init_resource::<CharacterPath>()
+        // .init_resource::<CharacterPath>()
         .init_resource::<Walkable>()
         .init_resource::<GameStage>()
         .add_systems(
@@ -75,7 +72,9 @@ fn main() {
             ((
                 setup_scene,
                 init_stage,
-                init_enemy,
+                init_human,
+                // init_character::<Human>,
+                // init_character::<Enemy>,
                 // init_entities,
                 init_timeline,
             )
@@ -88,11 +87,12 @@ fn main() {
                 adjust_stats,
                 button_system,
                 guard_system,
-                schedule_timeline_actions,
-                move_character,
+                // schedule_timeline_actions,
                 update_chest,
                 update_gate,
-                update_enemy,
+                update_human,
+                // update_character::<Human>,
+                // update_character::<Enemy>,
             ),
         )
         .add_systems(

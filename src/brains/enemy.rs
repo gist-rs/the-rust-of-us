@@ -1,42 +1,63 @@
 use std::fs;
 
-use bevy::prelude::*;
-use bevy_spritesheet_animation::prelude::*;
-use bevy_stat_bars::{Statbar, StatbarObserveEntity};
-
-#[derive(Bundle)]
-struct EnemyBundle {
-    sprite_bundle: SpriteBundle,
-    texture_atlas: TextureAtlas,
-    spritesheet_animation: SpritesheetAnimation,
-    sprite_layer: SpriteLayer,
-    marker: Enemy,
-    ysort: YSort,
-}
-
 use crate::{
+    brains::actions::Action,
     characters::bar::Health,
     core::{
         layer::{SpriteLayer, YSort},
         library::{build_library, Ani},
         map::{convert_map_to_screen, get_position_from_map},
-        play::Action,
         position::Position,
         setup::CharacterId,
-        stage::{Enemy, GameStage},
+        stage::{CharacterInfo, GameStage, Human, StageInfo},
     },
     get_thinker,
     timeline::init::LookDirection,
     Guard,
 };
+use bevy::prelude::*;
+use bevy_spritesheet_animation::prelude::*;
+use bevy_stat_bars::{Statbar, StatbarObserveEntity};
+use std::fmt::Debug;
 
-fn build_enemy(
+use super::actions::Act;
+
+#[derive(Bundle)]
+struct CharacterBundle<T: Component> {
+    sprite_bundle: SpriteBundle,
+    texture_atlas: TextureAtlas,
+    spritesheet_animation: SpritesheetAnimation,
+    sprite_layer: SpriteLayer,
+    marker: T,
+    ysort: YSort,
+}
+
+#[derive(Bundle)]
+struct HumanBundle {
+    sprite_bundle: SpriteBundle,
+    texture_atlas: TextureAtlas,
+    spritesheet_animation: SpritesheetAnimation,
+    sprite_layer: SpriteLayer,
+    marker: Human,
+    ysort: YSort,
+}
+
+#[derive(Component)]
+pub struct CharacterMarker;
+
+fn get_animation_name(character_id: CharacterId, act: Act) -> String {
+    let subject = character_id.0.split('_').next().expect("subject");
+
+    format!("{subject}_{act}")
+}
+
+fn build_character<T: CharacterInfo>(
     asset_server: &Res<AssetServer>,
     atlas_layouts: &mut ResMut<Assets<TextureAtlasLayout>>,
     library: &mut ResMut<AnimationLibrary>,
     ani: Ani,
-    enemy_stage_info: &Enemy,
-) -> EnemyBundle {
+    character_info: T,
+) -> CharacterBundle<T> {
     let clip_fps = 30;
 
     let libs = build_library(atlas_layouts, library, &ani, clip_fps);
@@ -44,15 +65,17 @@ fn build_enemy(
     let texture_path = ani.texture_path.clone();
     let texture = asset_server.load(texture_path);
 
-    let at = convert_map_to_screen(enemy_stage_info.position.clone()).expect("Valid position");
+    let at = convert_map_to_screen(character_info.position().clone()).expect("Valid position");
     let position = get_position_from_map(at.0, at.1, None);
 
-    let is_flip_x = match enemy_stage_info.look_direction {
+    let is_flip_x = match character_info.look_direction() {
         LookDirection::Left => true,
         LookDirection::Right => false,
     };
 
-    EnemyBundle {
+    let animation_name = get_animation_name(character_info.character_id().to_owned(), Act::Idle);
+
+    CharacterBundle {
         sprite_bundle: SpriteBundle {
             texture,
             sprite: Sprite {
@@ -68,86 +91,89 @@ fn build_enemy(
             ..default()
         },
         spritesheet_animation: SpritesheetAnimation::from_id(
-            library.animation_with_name("skeleton_idle").unwrap(),
+            library.animation_with_name(animation_name).unwrap(),
         ),
         sprite_layer: SpriteLayer::Ground,
-        marker: enemy_stage_info.clone(),
+        marker: character_info.get_clone(),
         ysort: YSort(0.0),
     }
 }
 
-pub fn init_enemy(
+pub fn init_character<T>(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     mut library: ResMut<AnimationLibrary>,
     game_stage: Res<GameStage>,
-) {
+) where
+    T: CharacterInfo + Clone + Debug + 'static,
+{
     let char_json = fs::read_to_string("assets/char.json").expect("Unable to read file");
     let characters: Vec<Ani> = serde_json::from_str(&char_json).expect("Unable to parse JSON");
     println!("characters:{:?}", characters);
-    let stage = &game_stage.0;
-    // println!("stage.enemies:{:#?}", stage.enemies);
 
-    for enemy in stage.enemies.iter() {
-        println!("🔥 enemy:{:?}", enemy);
-        if let Some(ani) = characters.iter().find(|&c| c.r#type == enemy.r#type) {
-            let at = convert_map_to_screen(enemy.position.clone()).expect("Valid position");
-            let position = get_position_from_map(at.0, at.1, None);
+    if let Some(character_iter) = game_stage.0.get_characters_iter_by_type::<T>() {
+        for character in character_iter {
+            println!("🔥 character:{:?}", *character);
+            if let Some(ani) = characters.iter().find(|&c| c.r#type == *character.r#type()) {
+                let at =
+                    convert_map_to_screen(character.position().clone()).expect("Valid position");
+                let position = get_position_from_map(at.0, at.1, None);
 
-            let enemy_bundle = build_enemy(
-                &asset_server,
-                &mut atlas_layouts,
-                &mut library,
-                ani.clone(),
-                enemy,
-            );
+                let character_bundle = build_character::<T>(
+                    &asset_server,
+                    &mut atlas_layouts,
+                    &mut library,
+                    ani.clone(),
+                    character.clone(),
+                );
 
-            let enemy_id = commands
-                .spawn(enemy_bundle)
-                .insert(CharacterId(enemy.character_id.0.clone()))
-                .insert((
-                    Action(enemy.act),
-                    Guard::new(75.0, 10.0),
-                    Position {
-                        position: Vec2::new(position.translation.x, position.translation.y),
-                    },
-                    get_thinker(),
-                    Health::new_full(100.0),
-                    Statbar::<Health> {
-                        color: Color::from(bevy::color::palettes::css::YELLOW),
-                        empty_color: Color::from(bevy::color::palettes::css::BLACK),
-                        length: 32.0,
-                        thickness: 6.0,
-                        displacement: 40. * Vec2::Y,
+                let character_id = commands
+                    .spawn(character_bundle)
+                    .insert(CharacterId(character.character_id().0.clone()))
+                    .insert((
+                        Action(*character.act()),
+                        Guard::new(75.0, 10.0),
+                        Position {
+                            position: Vec2::new(position.translation.x, position.translation.y),
+                        },
+                        get_thinker(),
+                        Health::new_full(100.0),
+                        Statbar::<Health> {
+                            color: Color::from(bevy::color::palettes::css::YELLOW),
+                            empty_color: Color::from(bevy::color::palettes::css::BLACK),
+                            length: 32.0,
+                            thickness: 6.0,
+                            displacement: 40. * Vec2::Y,
+                            ..Default::default()
+                        },
+                        CharacterMarker,
+                    ))
+                    .id();
+
+                commands
+                    .spawn((
+                        Statbar::<Health> {
+                            color: Color::WHITE,
+                            empty_color: Color::BLACK,
+                            length: 500.0,
+                            thickness: 50.0,
+                            ..Default::default()
+                        },
+                        StatbarObserveEntity(character_id),
+                    ))
+                    .insert(SpatialBundle {
+                        transform: Transform::from_translation(-200. * Vec3::Y),
                         ..Default::default()
-                    },
-                ))
-                .id();
-
-            commands
-                .spawn((
-                    Statbar::<Health> {
-                        color: Color::WHITE,
-                        empty_color: Color::BLACK,
-                        length: 500.0,
-                        thickness: 50.0,
-                        ..Default::default()
-                    },
-                    StatbarObserveEntity(enemy_id),
-                ))
-                .insert(SpatialBundle {
-                    transform: Transform::from_translation(-200. * Vec3::Y),
-                    ..Default::default()
-                });
+                    });
+            }
         }
     }
 }
 
-#[allow(clippy::complexity)]
-pub fn update_enemy(
+pub fn update_character<T>(
     game_stage: Res<GameStage>,
-    mut enemies: Query<
+    mut characters: Query<
         (
             &CharacterId,
             &mut Position,
@@ -156,36 +182,41 @@ pub fn update_enemy(
             &mut SpritesheetAnimation,
             &mut Action,
         ),
-        With<Enemy>,
+        With<CharacterMarker>,
     >,
     library: Res<AnimationLibrary>,
-) {
-    for enemy in game_stage.0.enemies.iter() {
-        for (
-            character_id,
-            enemy_position,
-            mut enemy_transform,
-            mut sprite,
-            mut animation,
-            action,
-        ) in enemies.iter_mut()
-        {
-            if enemy.character_id == *character_id {
-                // Look direction
-                sprite.flip_x = enemy_transform.translation.x > enemy_position.position.x;
+) where
+    T: CharacterInfo + 'static,
+{
+    if let Some(character_iter) = game_stage.0.get_characters_iter_by_type::<T>() {
+        for character in character_iter {
+            for (
+                character_id,
+                character_position,
+                mut character_transform,
+                mut sprite,
+                mut animation,
+                action,
+            ) in characters.iter_mut()
+            {
+                if character.character_id() == character_id {
+                    // Look direction
+                    sprite.flip_x =
+                        character_transform.translation.x > character_position.position.x;
 
-                // Position
-                enemy_transform.translation.x = enemy_position.position.x;
-                enemy_transform.translation.y = enemy_position.position.y;
+                    // Position
+                    character_transform.translation.x = character_position.position.x;
+                    character_transform.translation.y = character_position.position.y;
 
-                // Action
-                let subject = character_id.0.split('_').next().expect("subject");
-                let act = action.0;
-                let animation_name = format!("{subject}_{act}");
+                    // Action
+                    let subject = character_id.0.split('_').next().expect("subject");
+                    let act = action.0;
+                    let animation_name = format!("{subject}_{act}");
 
-                if let Some(animation_id) = library.animation_with_name(animation_name) {
-                    if animation.animation_id != animation_id {
-                        animation.switch(animation_id);
+                    if let Some(animation_id) = library.animation_with_name(animation_name) {
+                        if animation.animation_id != animation_id {
+                            animation.switch(animation_id);
+                        }
                     }
                 }
             }

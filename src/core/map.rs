@@ -14,9 +14,10 @@ pub struct PathCost {
     pub cost: usize,
 }
 
+// TOFIX
+#[allow(clippy::ptr_arg)]
 fn successors(
-    // TOFIX
-    #[allow(clippy::ptr_arg)] walkables: &Vec<Vec<bool>>,
+    walkables: &Vec<Vec<bool>>,
     &(x, y): &(usize, usize),
 ) -> Vec<((usize, usize), usize)> {
     vec![(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
