@@ -64,7 +64,6 @@ fn main() {
         .init_resource::<TimelineActions>()
         .init_resource::<CharacterTimelines>()
         .init_resource::<MainPath>()
-        // .init_resource::<CharacterPath>()
         .init_resource::<Walkable>()
         .init_resource::<GameStage>()
         .add_systems(
@@ -72,8 +71,7 @@ fn main() {
             ((
                 setup_scene,
                 init_stage,
-                init_human,
-                // init_character::<Human>,
+                init_character::<Human>,
                 // init_character::<Enemy>,
                 // init_entities,
                 init_timeline,
@@ -87,11 +85,9 @@ fn main() {
                 adjust_stats,
                 button_system,
                 guard_system,
-                // schedule_timeline_actions,
                 update_chest,
                 update_gate,
-                update_human,
-                // update_character::<Human>,
+                update_character::<Human>,
                 // update_character::<Enemy>,
             ),
         )
