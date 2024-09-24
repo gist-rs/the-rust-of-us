@@ -67,6 +67,7 @@ impl MapPosition {
     }
 }
 
+#[allow(clippy::type_complexity)]
 pub fn load_map_from_csv(
     file_path: &str,
 ) -> Result<(Vec<Vec<bool>>, MapPosition, MapPosition, PathCost, GameMap)> {
@@ -156,7 +157,7 @@ impl Default for MapConfig {
 }
 
 pub fn get_position_from_map(x: usize, y: usize, map_config: Option<MapConfig>) -> Transform {
-    let map_config = map_config.unwrap_or_else(MapConfig::default);
+    let map_config = map_config.unwrap_or_default();
     let (offset_x, offset_y) = map_config.offset;
     Transform::from_xyz(
         map_config.cell_size as f32 * x as f32 - map_config.half_width + offset_x,
