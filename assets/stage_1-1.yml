@@ -14,7 +14,7 @@ humans:
     mindsets:
       - "when idle, do task"
       - "when no task, find exit"
-      - "when beside (<1 block) enemy, attack enemy"
+      - "when beside(<1 block) monster, attack monster"
       - "when lost, find unvisited place"
       - "when hurt, attack the attacker"
       - "when low(<50%) health and has potion, drink potion"

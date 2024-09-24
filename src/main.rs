@@ -26,7 +26,7 @@ use core::{
     point::Exit,
     scene::MainPath,
     setup::{setup_scene, Walkable},
-    stage::{init_stage, Enemy, GameStage, Human},
+    stage::{init_stage, GameStage, Human, Monster},
 };
 use extol_sprite_layer::SpriteLayerPlugin;
 
@@ -77,7 +77,7 @@ fn main() {
                 setup_scene,
                 init_stage,
                 init_character::<Human>,
-                init_character::<Enemy>,
+                init_character::<Monster>,
             )
                 .chain(),),
         )
@@ -91,7 +91,7 @@ fn main() {
                 update_chest,
                 update_gate,
                 update_character::<Human>,
-                update_character::<Enemy>,
+                update_character::<Monster>,
             ),
         )
         .add_systems(

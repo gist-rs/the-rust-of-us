@@ -15,7 +15,7 @@ pub struct Stage {
     pub id: String,
     pub name: String,
     pub humans: Vec<Human>,
-    pub enemies: Vec<Enemy>,
+    pub enemies: Vec<Monster>,
     pub npcs: Vec<Npc>,
 }
 
@@ -35,7 +35,7 @@ impl StageInfo for Stage {
                 let humans: &[T] = unsafe { std::mem::transmute(&self.humans[..]) };
                 Some(humans.iter())
             }
-            id if id == std::any::TypeId::of::<Enemy>() => {
+            id if id == std::any::TypeId::of::<Monster>() => {
                 let enemies: &[T] = unsafe { std::mem::transmute(&self.enemies[..]) };
                 Some(enemies.iter())
             }
@@ -98,7 +98,7 @@ impl CharacterInfo for Human {
 #[allow(unused)]
 #[cfg_attr(feature = "bevy", derive(Component))]
 #[derive(Deserialize, Clone, Debug)]
-pub struct Enemy {
+pub struct Monster {
     pub r#type: String,
     pub character_id: CharacterId,
     pub position: String,
@@ -110,7 +110,7 @@ pub struct Enemy {
     pub mindsets: Vec<String>,
 }
 
-impl CharacterInfo for Enemy {
+impl CharacterInfo for Monster {
     fn r#type(&self) -> &String {
         &self.r#type
     }

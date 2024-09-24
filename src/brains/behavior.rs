@@ -3,7 +3,7 @@ use serde::Deserialize;
 use strum_macros::{Display, EnumString};
 
 use crate::{
-    core::stage::{CharacterInfo, Enemy, Human, Npc},
+    core::stage::{CharacterInfo, Human, Monster, Npc},
     Guard,
 };
 
@@ -38,7 +38,7 @@ where
 {
     match std::any::TypeId::of::<T>() {
         id if id == std::any::TypeId::of::<Human>() => Guard::new(75.0, 10.0),
-        id if id == std::any::TypeId::of::<Enemy>() => Guard::new(75.0, 10.0),
+        id if id == std::any::TypeId::of::<Monster>() => Guard::new(75.0, 10.0),
         id if id == std::any::TypeId::of::<Npc>() => {
             todo!()
         }

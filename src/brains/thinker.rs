@@ -4,7 +4,7 @@ use big_brain::prelude::*;
 
 use crate::characters::actions::{Act, Action};
 use crate::core::point::Exit;
-use crate::core::stage::{CharacterInfo, Enemy, Human, Npc};
+use crate::core::stage::{CharacterInfo, Monster, Human, Npc};
 use crate::core::{chest::Chest, grave::Grave, position::Position};
 use std::fmt::Debug;
 
@@ -126,7 +126,7 @@ where
                 .picker(Highest)
                 .when(Duty, move_and_guard)
         }
-        id if id == std::any::TypeId::of::<Enemy>() => {
+        id if id == std::any::TypeId::of::<Monster>() => {
             let move_and_guard = Steps::build()
                 .label("MoveAndGuard")
                 .step(MoveToNearest::<Chest>::new(MOVEMENT_SPEED, MAX_DISTANCE))
