@@ -29,16 +29,25 @@ sequenceDiagram
      Note left of Server: <br>0,man_0,idle,entrance<br>1,man_0,walk,skeleton_0<br>2,man_0,attack,skeleton_0<br>3,skeleton_0,hurt<br>4,skeleton_0,attack<br>5,man_0,hurt<br>6,man_0,attack,skeleton_0<br>7,skeleton_0,die<br>8,man_0,walk,chest_0<br>9,man_0,open,chest_0<br>10,man_0,walk,exit<br>11,man_0,open,gate_1
 ```
 
+## PERKS
+
+- [ ] Boost health power.
+- [ ] Boost attack power.
+- [ ] Boost eye sight.
+
 ## TODO
 
-- [ ] Monster follow to attack when 2 block close.
-- [ ] Define `FIGHT`/`TRAVEL`/`LIVING` mode.
+- [x] Define `FOLLOW`/`FIGHT`/`TRAVEL`/`LIVE`/`AVOID` mode.
+- [ ] Offer ai to choose behavior and task. e.g. explore north, find treasure, avoid monster.
+- [ ] [FOLLOW] Monster follow to attack when 2 block close.
 - [ ] [FIGHT] Monster attack when 1 block close.
 - [ ] [FIGHT] Human hurt when attack hit.
 - [ ] [FIGHT] Human die when out of health.
 - [ ] [FIGHT] Human attack when 1 block close.
 - [ ] [FIGHT] Monster hurt when attack hit.
 - [ ] [FIGHT] Monster die when out of health.
+- [ ] Walkable with Pathfinding from a to b.
+- [ ] Walkable with adaptive Pathfinding from a to b.
 - [ ] Gen next stage map via llm.
 - [ ] Gen next move by llm.
 - [ ] Show model name.
@@ -47,7 +56,6 @@ sequenceDiagram
 - [ ] Record map on KV and NFT fallback.
 - [ ] Cut scene show owner and their message. // render like x ss
 - [ ] Walkable from a to b.
-- [ ] Walkable with Pathfinding from a to b.
 - [ ] Logic gates quiz
 - [ ] Move stone to open path way.
 - [ ] Move stone to toggle switch.

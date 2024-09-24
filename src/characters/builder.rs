@@ -1,6 +1,7 @@
 use std::fs;
 
 use crate::{
+    brains::behavior::get_behavior,
     characters::{actions::Action, bar::Health},
     core::{
         layer::{SpriteLayer, YSort},
@@ -10,7 +11,7 @@ use crate::{
         setup::CharacterId,
         stage::{CharacterInfo, GameStage, Human, StageInfo},
     },
-    get_thinker, Guard,
+    get_thinker,
 };
 use bevy::prelude::*;
 use bevy_spritesheet_animation::prelude::*;
@@ -125,16 +126,16 @@ pub fn init_character<T>(
                     character.clone(),
                 );
 
-                let character_id = commands
-                    .spawn(character_bundle)
+                let mut entity_commands = commands.spawn(character_bundle);
+
+                // Statics
+                entity_commands
                     .insert(CharacterId(character.character_id().0.clone()))
                     .insert((
                         Action(*character.act()),
-                        Guard::new(75.0, 10.0),
                         Position {
                             position: Vec2::new(position.translation.x, position.translation.y),
                         },
-                        get_thinker::<T>(),
                         Health::new_full(100.0),
                         Statbar::<Health> {
                             color: Color::from(bevy::color::palettes::css::RED),
@@ -145,8 +146,12 @@ pub fn init_character<T>(
                             ..Default::default()
                         },
                         CharacterMarker,
-                    ))
-                    .id();
+                    ));
+
+                // Dynamics
+                entity_commands.insert((get_thinker::<T>(), get_behavior::<T>()));
+
+                let character_id = entity_commands.id();
 
                 commands
                     .spawn((

@@ -123,7 +123,7 @@ where
 
             Thinker::build()
                 .label("GuardingThinker")
-                .picker(FirstToScore { threshold: 0.8 })
+                .picker(Highest)
                 .when(Duty, move_and_guard)
         }
         id if id == std::any::TypeId::of::<Enemy>() => {
