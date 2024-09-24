@@ -1,7 +1,6 @@
 mod brains;
 mod characters;
 mod core;
-mod timeline;
 
 use bevy::{
     log::LogPlugin,
@@ -28,10 +27,6 @@ use core::{
     stage::{init_stage, Enemy, GameStage, Human},
 };
 use extol_sprite_layer::SpriteLayerPlugin;
-use timeline::{
-    entity::{TimelineActions, TimelineClock},
-    init::{init_timeline, CharacterTimelines},
-};
 
 fn main() {
     App::new()
@@ -58,11 +53,8 @@ fn main() {
         .add_plugins(BigBrainPlugin::new(PreUpdate))
         .register_type::<Health>()
         .add_statbar_component_observer::<Health>()
-        .init_resource::<TimelineClock>()
         .init_resource::<Chests>()
         .init_resource::<Gates>()
-        .init_resource::<TimelineActions>()
-        .init_resource::<CharacterTimelines>()
         .init_resource::<MainPath>()
         .init_resource::<Walkable>()
         .init_resource::<GameStage>()
@@ -73,8 +65,6 @@ fn main() {
                 init_stage,
                 init_character::<Human>,
                 init_character::<Enemy>,
-                // init_entities,
-                init_timeline,
             )
                 .chain(),),
         )

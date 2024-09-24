@@ -10,16 +10,14 @@ use crate::{
         setup::CharacterId,
         stage::{CharacterInfo, GameStage, Human, StageInfo},
     },
-    get_thinker,
-    timeline::init::LookDirection,
-    Guard,
+    get_thinker, Guard,
 };
 use bevy::prelude::*;
 use bevy_spritesheet_animation::prelude::*;
 use bevy_stat_bars::{Statbar, StatbarObserveEntity};
 use std::fmt::Debug;
 
-use super::actions::Act;
+use super::actions::{Act, LookDirection};
 
 #[derive(Bundle)]
 struct CharacterBundle<T: Component> {

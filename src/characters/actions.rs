@@ -17,3 +17,10 @@ pub enum Act {
     Hurt,
     Die,
 }
+
+#[derive(Deserialize, Debug, PartialEq, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum LookDirection {
+    Left,
+    Right,
+}
