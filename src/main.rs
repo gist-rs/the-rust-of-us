@@ -7,6 +7,8 @@ use bevy::{
     prelude::*,
     window::{PresentMode, WindowResolution},
 };
+use bevy_inspector_egui::prelude::*;
+use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 use bevy_spritesheet_animation::prelude::*;
 use bevy_stat_bars::RegisterStatbarSubject;
 use big_brain::{BigBrainPlugin, BigBrainSet};
@@ -28,6 +30,15 @@ use core::{
 };
 use extol_sprite_layer::SpriteLayerPlugin;
 
+// `InspectorOptions` are completely optional
+#[derive(Reflect, Resource, Default, InspectorOptions)]
+#[reflect(Resource, InspectorOptions)]
+struct Configuration {
+    foo: String,
+    #[inspector(min = 0.0, max = 1.0)]
+    bar: f32,
+}
+
 fn main() {
     App::new()
         .add_plugins((
@@ -37,7 +48,7 @@ fn main() {
                 .set(WindowPlugin {
                     primary_window: Some(Window {
                         title: "🦀 The Rust of Us".into(),
-                        resolution: WindowResolution::new(320.0, 320.0),
+                        resolution: WindowResolution::new(320.0, 640.0),
                         present_mode: PresentMode::AutoNoVsync,
                         ..default()
                     }),
@@ -51,8 +62,11 @@ fn main() {
                 .set(ImagePlugin::default_nearest()),
         ))
         .add_plugins(BigBrainPlugin::new(PreUpdate))
+        .add_plugins(ResourceInspectorPlugin::<Configuration>::default())
         .register_type::<Health>()
         .add_statbar_component_observer::<Health>()
+        .register_type::<Configuration>()
+        .init_resource::<Configuration>()
         .init_resource::<Chests>()
         .init_resource::<Gates>()
         .init_resource::<MainPath>()
