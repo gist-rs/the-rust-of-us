@@ -33,6 +33,7 @@ struct DecorBundle {
     ysort: YSort,
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn build_scene(
     commands: &mut Commands,
     asset_server: &Res<AssetServer>,

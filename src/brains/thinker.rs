@@ -38,6 +38,7 @@ pub fn guard_system(time: Res<Time>, mut guards: Query<&mut Guard>) {
 #[derive(Clone, Component, Debug, ActionBuilder)]
 pub struct LookAround {
     per_second: f32,
+    distance: f32,
 }
 
 #[allow(clippy::type_complexity)]
@@ -64,7 +65,7 @@ pub fn guard_action_system<T: Component + Debug + Clone>(
                 // TODO: can be no chest
                 let closest_chest = find_closest_target::<T>(&targets, actor_position);
                 let distance = (closest_chest.position - actor_position.position).length();
-                if distance < MAX_DISTANCE {
+                if distance < look_around.distance {
                     trace!("Guarding!");
                     guard.concern -= look_around.per_second * time.delta_seconds();
 
@@ -113,9 +114,12 @@ where
         id if id == std::any::TypeId::of::<Human>() => {
             let move_and_guard = Steps::build()
                 .label("MoveAndGuard")
-                .step(MoveToNearest::<Chest>::new(MOVEMENT_SPEED))
-                .step(LookAround { per_second: 25.0 })
-                .step(MoveToNearest::<Exit>::new(MOVEMENT_SPEED));
+                .step(MoveToNearest::<Chest>::new(MOVEMENT_SPEED, MAX_DISTANCE))
+                .step(LookAround {
+                    per_second: 25.0,
+                    distance: MAX_DISTANCE,
+                })
+                .step(MoveToNearest::<Exit>::new(MOVEMENT_SPEED, 0.));
 
             Thinker::build()
                 .label("GuardingThinker")
@@ -125,9 +129,12 @@ where
         id if id == std::any::TypeId::of::<Enemy>() => {
             let move_and_guard = Steps::build()
                 .label("MoveAndGuard")
-                .step(MoveToNearest::<Chest>::new(MOVEMENT_SPEED))
-                .step(LookAround { per_second: 25.0 })
-                .step(MoveToNearest::<Grave>::new(MOVEMENT_SPEED));
+                .step(MoveToNearest::<Chest>::new(MOVEMENT_SPEED, MAX_DISTANCE))
+                .step(LookAround {
+                    per_second: 25.0,
+                    distance: MAX_DISTANCE,
+                })
+                .step(MoveToNearest::<Grave>::new(MOVEMENT_SPEED, MAX_DISTANCE));
 
             Thinker::build()
                 .label("GuardingThinker")
@@ -147,13 +154,15 @@ pub struct MoveToNearest<T: Component + Debug + Clone> {
     // We use a PhantomData to store the type of the component we're moving to.
     _marker: std::marker::PhantomData<T>,
     speed: f32,
+    distance: f32,
 }
 
 impl<T: Component + Debug + Clone> MoveToNearest<T> {
-    pub fn new(speed: f32) -> Self {
+    pub fn new(speed: f32, distance: f32) -> Self {
         Self {
             _marker: std::marker::PhantomData,
             speed,
+            distance,
         }
     }
 }
@@ -207,7 +216,7 @@ pub fn move_to_nearest_system<T: Component + Debug + Clone>(
 
                 trace!("Distance: {}", distance);
 
-                if distance > MAX_DISTANCE {
+                if distance > move_to.distance {
                     trace!("Stepping closer.");
 
                     let step_size = time.delta_seconds() * move_to.speed;
