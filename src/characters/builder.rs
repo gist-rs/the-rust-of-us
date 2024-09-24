@@ -9,7 +9,7 @@ use crate::{
         map::{convert_map_to_screen, get_position_from_map},
         position::Position,
         setup::CharacterId,
-        stage::{CharacterInfo, GameStage, Human, StageInfo},
+        stage::{CharacterInfo, GameStage, StageInfo},
     },
     get_thinker,
 };
@@ -27,16 +27,6 @@ struct CharacterBundle<T: Component> {
     spritesheet_animation: SpritesheetAnimation,
     sprite_layer: SpriteLayer,
     marker: T,
-    ysort: YSort,
-}
-
-#[derive(Bundle)]
-struct HumanBundle {
-    sprite_bundle: SpriteBundle,
-    texture_atlas: TextureAtlas,
-    spritesheet_animation: SpritesheetAnimation,
-    sprite_layer: SpriteLayer,
-    marker: Human,
     ysort: YSort,
 }
 
