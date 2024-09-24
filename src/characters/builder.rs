@@ -139,11 +139,11 @@ pub fn init_character<T>(
                         get_thinker::<T>(),
                         Health::new_full(100.0),
                         Statbar::<Health> {
-                            color: Color::from(bevy::color::palettes::css::YELLOW),
+                            color: Color::from(bevy::color::palettes::css::RED),
                             empty_color: Color::from(bevy::color::palettes::css::BLACK),
                             length: 32.0,
                             thickness: 6.0,
-                            displacement: 40. * Vec2::Y,
+                            displacement: 32. * Vec2::Y,
                             ..Default::default()
                         },
                         CharacterMarker,
