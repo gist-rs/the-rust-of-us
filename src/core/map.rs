@@ -170,7 +170,7 @@ pub fn get_map_from_position(
     map_config: Option<MapConfig>,
 ) -> (usize, usize) {
     // Use the provided map_config or create a default instance
-    let map_config = map_config.unwrap_or_else(MapConfig::default);
+    let map_config = map_config.unwrap_or_default();
 
     // Extract the x and y coordinates from the transform
     let pos_x = transform.translation.x;
