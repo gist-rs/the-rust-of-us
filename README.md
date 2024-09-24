@@ -31,6 +31,14 @@ sequenceDiagram
 
 ## TODO
 
+- [ ] Monster follow to attack when 2 block close.
+- [ ] Define `FIGHT`/`TRAVEL`/`LIVING` mode.
+- [ ] [FIGHT] Monster attack when 1 block close.
+- [ ] [FIGHT] Human hurt when attack hit.
+- [ ] [FIGHT] Human die when out of health.
+- [ ] [FIGHT] Human attack when 1 block close.
+- [ ] [FIGHT] Monster hurt when attack hit.
+- [ ] [FIGHT] Monster die when out of health.
 - [ ] Gen next stage map via llm.
 - [ ] Gen next move by llm.
 - [ ] Show model name.
@@ -48,6 +56,7 @@ sequenceDiagram
 - [ ] Learn from previously trap (don't step on it again!).
 - [ ] Use key to open chest.
 - [ ] Find the right key to open chest.
+- [ ] Find the right path to avoid monster.
 
 ## Resources
 
