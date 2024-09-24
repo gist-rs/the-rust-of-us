@@ -9,20 +9,21 @@ use crate::{
 
 use std::fmt::Debug;
 
-#[derive(Deserialize, Debug, Clone, Copy, PartialEq, Eq, EnumString, Display)]
+#[derive(Deserialize, Default, Debug, Clone, Copy, PartialEq, Eq, EnumString, Display, Reflect)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
 pub enum Behavior {
-    GUARD,   // When have duty to protect something
-    EXPLORE, // When no target in range
+    #[default]
+    CHILL, // When no target in range
+    EXPLORE, // When no target in range and boring score trigger.
+    JOB,     // When on duty for some task.
     OPEN,    // When see object in range e.g. Treasure, Gate, Switch
     COLLECT, // When see items in range e.g. Key, Items
     HUNT,    // When low stocks.
     FOLLOW,  // When NPC ask.
     FIGHT,   // When near Monster.
     HARVEST, // When low health, find
-    REST,    // When tried, low health.
-    CHILL,   // When tried, low health.
+    SLEEP,   // When tried, low health.
     AVOID,   // When see monster in range and low health.
 }
 

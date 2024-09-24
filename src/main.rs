@@ -12,7 +12,7 @@ use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 use bevy_spritesheet_animation::prelude::*;
 use bevy_stat_bars::RegisterStatbarSubject;
 use big_brain::{BigBrainPlugin, BigBrainSet};
-use brains::thinker::*;
+use brains::{behavior::Behavior, thinker::*};
 use characters::{
     bar::{adjust_stats, Health},
     builder::{init_character, update_character},
@@ -34,9 +34,7 @@ use extol_sprite_layer::SpriteLayerPlugin;
 #[derive(Reflect, Resource, Default, InspectorOptions)]
 #[reflect(Resource, InspectorOptions)]
 struct Configuration {
-    foo: String,
-    #[inspector(min = 0.0, max = 1.0)]
-    bar: f32,
+    behavior: Behavior,
 }
 
 fn main() {
@@ -64,6 +62,7 @@ fn main() {
         .add_plugins(BigBrainPlugin::new(PreUpdate))
         .add_plugins(ResourceInspectorPlugin::<Configuration>::default())
         .register_type::<Health>()
+        .register_type::<Behavior>()
         .add_statbar_component_observer::<Health>()
         .register_type::<Configuration>()
         .init_resource::<Configuration>()
