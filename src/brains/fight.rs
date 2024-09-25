@@ -103,14 +103,15 @@ where
     }
 }
 
+#[allow(clippy::type_complexity)]
 pub fn fight_action_system<T, U>(
     time: Res<Time>,
-    mut fights: Query<(&mut Fighter)>,
+    mut fights: Query<&mut Fighter>,
     mut characters: Query<
         (&mut TargetAt, &mut Position, &mut Action, &mut Sprite),
         (With<T>, Without<U>),
     >,
-    mut targets: Query<&Position, With<U>>,
+    targets: Query<&Position, With<U>>,
     mut action_query: Query<(&Actor, &mut ActionState, &Fight, &ActionSpan)>,
 ) where
     T: CharacterInfo + Clone + Debug + 'static,
@@ -120,7 +121,7 @@ pub fn fight_action_system<T, U>(
         let _guard = span.span().enter();
 
         // Use the fight_action's actor to look up the corresponding Fighter Component.
-        if let Ok((mut fight)) = fights.get_mut(actor.0) {
+        if let Ok(mut fight) = fights.get_mut(actor.0) {
             // Look up the actor's action.
             let (mut actor_target_at, actor_position, mut actor_action, mut sprite) =
                 characters.get_mut(actor.0).expect("😱 actor has no action");

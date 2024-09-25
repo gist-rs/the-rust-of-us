@@ -5,7 +5,7 @@ use big_brain::prelude::*;
 use crate::characters::actions::{Act, Action};
 use crate::core::point::Exit;
 use crate::core::stage::{CharacterInfo, Human, Monster, Npc};
-use crate::core::{chest::Chest, grave::Grave, position::Position};
+use crate::core::{chest::Chest, position::Position};
 use std::fmt::Debug;
 
 use super::fight::{Fight, FightScorer};

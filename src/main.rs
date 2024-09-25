@@ -29,7 +29,7 @@ use core::{
     menu::button_system,
     point::Exit,
     scene::MainPath,
-    setup::{setup_scene, Walkable},
+    setup::setup_scene,
     stage::{init_stage, GameStage, Human, Monster},
 };
 use extol_sprite_layer::SpriteLayerPlugin;
@@ -73,7 +73,6 @@ fn main() {
         .init_resource::<Chests>()
         .init_resource::<Gates>()
         .init_resource::<MainPath>()
-        .init_resource::<Walkable>()
         .init_resource::<GameStage>()
         .add_systems(
             Startup,

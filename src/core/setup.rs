@@ -61,9 +61,6 @@ pub fn build_player(
     }
 }
 
-#[derive(Resource, Default, Debug)]
-pub struct Walkable(pub Vec<Vec<bool>>);
-
 pub fn setup_scene(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -71,21 +68,11 @@ pub fn setup_scene(
     mut library: ResMut<AnimationLibrary>,
     chests: ResMut<Chests>,
     gates: ResMut<Gates>,
-    // mut main_path: ResMut<MainPath>,
-    // mut current_walkables: ResMut<Walkable>,
 ) {
     commands.spawn(Camera2dBundle::default());
 
     // Load map
     let (_walkables, start, goal, _path_cost, map) = load_map_from_csv("assets/map.csv").unwrap();
-
-    // TODO: move to stage main mission.
-    // // Update walkables
-    // *current_walkables = Walkable(walkables);
-
-    // // Update MainPath with the data from PathCost
-    // main_path.0.path = path_cost.path;
-    // main_path.0.cost = path_cost.cost;
 
     build_scene(
         &mut commands,
