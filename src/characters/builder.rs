@@ -1,8 +1,14 @@
 use std::fs;
 
 use crate::{
-    brains::behavior::get_behavior,
-    characters::{actions::Action, bar::Health},
+    brains::{
+        behavior::get_behavior,
+        fight::{get_fighter, TargetAt},
+    },
+    characters::{
+        actions::{Act, Action, LookDirection},
+        bar::Health,
+    },
     core::{
         layer::{SpriteLayer, YSort},
         library::{build_library, Ani},
@@ -18,8 +24,6 @@ use bevy_spritesheet_animation::prelude::*;
 use bevy_stat_bars::{Statbar, StatbarObserveEntity};
 use std::fmt::Debug;
 
-use super::actions::{Act, LookDirection};
-
 #[derive(Bundle)]
 struct CharacterBundle<T: Component> {
     sprite_bundle: SpriteBundle,
@@ -28,6 +32,7 @@ struct CharacterBundle<T: Component> {
     sprite_layer: SpriteLayer,
     marker: T,
     ysort: YSort,
+    target_at: TargetAt,
 }
 
 #[derive(Component)]
@@ -84,6 +89,7 @@ fn build_character<T: CharacterInfo>(
         sprite_layer: SpriteLayer::Ground,
         marker: character_info.get_clone(),
         ysort: YSort(0.0),
+        target_at: TargetAt { position: None },
     }
 }
 
@@ -139,6 +145,7 @@ pub fn init_character<T>(
                     ));
 
                 // Dynamics
+                get_fighter::<T>(&mut entity_commands);
                 entity_commands.insert((get_thinker::<T>(), get_behavior::<T>()));
 
                 let character_id = entity_commands.id();
@@ -174,6 +181,7 @@ pub fn update_character<T>(
             &mut Sprite,
             &mut SpritesheetAnimation,
             &mut Action,
+            &mut TargetAt,
         ),
         With<CharacterMarker>,
     >,
@@ -190,16 +198,30 @@ pub fn update_character<T>(
                 mut sprite,
                 mut animation,
                 action,
+                actor_target_at,
             ) in characters.iter_mut()
             {
                 if character.character_id() == character_id {
-                    // Look direction
-                    sprite.flip_x =
-                        character_transform.translation.x > character_position.position.x;
-
                     // Position
-                    character_transform.translation.x = character_position.position.x;
-                    character_transform.translation.y = character_position.position.y;
+                    match action.0 {
+                        Act::Walk => {
+                            // Look direction
+                            sprite.flip_x =
+                                character_transform.translation.x > character_position.position.x;
+
+                            // Snap
+                            character_transform.translation.x = character_position.position.x;
+                            character_transform.translation.y = character_position.position.y;
+                        }
+                        Act::Attack => {
+                            // Look direction
+                            if let Some(actor_target_at_position) = actor_target_at.position {
+                                sprite.flip_x = character_transform.translation.x
+                                    > actor_target_at_position.position.x;
+                            };
+                        }
+                        _ => (),
+                    }
 
                     // Action
                     let subject = character_id.0.split('_').next().expect("subject");

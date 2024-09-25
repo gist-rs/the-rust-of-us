@@ -4,9 +4,11 @@ use big_brain::prelude::*;
 
 use crate::characters::actions::{Act, Action};
 use crate::core::point::Exit;
-use crate::core::stage::{CharacterInfo, Monster, Human, Npc};
+use crate::core::stage::{CharacterInfo, Human, Monster, Npc};
 use crate::core::{chest::Chest, grave::Grave, position::Position};
 use std::fmt::Debug;
+
+use super::fight::{Fight, FightScorer};
 
 const MAX_DISTANCE: f32 = 32.;
 
@@ -62,9 +64,9 @@ pub fn guard_action_system<T: Component + Debug + Clone>(
                 *state = ActionState::Executing;
             }
             ActionState::Executing => {
-                // TODO: can be no chest
-                let closest_chest = find_closest_target::<T>(&targets, actor_position);
-                let distance = (closest_chest.position - actor_position.position).length();
+                // TODO: can be no target
+                let closest_target = find_closest_target::<T>(&targets, actor_position);
+                let distance = (closest_target.position - actor_position.position).length();
                 if distance < look_around.distance {
                     trace!("Guarding!");
                     guard.concern -= look_around.per_second * time.delta_seconds();
@@ -127,19 +129,28 @@ where
                 .when(Duty, move_and_guard)
         }
         id if id == std::any::TypeId::of::<Monster>() => {
-            let move_and_guard = Steps::build()
-                .label("MoveAndGuard")
-                .step(MoveToNearest::<Chest>::new(MOVEMENT_SPEED, MAX_DISTANCE))
-                .step(LookAround {
+            // let move_and_guard = Steps::build()
+            //     .label("MoveAndGuard")
+            //     .step(MoveToNearest::<Human>::new(MOVEMENT_SPEED, MAX_DISTANCE))
+            //     .step(LookAround {
+            //         per_second: 25.0,
+            //         distance: MAX_DISTANCE,
+            //     })
+            //     .step(MoveToNearest::<Grave>::new(MOVEMENT_SPEED, MAX_DISTANCE));
+
+            let move_and_fight = Steps::build()
+                .label("MoveAndFight")
+                .step(MoveToNearest::<Human>::new(MOVEMENT_SPEED, MAX_DISTANCE))
+                .step(Fight {
+                    until: 10.0,
                     per_second: 25.0,
-                    distance: MAX_DISTANCE,
-                })
-                .step(MoveToNearest::<Grave>::new(MOVEMENT_SPEED, MAX_DISTANCE));
+                });
 
             Thinker::build()
                 .label("GuardingThinker")
                 .picker(FirstToScore { threshold: 0.8 })
-                .when(Duty, move_and_guard)
+                .when(FightScorer, move_and_fight)
+            // .when(Duty, move_and_guard)
         }
         id if id == std::any::TypeId::of::<Npc>() => {
             todo!()
@@ -167,7 +178,7 @@ impl<T: Component + Debug + Clone> MoveToNearest<T> {
     }
 }
 
-fn find_closest_target<T: Component + Debug + Clone>(
+pub fn find_closest_target<T: Component + Debug + Clone>(
     targets: &Query<&Position, With<T>>,
     actor_position: &Position,
 ) -> Position {
@@ -206,11 +217,11 @@ pub fn move_to_nearest_system<T: Component + Debug + Clone>(
                 let actor_position = characters.get_mut(actor.0).expect("actor has no position");
                 let (mut actor_position, mut actor_action) = actor_position;
 
-                // Look up the chest closest to them.
-                let closest_chest = find_closest_target::<T>(&targets, &actor_position);
+                // Look up the target closest to them.
+                let closest_target = find_closest_target::<T>(&targets, &actor_position);
 
                 // Find how far we are from it.
-                let delta = closest_chest.position - actor_position.position;
+                let delta = closest_target.position - actor_position.position;
 
                 let distance = delta.length();
 
@@ -228,7 +239,7 @@ pub fn move_to_nearest_system<T: Component + Debug + Clone>(
                     // Action
                     *actor_action = Action(Act::Walk);
                 } else {
-                    debug!("🔥 We got there!");
+                    // debug!("🔥 We got there!");
 
                     *action_state = ActionState::Success;
 

@@ -12,7 +12,11 @@ use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 use bevy_spritesheet_animation::prelude::*;
 use bevy_stat_bars::RegisterStatbarSubject;
 use big_brain::{BigBrainPlugin, BigBrainSet};
-use brains::{behavior::Behavior, thinker::*};
+use brains::{
+    behavior::Behavior,
+    fight::{fight_action_system, fight_scorer_system, fight_system},
+    thinker::*,
+};
 use characters::{
     bar::{adjust_stats, Health},
     builder::{init_character, update_character},
@@ -88,6 +92,7 @@ fn main() {
                 adjust_stats,
                 button_system,
                 guard_system,
+                fight_system::<Monster>,
                 update_chest,
                 update_gate,
                 update_character::<Human>,
@@ -101,6 +106,13 @@ fn main() {
                 move_to_nearest_system::<Chest>,
                 move_to_nearest_system::<Grave>,
                 move_to_nearest_system::<Exit>,
+                // --- FIGHT ---
+                // Monster seek for Human
+                fight_scorer_system::<Monster>,
+                // Monster follow Human
+                move_to_nearest_system::<Human>,
+                // Monster fight with Human
+                fight_action_system::<Monster, Human>,
             )
                 .in_set(BigBrainSet::Actions),
         )
