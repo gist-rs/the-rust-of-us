@@ -144,6 +144,9 @@ pub fn fight_action_system<T, U>(
                         fight.is_fighting = false;
                         *state = ActionState::Success;
 
+                        // Unlock target
+                        actor_target_at.position = None;
+
                         // Action
                         *actor_action = Action(Act::Idle);
                     } else {
