@@ -89,7 +89,7 @@ fn build_character<T: CharacterInfo>(
         sprite_layer: SpriteLayer::Ground,
         marker: character_info.get_clone(),
         ysort: YSort(0.0),
-        target_at: TargetAt { position: None },
+        target_at: TargetAt::default(),
     }
 }
 

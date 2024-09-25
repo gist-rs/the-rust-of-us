@@ -6,7 +6,7 @@ use bevy::{ecs::system::EntityCommands, prelude::*};
 use big_brain::prelude::*;
 use std::fmt::Debug;
 
-#[derive(Component, Clone, Debug)]
+#[derive(Component, Clone, Debug, Default)]
 pub struct TargetAt {
     pub position: Option<Position>,
 }
