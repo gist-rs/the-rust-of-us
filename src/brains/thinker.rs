@@ -203,7 +203,7 @@ pub fn move_to_nearest_system<T: Component + Debug + Clone>(
         return;
     };
 
-    for (actor, mut action_state, move_to, span) in &mut action_query {
+    for (Actor(actor), mut action_state, move_to, span) in &mut action_query {
         let _guard = span.span().enter();
 
         match *action_state {
@@ -214,7 +214,7 @@ pub fn move_to_nearest_system<T: Component + Debug + Clone>(
             }
             ActionState::Executing => {
                 // Look up the actor's position.
-                let actor_position = characters.get_mut(actor.0).expect("actor has no position");
+                let actor_position = characters.get_mut(*actor).expect("actor has no position");
                 let (mut actor_position, mut actor_action) = actor_position;
 
                 // Look up the target closest to them.

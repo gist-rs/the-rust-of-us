@@ -117,14 +117,14 @@ pub fn fight_action_system<T, U>(
     T: CharacterInfo + Clone + Debug + 'static,
     U: CharacterInfo + Clone + Debug + 'static,
 {
-    for (actor, mut state, sleep, span) in &mut action_query {
+    for (Actor(actor), mut state, sleep, span) in &mut action_query {
         let _guard = span.span().enter();
 
         // Use the fight_action's actor to look up the corresponding Fighter Component.
-        if let Ok(mut fight) = fights.get_mut(actor.0) {
+        if let Ok(mut fight) = fights.get_mut(*actor) {
             // Look up the actor's action.
             let (mut actor_target_at, actor_position, mut actor_action, mut sprite) =
-                characters.get_mut(actor.0).expect("😱 actor has no action");
+                characters.get_mut(*actor).expect("😱 actor has no action");
 
             match *state {
                 ActionState::Requested => {
@@ -134,6 +134,7 @@ pub fn fight_action_system<T, U>(
                 }
                 ActionState::Executing => {
                     trace!("Fighting...");
+                    // TODO: Fight until target hp reach 0 or target position out of range.
                     fight.angry -= sleep.per_second * time.delta_seconds();
 
                     if fight.angry <= sleep.until {
