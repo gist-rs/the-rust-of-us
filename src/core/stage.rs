@@ -55,6 +55,7 @@ pub trait CharacterInfo: Component {
     fn look_direction(&self) -> &LookDirection;
     fn act(&self) -> &Act;
     fn get_clone(&self) -> Self;
+    fn line_of_sight(&self) -> f32;
 }
 
 #[allow(unused)]
@@ -66,6 +67,7 @@ pub struct Human {
     pub position: String,
     pub look_direction: LookDirection,
     pub act: Act,
+    pub line_of_sight: f32,
     pub attack: u32,
     pub defend: u32,
     pub health: u32,
@@ -93,6 +95,10 @@ impl CharacterInfo for Human {
     fn get_clone(&self) -> Self {
         self.clone()
     }
+
+    fn line_of_sight(&self) -> f32 {
+        self.line_of_sight
+    }
 }
 
 #[allow(unused)]
@@ -104,6 +110,7 @@ pub struct Monster {
     pub position: String,
     pub look_direction: LookDirection,
     pub act: Act,
+    pub line_of_sight: f32,
     pub attack: u32,
     pub defend: u32,
     pub health: u32,
@@ -129,6 +136,10 @@ impl CharacterInfo for Monster {
 
     fn get_clone(&self) -> Self {
         self.clone()
+    }
+
+    fn line_of_sight(&self) -> f32 {
+        self.line_of_sight
     }
 }
 

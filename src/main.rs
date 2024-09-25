@@ -91,7 +91,7 @@ fn main() {
                 adjust_stats,
                 button_system,
                 guard_system,
-                fight_system::<Monster>,
+                fight_system::<Monster, Human>,
                 update_chest,
                 update_gate,
                 update_character::<Human>,

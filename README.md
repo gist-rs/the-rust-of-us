@@ -38,14 +38,14 @@ sequenceDiagram
 ## TODO
 
 - [x] Define `FOLLOW`/`FIGHT`/`TRAVEL`/`LIVE`/`AVOID` mode.
-- [ ] Offer ai to choose behavior and task. e.g. explore north, find treasure, avoid monster.
 - [ ] [FOLLOW] Monster follow to attack when 2 block close.
-- [ ] [FIGHT] Monster attack when 1 block close.
+- [x] [FIGHT] Monster attack when 1 block close.
 - [ ] [FIGHT] Human hurt when attack hit.
 - [ ] [FIGHT] Human die when out of health.
 - [ ] [FIGHT] Human attack when 1 block close.
 - [ ] [FIGHT] Monster hurt when attack hit.
 - [ ] [FIGHT] Monster die when out of health.
+- [ ] Offer ai to choose behavior and task. e.g. explore north, find treasure, avoid monster.
 - [ ] Walkable with Pathfinding from a to b.
 - [ ] Walkable with adaptive Pathfinding from a to b.
 - [ ] Gen next stage map via llm.

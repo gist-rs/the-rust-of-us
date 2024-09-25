@@ -27,20 +27,43 @@ pub struct Fighter {
 #[derive(Clone, Component, Debug, ScorerBuilder)]
 pub struct FightScorer;
 
-// TODO: change to range base
-pub fn fight_system<T: Component + Debug + Clone>(
+#[allow(clippy::type_complexity)]
+pub fn fight_system<T, U>(
     time: Res<Time>,
     mut fights: Query<&mut Fighter>,
-) {
+    mut characters: Query<(&mut Position, &T), (With<T>, Without<U>)>,
+    targets: Query<&Position, With<U>>,
+    mut action_query: Query<&Actor>,
+) where
+    T: CharacterInfo + Clone + Debug + Component + 'static,
+    U: CharacterInfo + Clone + Debug + Component + 'static,
+{
     match std::any::TypeId::of::<T>() {
         id if id == std::any::TypeId::of::<Human>() => (),
         id if id == std::any::TypeId::of::<Monster>() => {
-            for mut fight in &mut fights {
-                fight.angry += fight.per_second * time.delta_seconds();
-                if fight.angry >= 100.0 {
-                    fight.angry = 100.0;
+            for Actor(actor) in &mut action_query {
+                // Use the fight_action's actor to look up the corresponding Fighter Component.
+                if let Ok(mut fight) = fights.get_mut(*actor) {
+                    // Look up the actor's action.
+                    let (actor_position, character_info) =
+                        characters.get_mut(*actor).expect("😱 actor has no action");
+
+                    // Look up the target closest to them.
+                    let closest_target = find_closest_target::<U>(&targets, &actor_position);
+
+                    // Find how far we are from it.
+                    let delta = closest_target.position - actor_position.position;
+                    let distance = delta.length();
+
+                    // Get angry when Human getting close.
+                    if distance < character_info.line_of_sight() {
+                        fight.angry += fight.per_second * time.delta_seconds();
+                        if fight.angry >= 100.0 {
+                            fight.angry = 100.0;
+                        }
+                        trace!("Fight.angry: {}", fight.angry);
+                    }
                 }
-                trace!("Fight.angry: {}", fight.angry);
             }
         }
         id if id == std::any::TypeId::of::<Npc>() => (),

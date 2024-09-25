@@ -6,6 +6,7 @@ humans:
     position: f2
     look_direction: left
     act: idle
+    line_of_sight: 200
     attack: 2
     defend: 2
     health: 100
@@ -24,6 +25,7 @@ enemies:
     position: e5
     look_direction: right
     act: idle
+    line_of_sight: 100
     attack: 1
     defend: 1
     health: 10
