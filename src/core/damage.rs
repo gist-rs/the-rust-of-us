@@ -53,6 +53,9 @@ pub fn spawn_damage_indicator(
                 ..default()
             },
             SpriteLayer::Foreground,
+            DamageIndicator {
+                duration: damage.duration,
+            },
         ));
     }
 }
