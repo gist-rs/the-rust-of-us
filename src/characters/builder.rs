@@ -8,13 +8,13 @@ use crate::{
     characters::{
         actions::{Act, Action, LookDirection},
         bar::Health,
+        entities::CharacterId,
     },
     core::{
         layer::{SpriteLayer, YSort},
         library::{build_library, Ani},
         map::{convert_map_to_screen, get_position_from_map},
         position::Position,
-        setup::CharacterId,
         stage::{CharacterInfo, GameStage, StageInfo},
     },
     get_thinker,
@@ -24,7 +24,7 @@ use bevy_spritesheet_animation::prelude::*;
 use bevy_stat_bars::{Statbar, StatbarObserveEntity};
 use std::fmt::Debug;
 
-use super::kind::CharacterKind;
+use super::entities::{AniType, CharacterKind};
 
 #[derive(Bundle)]
 struct CharacterBundle<T: Component> {
@@ -41,10 +41,8 @@ struct CharacterBundle<T: Component> {
 #[derive(Component)]
 pub struct CharacterMarker;
 
-fn get_animation_name(character_id: CharacterId, act: Act) -> String {
-    let subject = character_id.0.split('_').next().expect("subject");
-
-    format!("{subject}_{act}")
+pub fn get_animation_name(ani_type: &AniType, act: Act) -> String {
+    format!("{ani_type}_{act}")
 }
 
 fn build_character<T: CharacterInfo>(
@@ -69,7 +67,7 @@ fn build_character<T: CharacterInfo>(
         LookDirection::Right => false,
     };
 
-    let animation_name = get_animation_name(character_info.character_id().to_owned(), Act::Idle);
+    let animation_name = get_animation_name(character_info.ani_type(), Act::Idle);
 
     CharacterBundle {
         sprite_bundle: SpriteBundle {
@@ -113,7 +111,10 @@ pub fn init_character<T>(
     if let Some(character_iter) = game_stage.0.get_characters_iter_by_type::<T>() {
         for character in character_iter {
             println!("🔥 character:{:?}", *character);
-            if let Some(ani) = characters.iter().find(|&c| c.r#type == *character.r#type()) {
+            if let Some(ani) = characters
+                .iter()
+                .find(|&c| c.ani_type == *character.ani_type())
+            {
                 let at =
                     convert_map_to_screen(character.position().clone()).expect("Valid position");
                 let position = get_position_from_map(at.0, at.1, None);
@@ -130,6 +131,7 @@ pub fn init_character<T>(
 
                 // Statics
                 entity_commands
+                    .insert(*character.ani_type())
                     .insert(CharacterId(character.character_id().0.clone()))
                     .insert((
                         Action(*character.act()),
@@ -180,6 +182,7 @@ pub fn update_character<T>(
     mut characters: Query<
         (
             &CharacterId,
+            &AniType,
             &mut Position,
             &mut Transform,
             &mut Sprite,
@@ -197,6 +200,7 @@ pub fn update_character<T>(
         for character in character_iter {
             for (
                 character_id,
+                ani_type,
                 character_position,
                 mut character_transform,
                 mut sprite,
@@ -228,9 +232,7 @@ pub fn update_character<T>(
                     }
 
                     // Action
-                    let subject = character_id.0.split('_').next().expect("subject");
-                    let act = action.0;
-                    let animation_name = format!("{subject}_{act}");
+                    let animation_name = get_animation_name(ani_type, action.0);
 
                     if let Some(animation_id) = library.animation_with_name(animation_name) {
                         if animation.animation_id != animation_id {

@@ -2,7 +2,7 @@ id: 1-1
 name: "hello world!"
 humans:
   - kind: human
-    type: man
+    ani_type: man
     character_id: man_0
     position: f2
     look_direction: left
@@ -22,7 +22,7 @@ humans:
       - "when low(<50%) health and has potion, drink potion"
 enemies:
   - kind: monster
-    type: skeleton
+    ani_type: skeleton
     character_id: skeleton_0
     position: e5
     look_direction: right
@@ -37,7 +37,7 @@ enemies:
       - "when beside (<1 block) player, attack player"
 npcs:
   - kind: animal
-    type: crab
+    ani_type: crab
     character_id: crab_0
     position: b2
     look_direction: left

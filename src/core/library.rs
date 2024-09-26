@@ -2,6 +2,8 @@ use bevy::prelude::*;
 use bevy_spritesheet_animation::prelude::*;
 use serde::Deserialize;
 
+use crate::characters::entities::AniType;
+
 #[derive(Deserialize, Clone, Debug)]
 pub struct AnimationDetails {
     pub action_name: String,
@@ -12,7 +14,7 @@ pub struct AnimationDetails {
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct Ani {
-    pub r#type: String,
+    pub ani_type: AniType,
     pub texture_path: String,
     pub width: u32,
     pub height: u32,
@@ -41,7 +43,8 @@ pub fn build_library(
                 .with_duration(AnimationDuration::PerFrame(fps));
             let clip_id = library.register_clip(clip);
             let animation = Animation::from_clip(clip_id);
-            let animation_name = format!("{}_{}", ani.r#type, &anim.action_name);
+            // TODO use get_animation_name
+            let animation_name = format!("{}_{}", ani.ani_type, &anim.action_name);
 
             // Check if the animation with the same name already exists
             if let Some(existing_animation_id) = library.animation_with_name(&animation_name) {

@@ -2,22 +2,20 @@ use bevy::{
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
-use big_brain::{prelude::ActionState, thinker::Actor};
 
-use super::{
-    layer::SpriteLayer,
-    stage::{CharacterInfo, Human},
-};
+use super::layer::SpriteLayer;
 use crate::characters::{
     actions::{Act, Action},
     bar::Health,
-    kind::CharacterKind,
+    entities::CharacterKind,
 };
 use std::fmt::Debug;
 
+#[allow(unused)]
 #[derive(Resource, Default, Debug)]
 pub struct Damages(pub Vec<Damage>);
 
+#[allow(unused)]
 #[derive(Clone, Default, Debug)]
 pub struct Damage {
     pub friendly: CharacterKind,
@@ -78,7 +76,7 @@ pub fn update_damage(
 ) {
     player_query
         .iter_mut()
-        .for_each(|(kind, mut player_transform, mut hp, mut actor_action)| {
+        .for_each(|(kind, mut _player_transform, mut hp, mut actor_action)| {
             if actor_action.0 != Act::Die {
                 for DamageEvent(damage) in damage_events.read() {
                     if *kind != damage.friendly {

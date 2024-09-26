@@ -1,7 +1,6 @@
-use super::setup::CharacterId;
 use crate::characters::{
     actions::{Act, LookDirection},
-    kind::CharacterKind,
+    entities::{AniType, CharacterId, CharacterKind},
 };
 use anyhow::*;
 use bevy::prelude::*;
@@ -51,7 +50,7 @@ impl StageInfo for Stage {
 
 pub trait CharacterInfo: Component {
     fn kind(&self) -> &CharacterKind;
-    fn r#type(&self) -> &String;
+    fn ani_type(&self) -> &AniType;
     fn character_id(&self) -> &CharacterId;
     fn position(&self) -> &String;
     fn look_direction(&self) -> &LookDirection;
@@ -65,7 +64,7 @@ pub trait CharacterInfo: Component {
 #[derive(Deserialize, Default, Clone, Debug)]
 pub struct Human {
     pub kind: CharacterKind,
-    pub r#type: String,
+    pub ani_type: AniType,
     pub character_id: CharacterId,
     pub position: String,
     pub look_direction: LookDirection,
@@ -82,8 +81,8 @@ impl CharacterInfo for Human {
     fn kind(&self) -> &CharacterKind {
         &self.kind
     }
-    fn r#type(&self) -> &String {
-        &self.r#type
+    fn ani_type(&self) -> &AniType {
+        &self.ani_type
     }
     fn character_id(&self) -> &CharacterId {
         &self.character_id
@@ -112,7 +111,7 @@ impl CharacterInfo for Human {
 #[derive(Deserialize, Clone, Debug)]
 pub struct Monster {
     pub kind: CharacterKind,
-    pub r#type: String,
+    pub ani_type: AniType,
     pub character_id: CharacterId,
     pub position: String,
     pub look_direction: LookDirection,
@@ -128,8 +127,8 @@ impl CharacterInfo for Monster {
     fn kind(&self) -> &CharacterKind {
         &self.kind
     }
-    fn r#type(&self) -> &String {
-        &self.r#type
+    fn ani_type(&self) -> &AniType {
+        &self.ani_type
     }
     fn character_id(&self) -> &CharacterId {
         &self.character_id
@@ -158,7 +157,7 @@ impl CharacterInfo for Monster {
 #[derive(Deserialize, Debug)]
 pub struct Npc {
     pub kind: CharacterKind,
-    pub r#type: String,
+    pub ani_type: AniType,
     pub character_id: CharacterId,
     pub position: String,
     pub look_direction: LookDirection,

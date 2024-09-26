@@ -1,5 +1,4 @@
 use crate::characters::actions::{Act, Action};
-use crate::characters::kind::CharacterKind;
 use crate::core::damage::{Damage, DamageEvent};
 use crate::core::position::Position;
 use crate::core::stage::{CharacterInfo, Human, Monster, Npc};

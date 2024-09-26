@@ -4,6 +4,8 @@ use bevy::prelude::*;
 use bevy_spritesheet_animation::prelude::*;
 use serde_json::from_str;
 
+use crate::characters::entities::AniType;
+
 use super::{
     chest::{Chest, ChestId, ChestState, Chests},
     gate::{Gate, GateState, Gates},
@@ -106,7 +108,7 @@ pub fn build_scene(
                 "🚪" => {
                     let ani = decor_animations
                         .iter()
-                        .find(|ani| ani.r#type == "gate")
+                        .find(|ani| ani.ani_type == AniType::Gate)
                         .expect("Expected gate");
                     let deco_bundle = build_ani_decor_bundle(
                         "gate_close".to_owned(),
@@ -137,7 +139,7 @@ pub fn build_scene(
                 "💰" => {
                     let ani = decor_animations
                         .iter()
-                        .find(|ani| ani.r#type == "chest")
+                        .find(|ani| ani.ani_type == AniType::Chest)
                         .expect("Expected chest");
                     let deco_bundle = build_ani_decor_bundle(
                         "chest_close".to_owned(),
