@@ -191,8 +191,13 @@ pub fn fight_action_system<T, U>(
                         let delta = closest_target.position - actor_position.position;
                         let distance = delta.length();
                         let direction = delta.normalize_or_zero();
+                        let damage_position = match delta.x {
+                            x if x > 0.0 => actor_position.position - delta,
+                            _ => actor_position.position + delta,
+                        };
+
                         let damage = Damage {
-                            position: actor_position.position,
+                            position: damage_position,
                             power: 10. / distance,
                             radius: 48.,
                             direction,
