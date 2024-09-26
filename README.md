@@ -41,7 +41,7 @@ sequenceDiagram
 - [x] [FOLLOW] Monster follow to attack when 2 block close.
 - [x] [FIGHT] Monster attack when 1 block close.
 - [x] [FIGHT] Human hurt when attack hit.
-- [ ] [FIGHT] Human die when out of health.
+- [x] [FIGHT] Human die when out of health.
 - [ ] [FIGHT] Human attack when 1 block close.
 - [ ] [FIGHT] Monster hurt when attack hit.
 - [ ] [FIGHT] Monster die when out of health.

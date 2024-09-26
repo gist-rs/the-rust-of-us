@@ -228,6 +228,12 @@ pub fn update_character<T>(
                                     > actor_target_at_position.position.x;
                             };
                         }
+                        Act::Die => {
+                            if animation.progress.repetition >= 1 && animation.progress.frame == 12
+                            {
+                                animation.playing = false;
+                            }
+                        }
                         _ => (),
                     }
 

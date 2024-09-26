@@ -3,7 +3,7 @@ use bevy::{
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
 
-use super::layer::SpriteLayer;
+use super::{layer::SpriteLayer, state::GameState};
 use crate::characters::{
     actions::{Act, Action},
     bar::Health,
@@ -76,6 +76,7 @@ pub fn despawn_damage_indicator(
 pub fn update_damage(
     mut player_query: Query<(&CharacterKind, &mut Transform, &mut Health, &mut Action)>,
     mut damage_events: EventReader<DamageEvent>,
+    mut game_state: ResMut<NextState<GameState>>,
 ) {
     player_query
         .iter_mut()
@@ -99,6 +100,8 @@ pub fn update_damage(
                             *actor_action = Action(Act::Hurt);
                         } else {
                             *actor_action = Action(Act::Die);
+                            println!("GameState::Over");
+                            game_state.set(GameState::Over);
                         }
                     }
                 }

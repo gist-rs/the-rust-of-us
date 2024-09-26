@@ -14,7 +14,7 @@ use bevy_stat_bars::RegisterStatbarSubject;
 use big_brain::{BigBrainPlugin, BigBrainSet};
 use brains::{
     behavior::Behavior,
-    fight::{fight_action_system, fight_scorer_system, fight_system},
+    fight::{fight_action_system, fight_scorer_system, fight_system, game_over_system},
     thinker::*,
 };
 use characters::{
@@ -34,6 +34,7 @@ use core::{
     scene::MainPath,
     setup::setup_scene,
     stage::{init_stage, GameStage, Human, Monster},
+    state::GameState,
 };
 use extol_sprite_layer::SpriteLayerPlugin;
 
@@ -78,6 +79,7 @@ fn main() {
         .init_resource::<MainPath>()
         .init_resource::<GameStage>()
         .init_resource::<Damages>()
+        .init_state::<GameState>()
         .add_systems(
             Startup,
             ((
@@ -104,7 +106,17 @@ fn main() {
                 spawn_damage_indicator,
                 despawn_damage_indicator,
                 update_damage,
-            ),
+            )
+                .run_if(in_state(GameState::Running)),
+        )
+        .add_systems(
+            Update,
+            (
+                game_over_system,
+                update_character::<Human>,
+                update_character::<Monster>,
+            )
+                .run_if(in_state(GameState::Over)),
         )
         .add_systems(
             PreUpdate,
@@ -121,7 +133,8 @@ fn main() {
                 // Monster fight with Human
                 fight_action_system::<Monster, Human>,
             )
-                .in_set(BigBrainSet::Actions),
+                .in_set(BigBrainSet::Actions)
+                .run_if(in_state(GameState::Running)),
         )
         .add_systems(First, guarding_scorer_system)
         .add_event::<DamageEvent>()

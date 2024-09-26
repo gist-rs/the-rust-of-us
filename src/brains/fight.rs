@@ -2,6 +2,7 @@ use crate::characters::actions::{Act, Action};
 use crate::core::damage::{Damage, DamageEvent};
 use crate::core::position::Position;
 use crate::core::stage::{CharacterInfo, Human, Monster, Npc};
+use crate::core::state::GameState;
 use crate::find_closest_target;
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use big_brain::prelude::*;
@@ -219,6 +220,27 @@ pub fn fight_action_system<T, U>(
                     *actor_action = Action(Act::Idle);
                 }
                 _ => {}
+            }
+        }
+    }
+}
+
+pub fn game_over_system(
+    mut characters: Query<(&mut Action)>,
+    mut action_query: Query<(&Actor)>,
+    game_state: Res<State<GameState>>,
+) {
+    for (Actor(actor)) in &mut action_query {
+        let (mut actor_action) = characters.get_mut(*actor).expect("😱 actor has no action");
+        // println!("game_state:{:?}", game_state.get());
+        match game_state.get() {
+            GameState::Running => {
+                // Do nothing
+            }
+            GameState::Over => {
+                if actor_action.0 != Act::Die {
+                    *actor_action = Action(Act::Idle);
+                }
             }
         }
     }
