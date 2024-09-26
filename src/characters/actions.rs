@@ -6,10 +6,11 @@ use strum_macros::{Display, EnumString};
 #[allow(dead_code)]
 pub struct Action(pub Act);
 
-#[derive(Deserialize, Debug, Clone, Copy, PartialEq, Eq, EnumString, Display)]
+#[derive(Deserialize, Default, Debug, Clone, Copy, PartialEq, Eq, EnumString, Display)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
 pub enum Act {
+    #[default]
     Idle,
     Walk,
     Attack,
@@ -18,9 +19,10 @@ pub enum Act {
     Die,
 }
 
-#[derive(Deserialize, Debug, PartialEq, Clone)]
+#[derive(Deserialize, Default, Debug, PartialEq, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum LookDirection {
     Left,
+    #[default]
     Right,
 }

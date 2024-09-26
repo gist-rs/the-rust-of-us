@@ -1,12 +1,13 @@
+use super::setup::CharacterId;
+use crate::characters::{
+    actions::{Act, LookDirection},
+    kind::CharacterKind,
+};
 use anyhow::*;
 use bevy::prelude::*;
 use serde::Deserialize;
 use serde_yaml::from_str;
 use std::{fs, slice::Iter};
-
-use crate::characters::actions::{Act, LookDirection};
-
-use super::setup::CharacterId;
 
 #[allow(unused)]
 #[cfg_attr(feature = "bevy", derive(Resource))]
@@ -49,6 +50,7 @@ impl StageInfo for Stage {
 }
 
 pub trait CharacterInfo: Component {
+    fn kind(&self) -> &CharacterKind;
     fn r#type(&self) -> &String;
     fn character_id(&self) -> &CharacterId;
     fn position(&self) -> &String;
@@ -60,8 +62,9 @@ pub trait CharacterInfo: Component {
 
 #[allow(unused)]
 #[cfg_attr(feature = "bevy", derive(Component))]
-#[derive(Deserialize, Clone, Debug)]
+#[derive(Deserialize, Default, Clone, Debug)]
 pub struct Human {
+    pub kind: CharacterKind,
     pub r#type: String,
     pub character_id: CharacterId,
     pub position: String,
@@ -76,6 +79,9 @@ pub struct Human {
 }
 
 impl CharacterInfo for Human {
+    fn kind(&self) -> &CharacterKind {
+        &self.kind
+    }
     fn r#type(&self) -> &String {
         &self.r#type
     }
@@ -105,6 +111,7 @@ impl CharacterInfo for Human {
 #[cfg_attr(feature = "bevy", derive(Component))]
 #[derive(Deserialize, Clone, Debug)]
 pub struct Monster {
+    pub kind: CharacterKind,
     pub r#type: String,
     pub character_id: CharacterId,
     pub position: String,
@@ -118,6 +125,9 @@ pub struct Monster {
 }
 
 impl CharacterInfo for Monster {
+    fn kind(&self) -> &CharacterKind {
+        &self.kind
+    }
     fn r#type(&self) -> &String {
         &self.r#type
     }
@@ -147,6 +157,7 @@ impl CharacterInfo for Monster {
 #[cfg_attr(feature = "bevy", derive(Component))]
 #[derive(Deserialize, Debug)]
 pub struct Npc {
+    pub kind: CharacterKind,
     pub r#type: String,
     pub character_id: CharacterId,
     pub position: String,

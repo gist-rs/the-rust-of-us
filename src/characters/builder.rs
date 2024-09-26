@@ -24,6 +24,8 @@ use bevy_spritesheet_animation::prelude::*;
 use bevy_stat_bars::{Statbar, StatbarObserveEntity};
 use std::fmt::Debug;
 
+use super::kind::CharacterKind;
+
 #[derive(Bundle)]
 struct CharacterBundle<T: Component> {
     sprite_bundle: SpriteBundle,
@@ -33,6 +35,7 @@ struct CharacterBundle<T: Component> {
     marker: T,
     ysort: YSort,
     target_at: TargetAt,
+    kind: CharacterKind,
 }
 
 #[derive(Component)]
@@ -90,6 +93,7 @@ fn build_character<T: CharacterInfo>(
         marker: character_info.get_clone(),
         ysort: YSort(0.0),
         target_at: TargetAt::default(),
+        kind: *character_info.kind(),
     }
 }
 

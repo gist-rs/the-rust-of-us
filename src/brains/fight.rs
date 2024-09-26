@@ -1,4 +1,5 @@
 use crate::characters::actions::{Act, Action};
+use crate::characters::kind::CharacterKind;
 use crate::core::damage::{Damage, DamageEvent};
 use crate::core::position::Position;
 use crate::core::stage::{CharacterInfo, Human, Monster, Npc};
@@ -197,6 +198,7 @@ pub fn fight_action_system<T, U>(
                         };
 
                         let damage = Damage {
+                            friendly: *character_info.kind(),
                             position: damage_position,
                             power: 10. / distance,
                             radius: 48.,

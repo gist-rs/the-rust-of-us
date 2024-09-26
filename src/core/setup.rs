@@ -25,41 +25,8 @@ pub struct PlayerBundle {
     ysort: YSort,
 }
 
-#[derive(Component, Clone, Deserialize, Debug, Eq, PartialEq)]
+#[derive(Component, Default, Clone, Deserialize, Debug, Eq, PartialEq)]
 pub struct CharacterId(pub String);
-
-#[allow(unused)]
-pub fn build_player(
-    asset_server: &Res<AssetServer>,
-    atlas_layouts: &mut ResMut<Assets<TextureAtlasLayout>>,
-    library: &mut ResMut<AnimationLibrary>,
-    ani: Ani,
-) -> PlayerBundle {
-    let clip_fps = 30;
-
-    let libs = build_library(atlas_layouts, library, &ani, clip_fps);
-
-    let texture_path = ani.texture_path.clone();
-    let texture = asset_server.load(texture_path);
-
-    PlayerBundle {
-        sprite_bundle: SpriteBundle {
-            texture,
-            transform: Transform::from_xyz(0.0, 0.0, 0.0).with_scale(Vec3::splat(2.0)),
-            ..default()
-        },
-        texture_atlas: TextureAtlas {
-            layout: libs[0].1.clone(),
-            ..default()
-        },
-        spritesheet_animation: SpritesheetAnimation::from_id(
-            library.animation_with_name("man_idle").unwrap(),
-        ),
-        sprite_layer: SpriteLayer::Ground,
-        marker: Player,
-        ysort: YSort(0.0),
-    }
-}
 
 pub fn setup_scene(
     mut commands: Commands,

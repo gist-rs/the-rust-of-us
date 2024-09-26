@@ -4,17 +4,23 @@ use bevy::{
 };
 use big_brain::{prelude::ActionState, thinker::Actor};
 
-use super::layer::SpriteLayer;
+use super::{
+    layer::SpriteLayer,
+    stage::{CharacterInfo, Human},
+};
 use crate::characters::{
     actions::{Act, Action},
     bar::Health,
+    kind::CharacterKind,
 };
+use std::fmt::Debug;
 
 #[derive(Resource, Default, Debug)]
 pub struct Damages(pub Vec<Damage>);
 
 #[derive(Clone, Default, Debug)]
 pub struct Damage {
+    pub friendly: CharacterKind,
     pub position: Vec2,
     pub power: f32,
     pub radius: f32,
@@ -67,26 +73,34 @@ pub fn despawn_damage_indicator(
 }
 
 pub fn update_damage(
-    mut player_query: Query<(&mut Transform, &mut Health, &mut Action)>,
+    mut player_query: Query<(&CharacterKind, &mut Transform, &mut Health, &mut Action)>,
     mut damage_events: EventReader<DamageEvent>,
 ) {
     player_query
         .iter_mut()
-        .for_each(|(mut player_transform, mut hp, mut actor_action)| {
-            for DamageEvent(damage) in damage_events.read() {
-                // TODO: some bounce from damage
-                // let player_position = Vec2::new(
-                //     player_transform.translation.x,
-                //     player_transform.translation.y,
-                // );
-                // let direction_to_damage = (damage.position - player_position).normalize();
-                // let move_direction = direction_to_damage * damage.power * damage.radius;
-                // player_transform.translation += Vec3::new(move_direction.x, move_direction.y, 0.0);
+        .for_each(|(kind, mut player_transform, mut hp, mut actor_action)| {
+            if actor_action.0 != Act::Die {
+                for DamageEvent(damage) in damage_events.read() {
+                    if *kind != damage.friendly {
+                        // TODO: some bounce from damage
+                        // let player_position = Vec2::new(
+                        //     player_transform.translation.x,
+                        //     player_transform.translation.y,
+                        // );
+                        // let direction_to_damage = (damage.position - player_position).normalize();
+                        // let move_direction = direction_to_damage * damage.power * damage.radius;
+                        // player_transform.translation += Vec3::new(move_direction.x, move_direction.y, 0.0);
 
-                *hp -= damage.power;
+                        *hp -= damage.power;
 
-                // Action
-                *actor_action = Action(Act::Hurt);
+                        // Action
+                        if hp.value > 0. {
+                            *actor_action = Action(Act::Hurt);
+                        } else {
+                            *actor_action = Action(Act::Die);
+                        }
+                    }
+                }
             }
         });
 }
