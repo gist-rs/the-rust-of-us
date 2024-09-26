@@ -23,6 +23,9 @@ use characters::{
 };
 use core::{
     chest::{update_chest, Chest, Chests},
+    damage::{
+        despawn_damage_indicator, spawn_damage_indicator, update_damage, DamageEvent, Damages,
+    },
     gate::{update_gate, Gates},
     grave::Grave,
     layer::{y_sort, SpriteLayer},
@@ -50,7 +53,7 @@ fn main() {
                 .set(WindowPlugin {
                     primary_window: Some(Window {
                         title: "🦀 The Rust of Us".into(),
-                        resolution: WindowResolution::new(320.0, 640.0),
+                        resolution: WindowResolution::new(320.0, 320.0),
                         present_mode: PresentMode::AutoNoVsync,
                         ..default()
                     }),
@@ -74,6 +77,7 @@ fn main() {
         .init_resource::<Gates>()
         .init_resource::<MainPath>()
         .init_resource::<GameStage>()
+        .init_resource::<Damages>()
         .add_systems(
             Startup,
             ((
@@ -96,6 +100,10 @@ fn main() {
                 update_gate,
                 update_character::<Human>,
                 update_character::<Monster>,
+                // Damage
+                spawn_damage_indicator,
+                despawn_damage_indicator,
+                update_damage,
             ),
         )
         .add_systems(
@@ -116,5 +124,6 @@ fn main() {
                 .in_set(BigBrainSet::Actions),
         )
         .add_systems(First, guarding_scorer_system)
+        .add_event::<DamageEvent>()
         .run();
 }

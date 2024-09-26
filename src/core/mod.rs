@@ -1,4 +1,5 @@
 pub mod chest;
+pub mod damage;
 pub mod gate;
 pub mod grave;
 pub mod layer;

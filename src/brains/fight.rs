@@ -1,4 +1,5 @@
 use crate::characters::actions::{Act, Action};
+use crate::core::damage::{Damage, DamageEvent};
 use crate::core::position::Position;
 use crate::core::stage::{CharacterInfo, Human, Monster, Npc};
 use crate::find_closest_target;
@@ -131,11 +132,12 @@ pub fn fight_action_system<T, U>(
     time: Res<Time>,
     mut fights: Query<&mut Fighter>,
     mut characters: Query<
-        (&mut TargetAt, &mut Position, &mut Action, &mut Sprite),
+        (&mut TargetAt, &mut Position, &mut Action, &mut Sprite, &T),
         (With<T>, Without<U>),
     >,
     targets: Query<&Position, With<U>>,
     mut action_query: Query<(&Actor, &mut ActionState, &Fight, &ActionSpan)>,
+    mut damage_events: EventWriter<DamageEvent>,
 ) where
     T: CharacterInfo + Clone + Debug + 'static,
     U: CharacterInfo + Clone + Debug + 'static,
@@ -146,7 +148,7 @@ pub fn fight_action_system<T, U>(
         // Use the fight_action's actor to look up the corresponding Fighter Component.
         if let Ok(mut fight) = fights.get_mut(*actor) {
             // Look up the actor's action.
-            let (mut actor_target_at, actor_position, mut actor_action, mut sprite) =
+            let (mut actor_target_at, actor_position, mut actor_action, mut sprite, character_info) =
                 characters.get_mut(*actor).expect("😱 actor has no action");
 
             match *state {
@@ -184,6 +186,21 @@ pub fn fight_action_system<T, U>(
 
                         // Action
                         *actor_action = Action(Act::Attack);
+
+                        // Damage
+                        let delta = closest_target.position - actor_position.position;
+                        let distance = delta.length();
+                        let direction = delta.normalize_or_zero();
+                        let damage = Damage {
+                            position: actor_position.position,
+                            power: 10. / distance,
+                            radius: 48.,
+                            direction,
+                            duration: 0.5,
+                        };
+
+                        // Send the DamageEvent
+                        damage_events.send(DamageEvent(damage));
                     }
                 }
                 // All Actions should make sure to handle cancellations!
