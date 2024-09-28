@@ -25,8 +25,7 @@ use characters::{
 use core::{
     chest::{update_chest, Chest, Chests},
     damage::{
-        despawn_damage_indicator, despawn_fighter_on_death_system, spawn_damage_indicator,
-        update_damage, DamageEvent, Damages,
+        despawn_damage_indicator, spawn_damage_indicator, update_damage, DamageEvent, Damages,
     },
     gate::{update_gate, Gates},
     grave::Grave,
@@ -92,7 +91,6 @@ fn main() {
             )
                 .chain(),),
         )
-        .add_systems(Update, (despawn_damage_indicator,))
         .add_systems(
             Update,
             (
@@ -110,20 +108,17 @@ fn main() {
                 // Damage
                 spawn_damage_indicator,
                 update_damage,
-                // Die
-                despawn_fighter_on_death_system::<Human>,
-                despawn_fighter_on_death_system::<Monster>,
+                // // Die
+                // despawn_fighter_on_death_system::<Human>,
+                // despawn_fighter_on_death_system::<Monster>,
+                despawn_damage_indicator,
+                // death_system,
             )
                 .run_if(in_state(GameState::Running)),
         )
         .add_systems(
             Update,
-            (
-                game_over_system,
-                update_character::<Human>,
-                update_character::<Monster>,
-            )
-                .run_if(in_state(GameState::Over)),
+            (game_over_system,).run_if(in_state(GameState::Over)),
         )
         .add_systems(
             PreUpdate,

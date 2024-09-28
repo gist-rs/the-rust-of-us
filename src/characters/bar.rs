@@ -68,7 +68,7 @@ where
     }
 }
 
-#[derive(Component, Default, Reflect, Debug)]
+#[derive(Component, Default, Reflect, Debug, Copy, Clone)]
 #[reflect(Component)]
 pub struct HealthValue;
 

@@ -76,15 +76,19 @@ pub fn despawn_damage_indicator(
     }
 }
 
+#[derive(Component)]
+pub struct Death;
+
 pub fn update_damage(
-    mut targets: Query<(&CharacterKind, &mut Health, &mut Action)>,
+    mut commands: Commands,
+    mut targets: Query<(Entity, &CharacterKind, &mut Health, &mut Action)>,
     mut damage_events: EventReader<DamageEvent>,
-    mut game_state: ResMut<NextState<GameState>>,
+    // mut game_state: ResMut<NextState<GameState>>,
 ) {
     for DamageEvent(damage) in damage_events.read() {
         targets
             .iter_mut()
-            .for_each(|(kind, mut hp, mut actor_action)| {
+            .for_each(|(entity, kind, mut hp, mut actor_action)| {
                 if actor_action.0 != Act::Die && *kind != damage.by {
                     // TODO: some bounce from damage
                     // let player_position = Vec2::new(
@@ -102,25 +106,29 @@ pub fn update_damage(
                         *actor_action = Action(Act::Hurt);
                     } else {
                         *actor_action = Action(Act::Die);
+                        println!("💥 actor_action: {:?}", actor_action.0);
 
-                        println!("GameState::Over");
-                        game_state.set(GameState::Over);
+                        commands.entity(entity).insert(Death);
+                        commands.entity(entity).remove::<Fighter>();
+
+                        // println!("💥  GameState::Over");
+                        // game_state.set(GameState::Over);
                     }
                 }
             });
     }
 }
 
-pub fn despawn_fighter_on_death_system<T>(
-    mut commands: Commands,
-    mut characters: Query<(Entity, &Action), With<T>>,
-) where
-    T: CharacterInfo + 'static,
-{
-    for (entity, action) in characters.iter_mut() {
-        if action.0 == Act::Die {
-            commands.entity(entity).remove::<Fighter>();
-            println!("💥 remove:Fighter");
-        }
-    }
-}
+// pub fn despawn_fighter_on_death_system<T>(
+//     mut commands: Commands,
+//     mut characters: Query<(Entity, &Action),( With<T>, With<Fighter>, WithOut<Death>)>,
+// ) where
+//     T: CharacterInfo + 'static,
+// {
+//     for (entity, action) in characters.iter_mut() {
+//         if action.0 == Act::Die {
+//             commands.entity(entity).remove::<Fighter>();
+//             println!("💥 remove:Fighter");
+//         }
+//     }
+// }

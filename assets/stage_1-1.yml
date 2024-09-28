@@ -28,7 +28,7 @@ enemies:
     look_direction: right
     act: idle
     line_of_sight: 100
-    attack: 5
+    attack: 1
     defend: 10
     health: 100
     mindsets:

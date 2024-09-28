@@ -4,11 +4,14 @@ use big_brain::prelude::*;
 
 use crate::char_type;
 use crate::characters::actions::{Act, Action};
+use crate::characters::bar::Health;
 use crate::core::chest::Chest;
+use crate::core::damage::Death;
 use crate::core::grave::Grave;
 use crate::core::point::Exit;
 use crate::core::position::Position;
 use crate::core::stage::{CharacterInfo, Human, Monster, Npc};
+use std::cmp::Ordering;
 use std::fmt::Debug;
 
 use super::fight::{Fight, FightScorer};
@@ -49,9 +52,9 @@ pub struct LookAround {
 #[allow(clippy::type_complexity)]
 pub fn guard_action_system<T: Component + Debug + Clone>(
     time: Res<Time>,
-    mut guards: Query<(&Position, &mut Guard), Without<T>>,
-    targets: Query<&Position, With<T>>,
-    mut query: Query<(&Actor, &mut ActionState, &LookAround, &ActionSpan)>,
+    mut guards: Query<(&Position, &mut Guard), (Without<T>, Without<Death>)>,
+    targets: Query<&Position, (With<T>, Without<Death>)>,
+    mut query: Query<(&Actor, &mut ActionState, &LookAround, &ActionSpan), Without<Death>>,
 ) {
     // Loop through all actions, just like you'd loop over all entities in any other query.
     for (Actor(actor), mut state, look_around, span) in &mut query {
@@ -105,7 +108,7 @@ pub struct Duty;
 
 pub fn guarding_scorer_system(
     guards: Query<&Guard>,
-    mut query: Query<(&Actor, &mut Score), With<Duty>>,
+    mut query: Query<(&Actor, &mut Score), (With<Duty>, Without<Death>)>,
 ) {
     for (Actor(actor), mut score) in &mut query {
         if let Ok(guard) = guards.get(*actor) {
@@ -124,17 +127,16 @@ where
         id if id == char_type!(Human) => {
             let move_and_guard = Steps::build()
                 .label("MoveAndGuard")
-                .step(MoveToNearest::<Monster>::new(MOVEMENT_SPEED, MAX_DISTANCE))
-                .step(LookAround {
-                    per_second: 25.0,
-                    distance: MAX_DISTANCE,
-                })
                 .step(MoveToNearest::<Chest>::new(MOVEMENT_SPEED, MAX_DISTANCE))
                 .step(LookAround {
                     per_second: 25.0,
                     distance: MAX_DISTANCE,
                 })
-                .step(MoveToNearest::<Exit>::new(MOVEMENT_SPEED, MAX_DISTANCE));
+                .step(MoveToNearest::<Exit>::new(MOVEMENT_SPEED, MAX_DISTANCE))
+                .step(LookAround {
+                    per_second: 25.0,
+                    distance: MAX_DISTANCE,
+                });
 
             let move_and_fight = Steps::build()
                 .label("MoveAndFight")
@@ -146,7 +148,7 @@ where
 
             Thinker::build()
                 .label("GuardingThinker")
-                .picker(FirstToScore { threshold: 0.8 })
+                .picker(Highest)
                 .when(FightScorer, move_and_fight)
                 .when(Duty, move_and_guard)
         }
@@ -170,7 +172,7 @@ where
 
             Thinker::build()
                 .label("GuardingThinker")
-                .picker(FirstToScore { threshold: 0.8 })
+                .picker(Highest)
                 .when(FightScorer, move_and_fight)
                 .when(Duty, move_and_guard)
         }
@@ -200,8 +202,22 @@ impl<T: Component + Debug + Clone> MoveToNearest<T> {
     }
 }
 
+pub fn find_closest_target_with_health<T: Component + Debug + Clone>(
+    targets: &Query<(&Health, &Position), (With<T>, Without<Death>)>,
+    actor_position: &Position,
+) -> Option<(f32, Position)> {
+    targets
+        .iter()
+        .min_by(|(_, a_pos), (_, b_pos)| {
+            let da = (a_pos.position - actor_position.position).length_squared();
+            let db = (b_pos.position - actor_position.position).length_squared();
+            da.partial_cmp(&db).unwrap_or(Ordering::Equal)
+        })
+        .map(|(health, pos)| (health.value, pos.clone()))
+}
+
 pub fn find_closest_target<T: Component + Debug + Clone>(
-    targets: &Query<&Position, With<T>>,
+    targets: &Query<&Position, (With<T>, Without<Death>)>,
     actor_position: &Position,
 ) -> Option<Position> {
     targets
@@ -209,7 +225,7 @@ pub fn find_closest_target<T: Component + Debug + Clone>(
         .min_by(|a, b| {
             let da = (a.position - actor_position.position).length_squared();
             let db = (b.position - actor_position.position).length_squared();
-            da.partial_cmp(&db).unwrap()
+            da.partial_cmp(&db).unwrap_or(Ordering::Equal)
         })
         .cloned()
 }
@@ -217,9 +233,15 @@ pub fn find_closest_target<T: Component + Debug + Clone>(
 #[allow(clippy::type_complexity)]
 pub fn move_to_nearest_system<T: Component + Debug + Clone>(
     time: Res<Time>,
-    targets: Query<&Position, With<T>>,
-    mut characters: Query<(&mut Position, &mut Action), (With<HasThinker>, Without<T>)>,
-    mut action_query: Query<(&Actor, &mut ActionState, &MoveToNearest<T>, &ActionSpan)>,
+    targets: Query<&Position, (With<T>, Without<Death>)>,
+    mut characters: Query<
+        (&mut Position, &mut Action),
+        (With<HasThinker>, Without<T>, Without<Death>),
+    >,
+    mut action_query: Query<
+        (&Actor, &mut ActionState, &MoveToNearest<T>, &ActionSpan),
+        Without<Death>,
+    >,
 ) {
     if targets.is_empty() {
         return;
@@ -236,41 +258,40 @@ pub fn move_to_nearest_system<T: Component + Debug + Clone>(
             }
             ActionState::Executing => {
                 // Look up the actor's position.
-                let (mut actor_position, mut actor_action) =
-                    characters.get_mut(*actor).expect("actor has no position");
+                if let Ok((mut actor_position, mut actor_action)) = characters.get_mut(*actor) {
+                    // Look up the target closest to them.
+                    match find_closest_target::<T>(&targets, &actor_position) {
+                        Some(closest_target) => {
+                            // Find how far we are from it.
+                            let delta = closest_target.position - actor_position.position;
 
-                // Look up the target closest to them.
-                match find_closest_target::<T>(&targets, &actor_position) {
-                    Some(closest_target) => {
-                        // Find how far we are from it.
-                        let delta = closest_target.position - actor_position.position;
+                            let distance = delta.length();
 
-                        let distance = delta.length();
+                            trace!("Distance: {}", distance);
 
-                        trace!("Distance: {}", distance);
+                            if distance > move_to.distance {
+                                trace!("Stepping closer.");
 
-                        if distance > move_to.distance {
-                            trace!("Stepping closer.");
+                                let step_size = time.delta_seconds() * move_to.speed;
+                                let step = delta.normalize() * step_size.min(distance);
 
-                            let step_size = time.delta_seconds() * move_to.speed;
-                            let step = delta.normalize() * step_size.min(distance);
+                                // Move the actor.
+                                actor_position.position += step;
 
-                            // Move the actor.
-                            actor_position.position += step;
+                                // Action
+                                *actor_action = Action(Act::Walk);
+                            } else {
+                                // debug!("🔥 We got there!");
 
-                            // Action
-                            *actor_action = Action(Act::Walk);
-                        } else {
-                            // debug!("🔥 We got there!");
+                                *action_state = ActionState::Success;
 
-                            *action_state = ActionState::Success;
-
-                            // Action
-                            *actor_action = Action(Act::Idle);
+                                // Action
+                                *actor_action = Action(Act::Idle);
+                            }
                         }
-                    }
-                    None => {
-                        // TODO
+                        None => {
+                            // TODO
+                        }
                     }
                 }
             }

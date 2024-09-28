@@ -248,6 +248,7 @@ pub fn update_character<T>(
                                     > actor_target_at_position.position.x;
 
                                 // TODO: use total frame /2
+                                // TOFIX: damage position max to radius
                                 if animation.progress.frame == 3 && ani_action.act != Act::Attack {
                                     // Damage
                                     let actor_position = character_position;
@@ -278,7 +279,7 @@ pub fn update_character<T>(
                             };
                         }
                         Act::Die => {
-                            // TODO: play once
+                            // TODO: play once by value from char.json
                             let total_frame = match character_info.kind() {
                                 CharacterKind::Human => 12,
                                 CharacterKind::Monster => 9,
@@ -301,6 +302,7 @@ pub fn update_character<T>(
 
                     if let Some(animation_id) = library.animation_with_name(animation_name) {
                         if animation.animation_id != animation_id {
+                            debug!("🥹 ACT: {}", action.0);
                             animation.switch(animation_id);
                         }
                     }
