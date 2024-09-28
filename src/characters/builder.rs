@@ -11,6 +11,7 @@ use crate::{
         entities::CharacterId,
     },
     core::{
+        damage::{Damage, DamageEvent},
         layer::{SpriteLayer, YSort},
         library::{build_library, Ani},
         map::{convert_map_to_screen, get_position_from_map},
@@ -178,6 +179,7 @@ pub fn init_character<T>(
 
 #[allow(clippy::complexity)]
 pub fn update_character<T>(
+    mut commands: Commands,
     game_stage: Res<GameStage>,
     mut characters: Query<
         (
@@ -189,10 +191,12 @@ pub fn update_character<T>(
             &mut SpritesheetAnimation,
             &mut Action,
             &mut TargetAt,
+            &T,
         ),
         With<CharacterMarker>,
     >,
     library: Res<AnimationLibrary>,
+    mut damage_events: EventWriter<DamageEvent>,
 ) where
     T: CharacterInfo + 'static,
 {
@@ -207,6 +211,7 @@ pub fn update_character<T>(
                 mut animation,
                 action,
                 actor_target_at,
+                character_info,
             ) in characters.iter_mut()
             {
                 if character.character_id() == character_id {
@@ -226,13 +231,45 @@ pub fn update_character<T>(
                             if let Some(actor_target_at_position) = actor_target_at.position {
                                 sprite.flip_x = character_transform.translation.x
                                     > actor_target_at_position.position.x;
+
+                                // TODO: use total frame /2
+                                if animation.progress.frame == 5 {
+                                    // Damage
+                                    let actor_position = character_position;
+                                    let delta =
+                                        actor_target_at_position.position - actor_position.position;
+                                    let _distance = delta.length();
+                                    let direction = delta.normalize_or_zero();
+                                    let damage_position = actor_position.position + delta;
+
+                                    let damage = Damage {
+                                        by: *character_info.kind(),
+                                        position: damage_position,
+                                        power: character_info.attack() as f32,
+                                        radius: 48.,
+                                        direction,
+                                        duration: 0.5,
+                                    };
+
+                                    println!("💥 DamageEvent:{:?}", damage);
+                                    damage_events.send(DamageEvent(damage));
+                                };
                             };
                         }
                         Act::Die => {
-                            if animation.progress.repetition >= 1 && animation.progress.frame == 12
+                            // TODO: play once
+                            let total_frame = match character_info.kind() {
+                                CharacterKind::Human => 12,
+                                CharacterKind::Monster => 9,
+                                CharacterKind::Animal => todo!(),
+                            };
+
+                            if animation.progress.repetition >= 1
+                                && animation.progress.frame == total_frame
                             {
                                 animation.playing = false;
-                            }
+                                // TODO: despawn
+                            };
                         }
                         _ => (),
                     }

@@ -2,9 +2,7 @@ use bevy::prelude::*;
 use bevy_stat_bars::*;
 use std::marker::PhantomData;
 
-use crate::core::stage::Monster;
-
-#[derive(Component, Reflect)]
+#[derive(Component, Reflect, Debug)]
 #[reflect(Component)]
 pub struct Stat<T>
 where
@@ -70,24 +68,24 @@ where
     }
 }
 
-#[derive(Component, Default, Reflect)]
+#[derive(Component, Default, Reflect, Debug)]
 #[reflect(Component)]
 pub struct HealthValue;
 
 pub type Health = Stat<HealthValue>;
 
-pub fn adjust_stats(
-    time: Res<Time>,
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut hp_query: Query<&mut Health, With<Monster>>,
-) {
-    let delta = 5.0 * time.delta_seconds();
-    hp_query.iter_mut().for_each(|mut hp| {
-        if keyboard_input.pressed(KeyCode::KeyA) {
-            *hp -= delta;
-        }
-        if keyboard_input.pressed(KeyCode::KeyS) {
-            *hp += delta;
-        }
-    });
-}
+// pub fn adjust_stats(
+//     time: Res<Time>,
+//     keyboard_input: Res<ButtonInput<KeyCode>>,
+//     mut hp_query: Query<&mut Health, With<Monster>>,
+// ) {
+//     let delta = 5.0 * time.delta_seconds();
+//     hp_query.iter_mut().for_each(|mut hp| {
+//         if keyboard_input.pressed(KeyCode::KeyA) {
+//             *hp -= delta;
+//         }
+//         if keyboard_input.pressed(KeyCode::KeyS) {
+//             *hp += delta;
+//         }
+//     });
+// }

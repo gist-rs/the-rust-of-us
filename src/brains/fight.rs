@@ -1,9 +1,8 @@
 use crate::characters::actions::{Act, Action};
-use crate::core::damage::{Damage, DamageEvent};
 use crate::core::position::Position;
 use crate::core::stage::{CharacterInfo, Human, Monster, Npc};
 use crate::core::state::GameState;
-use crate::find_closest_target;
+use crate::{char_type, find_closest_target};
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use big_brain::prelude::*;
 use std::fmt::Debug;
@@ -40,47 +39,45 @@ pub fn fight_system<T, U>(
     T: CharacterInfo + Clone + Debug + Component + 'static,
     U: CharacterInfo + Clone + Debug + Component + 'static,
 {
-    match std::any::TypeId::of::<T>() {
-        id if id == std::any::TypeId::of::<Human>() => (),
-        id if id == std::any::TypeId::of::<Monster>() => {
+    match char_type!(T) {
+        id if id == char_type!(Human) || id == char_type!(Monster) => {
             for Actor(actor) in &mut action_query {
                 // Use the fight_action's actor to look up the corresponding Fighter Component.
                 if let Ok(mut fight) = fights.get_mut(*actor) {
                     // Look up the actor's action.
-                    let (actor_position, character_info) =
-                        characters.get_mut(*actor).expect("😱 actor has no action");
+                    if let Ok((actor_position, character_info)) = characters.get_mut(*actor) {
+                        // Look up the target closest to them.
+                        let closest_target = find_closest_target::<U>(&targets, &actor_position);
 
-                    // Look up the target closest to them.
-                    let closest_target = find_closest_target::<U>(&targets, &actor_position);
+                        // Find how far we are from it.
+                        let delta = closest_target.position - actor_position.position;
+                        let distance = delta.length();
 
-                    // Find how far we are from it.
-                    let delta = closest_target.position - actor_position.position;
-                    let distance = delta.length();
-
-                    // Get angry when Human getting close.
-                    if distance < character_info.line_of_sight() {
-                        fight.angry += fight.per_second * time.delta_seconds();
-                        if fight.angry >= 100.0 {
-                            fight.angry = 100.0;
+                        // Get angry when enemy getting close.
+                        if distance < character_info.line_of_sight() {
+                            fight.angry += fight.per_second * time.delta_seconds();
+                            if fight.angry >= 100.0 {
+                                fight.angry = 100.0;
+                            }
+                            trace!("Fight.angry: {}", fight.angry);
                         }
-                        trace!("Fight.angry: {}", fight.angry);
                     }
                 }
             }
         }
-        id if id == std::any::TypeId::of::<Npc>() => (),
+        id if id == char_type!(Npc) => (),
         _ => (),
     }
 }
 
+#[allow(clippy::type_complexity)]
 pub fn fight_scorer_system<T: Component + Debug + Clone>(
     mut last_score: Local<Option<f32>>,
     fights: Query<&Fighter>,
     mut query: Query<(&Actor, &mut Score, &ScorerSpan), With<FightScorer>>,
 ) {
-    match std::any::TypeId::of::<T>() {
-        id if id == std::any::TypeId::of::<Human>() => (),
-        id if id == std::any::TypeId::of::<Monster>() => {
+    match char_type!(T) {
+        id if id == char_type!(Human) || id == char_type!(Monster) => {
             for (Actor(actor), mut score, span) in &mut query {
                 if let Ok(fight) = fights.get(*actor) {
                     let new_score = fight.angry / 100.0;
@@ -102,7 +99,7 @@ pub fn fight_scorer_system<T: Component + Debug + Clone>(
                 }
             }
         }
-        id if id == std::any::TypeId::of::<Npc>() => (),
+        id if id == char_type!(Npc) => (),
         _ => (),
     }
 }
@@ -111,9 +108,8 @@ pub fn get_fighter<T>(entity_commands: &mut EntityCommands)
 where
     T: CharacterInfo + Clone + Debug + 'static,
 {
-    match std::any::TypeId::of::<T>() {
-        id if id == std::any::TypeId::of::<Human>() => (),
-        id if id == std::any::TypeId::of::<Monster>() => {
+    match char_type!(T) {
+        id if id == char_type!(Human) || id == char_type!(Monster) => {
             entity_commands.insert((
                 Fighter {
                     is_fighting: false,
@@ -123,7 +119,7 @@ where
                 FightScorer,
             ));
         }
-        id if id == std::any::TypeId::of::<Npc>() => (),
+        id if id == char_type!(Npc) => (),
         _ => (),
     }
 }
@@ -133,113 +129,94 @@ pub fn fight_action_system<T, U>(
     time: Res<Time>,
     mut fights: Query<&mut Fighter>,
     mut characters: Query<
-        (&mut TargetAt, &mut Position, &mut Action, &mut Sprite, &T),
+        (&mut TargetAt, &mut Position, &mut Action, &mut Sprite),
         (With<T>, Without<U>),
     >,
     targets: Query<&Position, With<U>>,
     mut action_query: Query<(&Actor, &mut ActionState, &Fight, &ActionSpan)>,
-    mut damage_events: EventWriter<DamageEvent>,
 ) where
     T: CharacterInfo + Clone + Debug + 'static,
     U: CharacterInfo + Clone + Debug + 'static,
 {
-    for (Actor(actor), mut state, sleep, span) in &mut action_query {
+    for (Actor(actor), mut state, fight, span) in &mut action_query {
         let _guard = span.span().enter();
 
         // Use the fight_action's actor to look up the corresponding Fighter Component.
-        if let Ok(mut fight) = fights.get_mut(*actor) {
+        if let Ok(mut fighter) = fights.get_mut(*actor) {
             // Look up the actor's action.
-            let (mut actor_target_at, actor_position, mut actor_action, mut sprite, character_info) =
-                characters.get_mut(*actor).expect("😱 actor has no action");
+            if let Ok((mut actor_target_at, actor_position, mut actor_action, mut sprite)) =
+                characters.get_mut(*actor)
+            {
+                match *state {
+                    ActionState::Requested => {
+                        debug!("🦀 Time to fight!");
+                        fighter.is_fighting = true;
+                        *state = ActionState::Executing;
+                    }
+                    ActionState::Executing => {
+                        trace!("Fighting...");
+                        // TODO: Fight until target hp reach 0 or target position out of range.
+                        fighter.angry -= fight.per_second * time.delta_seconds();
 
-            match *state {
-                ActionState::Requested => {
-                    debug!("🦀 Time to fight!");
-                    fight.is_fighting = true;
-                    *state = ActionState::Executing;
-                }
-                ActionState::Executing => {
-                    trace!("Fighting...");
-                    // TODO: Fight until target hp reach 0 or target position out of range.
-                    fight.angry -= sleep.per_second * time.delta_seconds();
+                        if fighter.angry <= fight.until {
+                            // To "finish" an action, we set its state to Success or
+                            // Failure.
+                            debug!("🦀 Fight complete!");
+                            fighter.is_fighting = false;
+                            *state = ActionState::Success;
 
-                    if fight.angry <= sleep.until {
-                        // To "finish" an action, we set its state to Success or
-                        // Failure.
-                        debug!("🦀 Fight complete!");
-                        fight.is_fighting = false;
-                        *state = ActionState::Success;
+                            // Unlock target
+                            actor_target_at.position = None;
 
-                        // Unlock target
-                        actor_target_at.position = None;
+                            // Action
+                            *actor_action = Action(Act::Idle);
+                        } else {
+                            // Look up the target closest to them.
+                            let closest_target =
+                                find_closest_target::<U>(&targets, &actor_position);
+
+                            // Look direction
+                            sprite.flip_x = actor_position.position.x > closest_target.position.x;
+
+                            // Lock target
+                            actor_target_at.position = Some(closest_target);
+
+                            // Action
+                            *actor_action = Action(Act::Attack);
+                        }
+                    }
+                    // All Actions should make sure to handle cancellations!
+                    ActionState::Cancelled => {
+                        debug!("Fight was interrupted.");
+                        fighter.is_fighting = false;
+                        *state = ActionState::Failure;
 
                         // Action
                         *actor_action = Action(Act::Idle);
-                    } else {
-                        // Look up the target closest to them.
-                        let closest_target = find_closest_target::<U>(&targets, &actor_position);
-
-                        // Look direction
-                        sprite.flip_x = actor_position.position.x > closest_target.position.x;
-
-                        // Lock target
-                        actor_target_at.position = Some(closest_target);
-
-                        // Action
-                        *actor_action = Action(Act::Attack);
-
-                        // Damage
-                        let delta = closest_target.position - actor_position.position;
-                        let distance = delta.length();
-                        let direction = delta.normalize_or_zero();
-                        let damage_position = match delta.x {
-                            x if x > 0.0 => actor_position.position - delta,
-                            _ => actor_position.position + delta,
-                        };
-
-                        let damage = Damage {
-                            friendly: *character_info.kind(),
-                            position: damage_position,
-                            power: 10. / distance,
-                            radius: 48.,
-                            direction,
-                            duration: 0.5,
-                        };
-
-                        // Send the DamageEvent
-                        damage_events.send(DamageEvent(damage));
                     }
+                    _ => {}
                 }
-                // All Actions should make sure to handle cancellations!
-                ActionState::Cancelled => {
-                    debug!("Fight was interrupted.");
-                    fight.is_fighting = false;
-                    *state = ActionState::Failure;
-
-                    // Action
-                    *actor_action = Action(Act::Idle);
-                }
-                _ => {}
             }
         }
     }
 }
 
 pub fn game_over_system(
-    mut characters: Query<(&mut Action)>,
-    mut action_query: Query<(&Actor)>,
+    mut characters: Query<&mut Action>,
+    mut action_query: Query<&Actor>,
     game_state: Res<State<GameState>>,
 ) {
-    for (Actor(actor)) in &mut action_query {
-        let (mut actor_action) = characters.get_mut(*actor).expect("😱 actor has no action");
-        // println!("game_state:{:?}", game_state.get());
-        match game_state.get() {
-            GameState::Running => {
-                // Do nothing
-            }
-            GameState::Over => {
-                if actor_action.0 != Act::Die {
-                    *actor_action = Action(Act::Idle);
+    for Actor(actor) in &mut action_query {
+        if let Ok(mut actor_action) = characters.get_mut(*actor) {
+            // println!("game_state:{:?}", game_state.get());
+            match game_state.get() {
+                GameState::Running => {
+                    // Do nothing
+                }
+                GameState::Over => {
+                    if actor_action.0 != Act::Die {
+                        *actor_action = Action(Act::Idle);
+                    }
                 }
             }
         }

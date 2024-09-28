@@ -1,6 +1,7 @@
 mod brains;
 mod characters;
 mod core;
+mod macros;
 
 use bevy::{
     log::LogPlugin,
@@ -18,13 +19,14 @@ use brains::{
     thinker::*,
 };
 use characters::{
-    bar::{adjust_stats, Health},
+    bar::Health,
     builder::{init_character, update_character},
 };
 use core::{
     chest::{update_chest, Chest, Chests},
     damage::{
-        despawn_damage_indicator, spawn_damage_indicator, update_damage, DamageEvent, Damages,
+        despawn_damage_indicator, despawn_fighter_on_death_system, spawn_damage_indicator,
+        update_damage, DamageEvent, Damages,
     },
     gate::{update_gate, Gates},
     grave::Grave,
@@ -94,18 +96,23 @@ fn main() {
             Update,
             (
                 y_sort,
-                adjust_stats,
+                // adjust_stats,
                 button_system,
                 guard_system,
-                fight_system::<Monster, Human>,
                 update_chest,
                 update_gate,
                 update_character::<Human>,
                 update_character::<Monster>,
+                // Fight
+                fight_system::<Monster, Human>,
+                fight_system::<Human, Monster>,
                 // Damage
                 spawn_damage_indicator,
                 despawn_damage_indicator,
                 update_damage,
+                // Die
+                despawn_fighter_on_death_system::<Human>,
+                despawn_fighter_on_death_system::<Monster>,
             )
                 .run_if(in_state(GameState::Running)),
         )
@@ -125,13 +132,20 @@ fn main() {
                 move_to_nearest_system::<Chest>,
                 move_to_nearest_system::<Grave>,
                 move_to_nearest_system::<Exit>,
-                // --- FIGHT ---
-                // Monster seek for Human
-                fight_scorer_system::<Monster>,
-                // Monster follow Human
-                move_to_nearest_system::<Human>,
-                // Monster fight with Human
-                fight_action_system::<Monster, Human>,
+                // // --- Monster Fight ---
+                // // Monster seek for Human
+                // fight_scorer_system::<Monster>,
+                // // Monster follow Human
+                // move_to_nearest_system::<Human>,
+                // // Monster fight with Human
+                // fight_action_system::<Monster, Human>,
+                // --- Human Fight ---
+                // Human seek for Monster
+                fight_scorer_system::<Human>,
+                // Human follow Monster
+                move_to_nearest_system::<Monster>,
+                // Human fight with Monster
+                fight_action_system::<Human, Monster>,
             )
                 .in_set(BigBrainSet::Actions)
                 .run_if(in_state(GameState::Running)),

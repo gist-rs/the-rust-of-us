@@ -4,12 +4,13 @@ humans:
   - kind: human
     ani_type: man
     character_id: man_0
-    position: f2
+    position: g5
     look_direction: left
     act: idle
     line_of_sight: 200
-    attack: 2
-    defend: 2
+    attack: 1
+    agility: 1
+    defend: 1
     health: 100
     tasks:
       - "find the chest"
@@ -29,6 +30,7 @@ enemies:
     act: idle
     line_of_sight: 100
     attack: 1
+    agility: 1
     defend: 1
     health: 10
     mindsets:

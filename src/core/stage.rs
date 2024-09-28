@@ -1,6 +1,9 @@
-use crate::characters::{
-    actions::{Act, LookDirection},
-    entities::{AniType, CharacterId, CharacterKind},
+use crate::{
+    char_type,
+    characters::{
+        actions::{Act, LookDirection},
+        entities::{AniType, CharacterId, CharacterKind},
+    },
 };
 use anyhow::*;
 use bevy::prelude::*;
@@ -30,16 +33,16 @@ impl StageInfo for Stage {
     where
         T: 'static,
     {
-        match std::any::TypeId::of::<T>() {
-            id if id == std::any::TypeId::of::<Human>() => {
+        match char_type!(T) {
+            id if id == char_type!(Human) => {
                 let humans: &[T] = unsafe { std::mem::transmute(&self.humans[..]) };
                 Some(humans.iter())
             }
-            id if id == std::any::TypeId::of::<Monster>() => {
+            id if id == char_type!(Monster) => {
                 let enemies: &[T] = unsafe { std::mem::transmute(&self.enemies[..]) };
                 Some(enemies.iter())
             }
-            id if id == std::any::TypeId::of::<Npc>() => {
+            id if id == char_type!(Npc) => {
                 let npcs: &[T] = unsafe { std::mem::transmute(&self.npcs[..]) };
                 Some(npcs.iter())
             }
@@ -57,6 +60,8 @@ pub trait CharacterInfo: Component {
     fn act(&self) -> &Act;
     fn get_clone(&self) -> Self;
     fn line_of_sight(&self) -> f32;
+    fn attack(&self) -> u32;
+    fn agility(&self) -> u32;
 }
 
 #[allow(unused)]
@@ -71,6 +76,7 @@ pub struct Human {
     pub act: Act,
     pub line_of_sight: f32,
     pub attack: u32,
+    pub agility: u32,
     pub defend: u32,
     pub health: u32,
     pub tasks: Vec<String>,
@@ -96,13 +102,17 @@ impl CharacterInfo for Human {
     fn act(&self) -> &Act {
         &self.act
     }
-
     fn get_clone(&self) -> Self {
         self.clone()
     }
-
     fn line_of_sight(&self) -> f32 {
         self.line_of_sight
+    }
+    fn attack(&self) -> u32 {
+        self.attack
+    }
+    fn agility(&self) -> u32 {
+        self.agility
     }
 }
 
@@ -118,6 +128,7 @@ pub struct Monster {
     pub act: Act,
     pub line_of_sight: f32,
     pub attack: u32,
+    pub agility: u32,
     pub defend: u32,
     pub health: u32,
     pub mindsets: Vec<String>,
@@ -142,13 +153,17 @@ impl CharacterInfo for Monster {
     fn act(&self) -> &Act {
         &self.act
     }
-
     fn get_clone(&self) -> Self {
         self.clone()
     }
-
     fn line_of_sight(&self) -> f32 {
         self.line_of_sight
+    }
+    fn attack(&self) -> u32 {
+        self.attack
+    }
+    fn agility(&self) -> u32 {
+        self.agility
     }
 }
 

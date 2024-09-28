@@ -2,7 +2,10 @@ use bevy::prelude::*;
 use bevy::utils::tracing::{debug, trace};
 use big_brain::prelude::*;
 
+use crate::char_type;
 use crate::characters::actions::{Act, Action};
+use crate::characters::bar::Health;
+use crate::core::grave::Grave;
 use crate::core::point::Exit;
 use crate::core::stage::{CharacterInfo, Human, Monster, Npc};
 use crate::core::{chest::Chest, position::Position};
@@ -112,35 +115,20 @@ pub fn get_thinker<T>() -> ThinkerBuilder
 where
     T: CharacterInfo + Clone + Debug + 'static,
 {
-    match std::any::TypeId::of::<T>() {
-        id if id == std::any::TypeId::of::<Human>() => {
+    match char_type!(T) {
+        id if id == char_type!(Human) => {
             let move_and_guard = Steps::build()
                 .label("MoveAndGuard")
-                .step(MoveToNearest::<Chest>::new(MOVEMENT_SPEED, MAX_DISTANCE))
+                .step(MoveToNearest::<Monster>::new(MOVEMENT_SPEED, MAX_DISTANCE))
                 .step(LookAround {
                     per_second: 25.0,
                     distance: MAX_DISTANCE,
                 })
-                .step(MoveToNearest::<Exit>::new(MOVEMENT_SPEED, 0.));
-
-            Thinker::build()
-                .label("GuardingThinker")
-                .picker(Highest)
-                .when(Duty, move_and_guard)
-        }
-        id if id == std::any::TypeId::of::<Monster>() => {
-            // let move_and_guard = Steps::build()
-            //     .label("MoveAndGuard")
-            //     .step(MoveToNearest::<Human>::new(MOVEMENT_SPEED, MAX_DISTANCE))
-            //     .step(LookAround {
-            //         per_second: 25.0,
-            //         distance: MAX_DISTANCE,
-            //     })
-            //     .step(MoveToNearest::<Grave>::new(MOVEMENT_SPEED, MAX_DISTANCE));
+                .step(MoveToNearest::<Grave>::new(MOVEMENT_SPEED, MAX_DISTANCE));
 
             let move_and_fight = Steps::build()
                 .label("MoveAndFight")
-                .step(MoveToNearest::<Human>::new(MOVEMENT_SPEED, MAX_DISTANCE))
+                .step(MoveToNearest::<Monster>::new(MOVEMENT_SPEED, MAX_DISTANCE))
                 .step(Fight {
                     until: 10.0,
                     per_second: 25.0,
@@ -152,7 +140,31 @@ where
                 .when(FightScorer, move_and_fight)
             // .when(Duty, move_and_guard)
         }
-        id if id == std::any::TypeId::of::<Npc>() => {
+        id if id == char_type!(Monster) => {
+            let move_and_guard = Steps::build()
+                .label("MoveAndGuard")
+                .step(MoveToNearest::<Human>::new(MOVEMENT_SPEED, MAX_DISTANCE))
+                .step(LookAround {
+                    per_second: 25.0,
+                    distance: MAX_DISTANCE,
+                })
+                .step(MoveToNearest::<Grave>::new(MOVEMENT_SPEED, MAX_DISTANCE));
+
+            let move_and_fight = Steps::build()
+                .label("MoveAndFight")
+                .step(MoveToNearest::<Human>::new(MOVEMENT_SPEED, MAX_DISTANCE))
+                .step(LookAround {
+                    per_second: 25.0,
+                    distance: MAX_DISTANCE,
+                });
+
+            Thinker::build()
+                .label("GuardingThinker")
+                .picker(FirstToScore { threshold: 0.8 })
+                .when(FightScorer, move_and_fight)
+            // .when(Duty, move_and_guard)
+        }
+        id if id == char_type!(Npc) => {
             todo!()
         }
         _ => todo!(),

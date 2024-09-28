@@ -3,6 +3,7 @@ use serde::Deserialize;
 use strum_macros::{Display, EnumString};
 
 use crate::{
+    char_type,
     core::stage::{CharacterInfo, Human, Monster, Npc},
     Guard,
 };
@@ -21,7 +22,7 @@ pub enum Behavior {
     COLLECT, // When see items in range e.g. Key, Items
     HUNT,    // When low stocks.
     FOLLOW,  // When NPC ask.
-    FIGHT,   // When near Monster.
+    FIGHT,   // When near enemy.
     HARVEST, // When low health, find
     SLEEP,   // When tried, low health.
     AVOID,   // When see monster in range and low health.
@@ -36,10 +37,10 @@ pub fn get_behavior<T>() -> Guard
 where
     T: CharacterInfo + Clone + Debug + 'static,
 {
-    match std::any::TypeId::of::<T>() {
-        id if id == std::any::TypeId::of::<Human>() => Guard::new(75.0, 10.0),
-        id if id == std::any::TypeId::of::<Monster>() => Guard::new(75.0, 10.0),
-        id if id == std::any::TypeId::of::<Npc>() => {
+    match char_type!(T) {
+        id if id == char_type!(Human) => Guard::new(75.0, 10.0),
+        id if id == char_type!(Monster) => Guard::new(75.0, 10.0),
+        id if id == char_type!(Npc) => {
             todo!()
         }
         _ => todo!(),
