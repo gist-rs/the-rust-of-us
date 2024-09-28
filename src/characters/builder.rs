@@ -248,7 +248,7 @@ pub fn update_character<T>(
                                     > actor_target_at_position.position.x;
 
                                 // TODO: use total frame /2
-                                if animation.progress.frame == 5 && ani_action.act != Act::Attack {
+                                if animation.progress.frame == 3 && ani_action.act != Act::Attack {
                                     // Damage
                                     let actor_position = character_position;
                                     let delta =
@@ -272,7 +272,7 @@ pub fn update_character<T>(
                                 };
 
                                 // This weird
-                                if animation.progress.frame > 7 {
+                                if animation.progress.frame > 5 {
                                     *ani_action = AniAction { act: Act::Idle };
                                 }
                             };

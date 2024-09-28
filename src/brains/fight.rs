@@ -154,7 +154,7 @@ pub fn fight_action_system<T, U>(
             {
                 match *state {
                     ActionState::Requested => {
-                        debug!("🦀 Time to fight!");
+                        debug!("🦀 Time to fight! :{}", char_type!(T));
                         fighter.is_fighting = true;
                         *state = ActionState::Executing;
                     }

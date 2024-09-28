@@ -153,7 +153,7 @@ where
         id if id == char_type!(Monster) => {
             let move_and_guard = Steps::build()
                 .label("MoveAndGuard")
-                .step(MoveToNearest::<Human>::new(MOVEMENT_SPEED, MAX_DISTANCE))
+                .step(MoveToNearest::<Chest>::new(MOVEMENT_SPEED, MAX_DISTANCE))
                 .step(LookAround {
                     per_second: 25.0,
                     distance: MAX_DISTANCE,
@@ -163,9 +163,9 @@ where
             let move_and_fight = Steps::build()
                 .label("MoveAndFight")
                 .step(MoveToNearest::<Human>::new(MOVEMENT_SPEED, MAX_DISTANCE))
-                .step(LookAround {
+                .step(Fight {
+                    until: 10.0,
                     per_second: 25.0,
-                    distance: MAX_DISTANCE,
                 });
 
             Thinker::build()

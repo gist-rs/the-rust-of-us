@@ -9,7 +9,7 @@ humans:
     act: idle
     line_of_sight: 200
     attack: 10
-    defend: 1
+    defend: 10
     health: 100
     tasks:
       - "find the chest"
@@ -28,9 +28,9 @@ enemies:
     look_direction: right
     act: idle
     line_of_sight: 100
-    attack: 1
-    defend: 1
-    health: 10
+    attack: 5
+    defend: 10
+    health: 100
     mindsets:
       - "when idle, rally between grave and chest"
       - "when near (<2 block) player, follow player"

@@ -47,7 +47,6 @@ pub fn spawn_damage_indicator(
         let shape = meshes.add(Circle {
             radius: damage.radius,
         });
-        println!("💥 damage.power: {:?}", damage.power);
         commands.spawn((
             MaterialMesh2dBundle {
                 mesh: Mesh2dHandle(shape),

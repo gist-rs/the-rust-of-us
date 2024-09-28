@@ -1,7 +1,25 @@
+use std::any::TypeId;
+use std::fmt;
+
+#[derive(Debug)]
+pub struct TypeIdWrapper(pub TypeId);
+
+impl fmt::Display for TypeIdWrapper {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self.0)
+    }
+}
+
+impl PartialEq for TypeIdWrapper {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+    }
+}
+
 #[macro_export]
 macro_rules! char_type {
     ($t:ty) => {
-        std::any::TypeId::of::<$t>()
+        $crate::macros::TypeIdWrapper(std::any::TypeId::of::<$t>())
     };
 }
 

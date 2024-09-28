@@ -9,7 +9,7 @@ use bevy::{
     window::{PresentMode, WindowResolution},
 };
 use bevy_inspector_egui::prelude::*;
-use bevy_inspector_egui::quick::ResourceInspectorPlugin;
+// use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 use bevy_spritesheet_animation::prelude::*;
 use bevy_stat_bars::RegisterStatbarSubject;
 use big_brain::{BigBrainPlugin, BigBrainSet};
@@ -70,7 +70,7 @@ fn main() {
                 .set(ImagePlugin::default_nearest()),
         ))
         .add_plugins(BigBrainPlugin::new(PreUpdate))
-        .add_plugins(ResourceInspectorPlugin::<Configuration>::default())
+        // .add_plugins(ResourceInspectorPlugin::<Configuration>::default())
         .register_type::<Health>()
         .register_type::<Behavior>()
         .add_statbar_component_observer::<Health>()
@@ -92,6 +92,7 @@ fn main() {
             )
                 .chain(),),
         )
+        .add_systems(Update, (despawn_damage_indicator,))
         .add_systems(
             Update,
             (
@@ -108,7 +109,6 @@ fn main() {
                 fight_system::<Human, Monster>,
                 // Damage
                 spawn_damage_indicator,
-                despawn_damage_indicator,
                 update_damage,
                 // Die
                 despawn_fighter_on_death_system::<Human>,
@@ -132,13 +132,13 @@ fn main() {
                 move_to_nearest_system::<Chest>,
                 move_to_nearest_system::<Grave>,
                 move_to_nearest_system::<Exit>,
-                // // --- Monster Fight ---
-                // // Monster seek for Human
-                // fight_scorer_system::<Monster>,
-                // // Monster follow Human
-                // move_to_nearest_system::<Human>,
-                // // Monster fight with Human
-                // fight_action_system::<Monster, Human>,
+                // --- Monster Fight ---
+                // Monster seek for Human
+                fight_scorer_system::<Monster>,
+                // Monster follow Human
+                move_to_nearest_system::<Human>,
+                // Monster fight with Human
+                fight_action_system::<Monster, Human>,
                 // --- Human Fight ---
                 // Human seek for Monster
                 fight_scorer_system::<Human>,
