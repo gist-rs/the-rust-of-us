@@ -26,3 +26,8 @@ pub enum LookDirection {
     #[default]
     Right,
 }
+
+#[derive(Component, Default)]
+pub struct AniAction {
+    pub act: Act,
+}

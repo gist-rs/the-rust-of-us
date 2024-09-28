@@ -25,7 +25,10 @@ use bevy_spritesheet_animation::prelude::*;
 use bevy_stat_bars::{Statbar, StatbarObserveEntity};
 use std::fmt::Debug;
 
-use super::entities::{AniType, CharacterKind};
+use super::{
+    actions::AniAction,
+    entities::{AniType, CharacterKind},
+};
 
 #[derive(Bundle)]
 struct CharacterBundle<T: Component> {
@@ -37,6 +40,7 @@ struct CharacterBundle<T: Component> {
     ysort: YSort,
     target_at: TargetAt,
     kind: CharacterKind,
+    ani_action: AniAction,
 }
 
 #[derive(Component)]
@@ -93,6 +97,9 @@ fn build_character<T: CharacterInfo>(
         ysort: YSort(0.0),
         target_at: TargetAt::default(),
         kind: *character_info.kind(),
+        ani_action: AniAction {
+            act: Act::default(),
+        },
     }
 }
 
@@ -178,8 +185,12 @@ pub fn init_character<T>(
 }
 
 #[allow(clippy::complexity)]
+pub fn update_animation<T>(mut characters: Query<(&mut SpritesheetAnimation, &mut AniAction)>) {
+    // TODO: update AniAction state
+}
+
+#[allow(clippy::complexity)]
 pub fn update_character<T>(
-    mut commands: Commands,
     game_stage: Res<GameStage>,
     mut characters: Query<
         (
@@ -190,6 +201,7 @@ pub fn update_character<T>(
             &mut Sprite,
             &mut SpritesheetAnimation,
             &mut Action,
+            &mut AniAction,
             &mut TargetAt,
             &T,
         ),
@@ -210,6 +222,7 @@ pub fn update_character<T>(
                 mut sprite,
                 mut animation,
                 action,
+                mut ani_action,
                 actor_target_at,
                 character_info,
             ) in characters.iter_mut()
@@ -225,6 +238,8 @@ pub fn update_character<T>(
                             // Snap
                             character_transform.translation.x = character_position.position.x;
                             character_transform.translation.y = character_position.position.y;
+
+                            *ani_action = AniAction { act: action.0 };
                         }
                         Act::Attack => {
                             // Look direction
@@ -233,7 +248,7 @@ pub fn update_character<T>(
                                     > actor_target_at_position.position.x;
 
                                 // TODO: use total frame /2
-                                if animation.progress.frame == 5 {
+                                if animation.progress.frame == 5 && ani_action.act != Act::Attack {
                                     // Damage
                                     let actor_position = character_position;
                                     let delta =
@@ -253,7 +268,13 @@ pub fn update_character<T>(
 
                                     println!("💥 DamageEvent:{:?}", damage);
                                     damage_events.send(DamageEvent(damage));
+                                    *ani_action = AniAction { act: action.0 };
                                 };
+
+                                // This weird
+                                if animation.progress.frame > 7 {
+                                    *ani_action = AniAction { act: Act::Idle };
+                                }
                             };
                         }
                         Act::Die => {
@@ -268,8 +289,9 @@ pub fn update_character<T>(
                                 && animation.progress.frame == total_frame
                             {
                                 animation.playing = false;
-                                // TODO: despawn
-                            };
+                            } else {
+                                *ani_action = AniAction { act: action.0 };
+                            }
                         }
                         _ => (),
                     }

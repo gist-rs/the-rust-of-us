@@ -3,7 +3,7 @@ use bevy::{
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
 
-use super::{layer::SpriteLayer, stage::CharacterInfo, state::GameState};
+use super::{layer::SpriteLayer, position::Position, stage::CharacterInfo, state::GameState};
 use crate::{
     brains::fight::Fighter,
     characters::{
@@ -51,7 +51,7 @@ pub fn spawn_damage_indicator(
         commands.spawn((
             MaterialMesh2dBundle {
                 mesh: Mesh2dHandle(shape),
-                material: materials.add(Color::srgba(1.0, 0.0, 0.0, damage.power / 10.)),
+                material: materials.add(Color::srgba(1.0, 0.0, 0.0, damage.power / 50.)),
                 transform: Transform::from_xyz(damage.position.x, damage.position.y, 0.0)
                     .with_scale(Vec3::new(damage.radius / 100.0, damage.radius / 100.0, 1.0)),
                 ..default()
@@ -104,12 +104,8 @@ pub fn update_damage(
                     } else {
                         *actor_action = Action(Act::Die);
 
-                        if *kind == CharacterKind::Human {
-                            println!("GameState::Over");
-                            game_state.set(GameState::Over);
-                        } else {
-                            // do something?
-                        }
+                        println!("GameState::Over");
+                        game_state.set(GameState::Over);
                     }
                 }
             });
@@ -125,6 +121,7 @@ pub fn despawn_fighter_on_death_system<T>(
     for (entity, action) in characters.iter_mut() {
         if action.0 == Act::Die {
             commands.entity(entity).remove::<Fighter>();
+            println!("💥 remove:Fighter");
         }
     }
 }

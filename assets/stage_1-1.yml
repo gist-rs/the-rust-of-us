@@ -8,7 +8,7 @@ humans:
     look_direction: left
     act: idle
     line_of_sight: 200
-    attack: 1
+    attack: 10
     agility: 1
     defend: 1
     health: 100

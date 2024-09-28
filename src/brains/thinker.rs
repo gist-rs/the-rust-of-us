@@ -226,8 +226,8 @@ pub fn move_to_nearest_system<T: Component + Debug + Clone>(
             }
             ActionState::Executing => {
                 // Look up the actor's position.
-                let actor_position = characters.get_mut(*actor).expect("actor has no position");
-                let (mut actor_position, mut actor_action) = actor_position;
+                let (mut actor_position, mut actor_action) =
+                    characters.get_mut(*actor).expect("actor has no position");
 
                 // Look up the target closest to them.
                 let closest_target = find_closest_target::<T>(&targets, &actor_position);
