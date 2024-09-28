@@ -3,7 +3,7 @@ use bevy::{
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
 
-use super::{layer::SpriteLayer, position::Position, stage::CharacterInfo, state::GameState};
+use super::{layer::SpriteLayer, stage::CharacterInfo, state::GameState};
 use crate::{
     brains::fight::Fighter,
     characters::{

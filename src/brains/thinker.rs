@@ -4,11 +4,11 @@ use big_brain::prelude::*;
 
 use crate::char_type;
 use crate::characters::actions::{Act, Action};
-use crate::characters::bar::Health;
+use crate::core::chest::Chest;
 use crate::core::grave::Grave;
 use crate::core::point::Exit;
+use crate::core::position::Position;
 use crate::core::stage::{CharacterInfo, Human, Monster, Npc};
-use crate::core::{chest::Chest, position::Position};
 use std::fmt::Debug;
 
 use super::fight::{Fight, FightScorer};
@@ -67,23 +67,28 @@ pub fn guard_action_system<T: Component + Debug + Clone>(
                 *state = ActionState::Executing;
             }
             ActionState::Executing => {
-                // TODO: can be no target
-                let closest_target = find_closest_target::<T>(&targets, actor_position);
-                let distance = (closest_target.position - actor_position.position).length();
-                if distance < look_around.distance {
-                    trace!("Guarding!");
-                    guard.concern -= look_around.per_second * time.delta_seconds();
+                match find_closest_target::<T>(&targets, actor_position) {
+                    Some(closest_target) => {
+                        let distance = (closest_target.position - actor_position.position).length();
+                        if distance < look_around.distance {
+                            trace!("Guarding!");
+                            guard.concern -= look_around.per_second * time.delta_seconds();
 
-                    // Once we hit 0 concern, we stop guarding and report success.
-                    if guard.concern <= 0.0 {
-                        guard.concern = 0.0;
-                        *state = ActionState::Success;
+                            // Once we hit 0 concern, we stop guarding and report success.
+                            if guard.concern <= 0.0 {
+                                guard.concern = 0.0;
+                                *state = ActionState::Success;
 
-                        debug!("🔥 Guarding success!");
+                                debug!("🔥 Guarding success!");
+                            }
+                        } else {
+                            debug!("We're too far away!");
+                            *state = ActionState::Failure;
+                        }
                     }
-                } else {
-                    debug!("We're too far away!");
-                    *state = ActionState::Failure;
+                    None => {
+                        // TODO
+                    }
                 }
             }
 
@@ -124,7 +129,12 @@ where
                     per_second: 25.0,
                     distance: MAX_DISTANCE,
                 })
-                .step(MoveToNearest::<Grave>::new(MOVEMENT_SPEED, MAX_DISTANCE));
+                .step(MoveToNearest::<Chest>::new(MOVEMENT_SPEED, MAX_DISTANCE))
+                .step(LookAround {
+                    per_second: 25.0,
+                    distance: MAX_DISTANCE,
+                })
+                .step(MoveToNearest::<Exit>::new(MOVEMENT_SPEED, MAX_DISTANCE));
 
             let move_and_fight = Steps::build()
                 .label("MoveAndFight")
@@ -138,7 +148,7 @@ where
                 .label("GuardingThinker")
                 .picker(FirstToScore { threshold: 0.8 })
                 .when(FightScorer, move_and_fight)
-            // .when(Duty, move_and_guard)
+                .when(Duty, move_and_guard)
         }
         id if id == char_type!(Monster) => {
             let move_and_guard = Steps::build()
@@ -162,7 +172,7 @@ where
                 .label("GuardingThinker")
                 .picker(FirstToScore { threshold: 0.8 })
                 .when(FightScorer, move_and_fight)
-            // .when(Duty, move_and_guard)
+                .when(Duty, move_and_guard)
         }
         id if id == char_type!(Npc) => {
             todo!()
@@ -193,15 +203,15 @@ impl<T: Component + Debug + Clone> MoveToNearest<T> {
 pub fn find_closest_target<T: Component + Debug + Clone>(
     targets: &Query<&Position, With<T>>,
     actor_position: &Position,
-) -> Position {
-    *(targets
+) -> Option<Position> {
+    targets
         .iter()
         .min_by(|a, b| {
             let da = (a.position - actor_position.position).length_squared();
             let db = (b.position - actor_position.position).length_squared();
             da.partial_cmp(&db).unwrap()
         })
-        .unwrap_or_else(|| panic!("no {:?}", std::any::type_name::<T>())))
+        .cloned()
 }
 
 #[allow(clippy::type_complexity)]
@@ -230,33 +240,38 @@ pub fn move_to_nearest_system<T: Component + Debug + Clone>(
                     characters.get_mut(*actor).expect("actor has no position");
 
                 // Look up the target closest to them.
-                let closest_target = find_closest_target::<T>(&targets, &actor_position);
+                match find_closest_target::<T>(&targets, &actor_position) {
+                    Some(closest_target) => {
+                        // Find how far we are from it.
+                        let delta = closest_target.position - actor_position.position;
 
-                // Find how far we are from it.
-                let delta = closest_target.position - actor_position.position;
+                        let distance = delta.length();
 
-                let distance = delta.length();
+                        trace!("Distance: {}", distance);
 
-                trace!("Distance: {}", distance);
+                        if distance > move_to.distance {
+                            trace!("Stepping closer.");
 
-                if distance > move_to.distance {
-                    trace!("Stepping closer.");
+                            let step_size = time.delta_seconds() * move_to.speed;
+                            let step = delta.normalize() * step_size.min(distance);
 
-                    let step_size = time.delta_seconds() * move_to.speed;
-                    let step = delta.normalize() * step_size.min(distance);
+                            // Move the actor.
+                            actor_position.position += step;
 
-                    // Move the actor.
-                    actor_position.position += step;
+                            // Action
+                            *actor_action = Action(Act::Walk);
+                        } else {
+                            // debug!("🔥 We got there!");
 
-                    // Action
-                    *actor_action = Action(Act::Walk);
-                } else {
-                    // debug!("🔥 We got there!");
+                            *action_state = ActionState::Success;
 
-                    *action_state = ActionState::Success;
-
-                    // Action
-                    *actor_action = Action(Act::Idle);
+                            // Action
+                            *actor_action = Action(Act::Idle);
+                        }
+                    }
+                    None => {
+                        // TODO
+                    }
                 }
             }
             ActionState::Cancelled => {

@@ -9,7 +9,6 @@ humans:
     act: idle
     line_of_sight: 200
     attack: 10
-    agility: 1
     defend: 1
     health: 100
     tasks:
@@ -30,7 +29,6 @@ enemies:
     act: idle
     line_of_sight: 100
     attack: 1
-    agility: 1
     defend: 1
     health: 10
     mindsets:

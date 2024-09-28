@@ -184,10 +184,10 @@ pub fn init_character<T>(
     }
 }
 
-#[allow(clippy::complexity)]
-pub fn update_animation<T>(mut characters: Query<(&mut SpritesheetAnimation, &mut AniAction)>) {
-    // TODO: update AniAction state
-}
+// #[allow(clippy::complexity)]
+// pub fn update_animation<T>(mut characters: Query<(&mut SpritesheetAnimation, &mut AniAction)>) {
+//     // TODO: update AniAction state
+// }
 
 #[allow(clippy::complexity)]
 pub fn update_character<T>(

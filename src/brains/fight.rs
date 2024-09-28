@@ -47,19 +47,24 @@ pub fn fight_system<T, U>(
                     // Look up the actor's action.
                     if let Ok((actor_position, character_info)) = characters.get_mut(*actor) {
                         // Look up the target closest to them.
-                        let closest_target = find_closest_target::<U>(&targets, &actor_position);
+                        match find_closest_target::<U>(&targets, &actor_position) {
+                            Some(closest_target) => {
+                                // Find how far we are from it.
+                                let delta = closest_target.position - actor_position.position;
+                                let distance = delta.length();
 
-                        // Find how far we are from it.
-                        let delta = closest_target.position - actor_position.position;
-                        let distance = delta.length();
-
-                        // Get angry when enemy getting close.
-                        if distance < character_info.line_of_sight() {
-                            fight.angry += fight.per_second * time.delta_seconds();
-                            if fight.angry >= 100.0 {
-                                fight.angry = 100.0;
+                                // Get angry when enemy getting close.
+                                if distance < character_info.line_of_sight() {
+                                    fight.angry += fight.per_second * time.delta_seconds();
+                                    if fight.angry >= 100.0 {
+                                        fight.angry = 100.0;
+                                    }
+                                    trace!("Fight.angry: {}", fight.angry);
+                                }
                             }
-                            trace!("Fight.angry: {}", fight.angry);
+                            None => {
+                                // TODO
+                            }
                         }
                     }
                 }
@@ -172,17 +177,22 @@ pub fn fight_action_system<T, U>(
                             *actor_action = Action(Act::Idle);
                         } else {
                             // Look up the target closest to them.
-                            let closest_target =
-                                find_closest_target::<U>(&targets, &actor_position);
+                            match find_closest_target::<U>(&targets, &actor_position) {
+                                Some(closest_target) => {
+                                    // Look direction
+                                    sprite.flip_x =
+                                        actor_position.position.x > closest_target.position.x;
 
-                            // Look direction
-                            sprite.flip_x = actor_position.position.x > closest_target.position.x;
+                                    // Lock target
+                                    actor_target_at.position = Some(closest_target);
 
-                            // Lock target
-                            actor_target_at.position = Some(closest_target);
-
-                            // Action
-                            *actor_action = Action(Act::Attack);
+                                    // Action
+                                    *actor_action = Action(Act::Attack);
+                                }
+                                None => {
+                                    // TODO
+                                }
+                            }
                         }
                     }
                     // All Actions should make sure to handle cancellations!

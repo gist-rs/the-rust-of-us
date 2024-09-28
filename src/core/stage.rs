@@ -61,7 +61,6 @@ pub trait CharacterInfo: Component {
     fn get_clone(&self) -> Self;
     fn line_of_sight(&self) -> f32;
     fn attack(&self) -> u32;
-    fn agility(&self) -> u32;
 }
 
 #[allow(unused)]
@@ -76,7 +75,6 @@ pub struct Human {
     pub act: Act,
     pub line_of_sight: f32,
     pub attack: u32,
-    pub agility: u32,
     pub defend: u32,
     pub health: u32,
     pub tasks: Vec<String>,
@@ -111,9 +109,6 @@ impl CharacterInfo for Human {
     fn attack(&self) -> u32 {
         self.attack
     }
-    fn agility(&self) -> u32 {
-        self.agility
-    }
 }
 
 #[allow(unused)]
@@ -128,7 +123,6 @@ pub struct Monster {
     pub act: Act,
     pub line_of_sight: f32,
     pub attack: u32,
-    pub agility: u32,
     pub defend: u32,
     pub health: u32,
     pub mindsets: Vec<String>,
@@ -161,9 +155,6 @@ impl CharacterInfo for Monster {
     }
     fn attack(&self) -> u32 {
         self.attack
-    }
-    fn agility(&self) -> u32 {
-        self.agility
     }
 }
 
