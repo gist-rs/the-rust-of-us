@@ -30,7 +30,7 @@ use core::{
     layer::{y_sort, SpriteLayer},
     menu::button_system,
     point::Exit,
-    scene::MainPath,
+    scene::{ChunkMap, MainPath},
     setup::setup_scene,
     stage::{init_stage, GameStage, Human, Monster},
     state::GameState,
@@ -75,6 +75,7 @@ fn main() {
         .init_resource::<Configuration>()
         .init_resource::<Chests>()
         .init_resource::<Gates>()
+        .init_resource::<ChunkMap>()
         .init_resource::<MainPath>()
         .init_resource::<GameStage>()
         .init_resource::<Damages>()

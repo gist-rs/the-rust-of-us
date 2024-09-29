@@ -1,7 +1,7 @@
 use std::fs;
 
-use anyhow::{bail, Result};
-use bevy::prelude::Transform;
+use anyhow::Result;
+use bevy::{math::Vec2, prelude::Transform};
 use csv::*;
 use pathfinding::prelude::*;
 
@@ -86,6 +86,7 @@ pub fn find_path(
     walkables: &Vec<Vec<bool>>,
     start: (usize, usize),
     goal: (usize, usize),
+    is_smooth: bool,
 ) -> Result<PathCost> {
     let mut counter = 0;
     let (path, cost) = astar(
@@ -99,12 +100,16 @@ pub fn find_path(
     )
     .expect("path not found");
 
-    let smoothed_path = smooth_path(walkables, path);
+    if is_smooth {
+        let smoothed_path = smooth_path(walkables, path);
 
-    Ok(PathCost {
-        path: smoothed_path,
-        cost,
-    })
+        Ok(PathCost {
+            path: smoothed_path,
+            cost,
+        })
+    } else {
+        Ok(PathCost { path, cost })
+    }
 }
 
 #[derive(Default, Debug, Clone)]
@@ -126,7 +131,7 @@ impl MapPosition {
 #[allow(clippy::type_complexity)]
 pub fn load_map_from_csv(
     file_path: &str,
-) -> Result<(Vec<Vec<bool>>, MapPosition, MapPosition, PathCost, GameMap)> {
+) -> Result<(Vec<Vec<bool>>, MapPosition, MapPosition, GameMap)> {
     // Read the CSV file
     let file_content = fs::read_to_string(file_path)?;
     let mut rdr = Reader::from_reader(file_content.as_bytes());
@@ -141,39 +146,41 @@ pub fn load_map_from_csv(
     for (y, result) in rdr.records().enumerate() {
         let record = result?;
         for (x, cell) in record.iter().enumerate() {
-            let inverted_y = 7 - y; // Invert the y-coordinate
-            map[inverted_y][x] = cell.to_string();
+            map[y][x] = cell.to_string();
             match cell {
-                "_" => walkables[inverted_y][x] = true,
                 "▶️" => {
-                    start = MapPosition::new(x, inverted_y);
-                    println!("start:{:?}", start);
-                    walkables[inverted_y][x] = true;
+                    start = MapPosition::new(x, y);
+                    walkables[y][x] = true;
                 }
                 "⏹" => {
-                    goal = MapPosition::new(x, inverted_y);
-                    println!("goal:{:?}", goal);
-                    walkables[inverted_y][x] = true;
+                    goal = MapPosition::new(x, y);
+                    walkables[y][x] = true;
+                }
+                "🚪" | "🌳" => {
+                    walkables[y][x] = false;
                 }
                 _ => {
-                    walkables[inverted_y][x] = false;
+                    walkables[y][x] = true;
                 }
             }
         }
     }
 
-    // Find the path
-    match find_path(
-        &walkables,
-        start.clone().to_tuple(),
-        goal.clone().to_tuple(),
-    ) {
-        Ok(path_cost) => {
-            println!("path_cost: {:?}", path_cost);
-            Ok((walkables, start, goal, path_cost, GameMap(map)))
-        }
-        Err(error) => bail!(error),
-    }
+    // // Find the path
+    // match find_path(
+    //     &walkables,
+    //     start.clone().to_tuple(),
+    //     goal.clone().to_tuple(),
+    //     false,
+    // ) {
+    //     Ok(path_cost) => {
+    //         // println!("path_cost: {:?}", path_cost);
+    //         Ok((walkables, start, goal, path_cost, GameMap(map)))
+    //     }
+    //     Err(error) => bail!(error),
+    // }
+
+    Ok((walkables, start, goal, GameMap(map)))
 }
 
 pub fn convert_map_to_screen(map_coord: String) -> Option<(usize, usize)> {
@@ -217,27 +224,21 @@ pub fn get_position_from_map(x: usize, y: usize, map_config: Option<MapConfig>) 
     let (offset_x, offset_y) = map_config.offset;
     Transform::from_xyz(
         map_config.cell_size as f32 * x as f32 - map_config.half_width + offset_x,
-        map_config.cell_size as f32 * y as f32 - map_config.half_height + offset_y,
+        -1.0 * (map_config.cell_size as f32 * y as f32 - map_config.half_height + offset_y),
         0.0,
     )
 }
 
 #[allow(dead_code)]
-pub fn get_map_from_position(
-    transform: Transform,
-    map_config: Option<MapConfig>,
-) -> (usize, usize) {
+pub fn get_map_from_position(xy: Vec2, map_config: Option<MapConfig>) -> (usize, usize) {
     // Use the provided map_config or create a default instance
     let map_config = map_config.unwrap_or_default();
 
-    // Extract the x and y coordinates from the transform
-    let pos_x = transform.translation.x;
-    let pos_y = transform.translation.y;
-
     // Reverse the transformation to get the map coordinates
-    let x = ((pos_x + map_config.half_width - map_config.offset.0) / map_config.cell_size as f32)
+    let x = ((xy.x + map_config.half_width - map_config.offset.0) / map_config.cell_size as f32)
         .round() as usize;
-    let y = ((pos_y + map_config.half_height - map_config.offset.1) / map_config.cell_size as f32)
+    let y = ((-1.0 * xy.y + map_config.half_height - map_config.offset.1)
+        / map_config.cell_size as f32)
         .round() as usize;
 
     (x, y)
@@ -245,10 +246,29 @@ pub fn get_map_from_position(
 
 #[cfg(test)]
 mod tests {
+    use bevy::math::Vec3Swizzles;
+
     use super::*;
+    #[test]
+    fn test_find_path() {
+        let (walkables, ..) = load_map_from_csv("assets/map.csv").unwrap();
+
+        let start = MapPosition { x: 1, y: 1 };
+        let goal = MapPosition { x: 1, y: 3 };
+
+        // Find the path
+        let result = find_path(
+            &walkables,
+            start.clone().to_tuple(),
+            goal.clone().to_tuple(),
+            false,
+        );
+
+        assert!(result.is_ok());
+    }
 
     #[test]
-    fn test_find_path_3x3() {
+    fn test_find_path_smooth() {
         // Define a 3x3 grid with walkable and non-walkable cells
         let walkables = vec![
             vec![false, false, false, false, false, false],
@@ -264,7 +284,7 @@ mod tests {
         let goal = (4, 4);
 
         // Find the path
-        let result = find_path(&walkables, start, goal);
+        let result = find_path(&walkables, start, goal, true);
 
         // Assert that the path is found
         assert!(result.is_ok());
@@ -317,59 +337,16 @@ mod tests {
         assert_eq!(convert_map_to_screen("".to_string()), None);
     }
 
-    // #[test]
-    // fn test_map_csv() {
-    //     use crate::pathfinder::astar::Heuristic;
-
-    //     let (mut grid, _) = load_map_from_csv("assets/map.csv").unwrap();
-    //     grid.solve(&Heuristic::Manhattan);
-
-    //     println!("Goal: {:?}", grid.goal.unwrap());
-    //     println!("Path: {:?}", grid.path);
-    // }
-
-    #[test]
-    fn test_flip_map_csv() {
-        let map = [
-            "a,b,c,d,e,f,g,h",
-            "🌳,⛩️,🌳,🌳,🌳,🌳,🌳,🌳",
-            "🌳,1,1,1,1,1,1,🌳",
-            "🌳,🌳,🌳,🌳,1,1,1,🌳",
-            "🌳,💰,1,1,💀,1,1,🌳",
-            "🌳,🌳,🌳,🌳,1,1,1,🌳",
-            "🌳,🦀,1,1,1,1,1,🌳",
-            "🌳,🌳,🌳,🌳,🌳,1,🌳,🌳",
-            "🌳,🌳,🌳,🌳,🌳,🚪,🌳,🌳",
-        ];
-
-        // Extract the header
-        let header = &map[0];
-
-        // Extract the rows to be flipped
-        let rows_to_flip = &map[1..];
-
-        // Reverse the rows
-        let flipped_rows: Vec<&str> = rows_to_flip.iter().rev().cloned().collect();
-
-        // Print the header
-        println!("{}", header);
-
-        // Print the flipped rows
-        for line in flipped_rows {
-            println!("{}", line);
-        }
-    }
-
     #[test]
     fn test_conversion_back_and_forth() {
-        let x = 5;
-        let y = 7;
+        let x = 1;
+        let y = 3;
 
         // Convert map coordinates to position
         let transform = get_position_from_map(x, y, None);
 
         // Convert position back to map coordinates
-        let (map_x, map_y) = get_map_from_position(transform, None);
+        let (map_x, map_y) = get_map_from_position(transform.translation.xy(), None);
 
         // Assert that the original map coordinates are recovered
         assert_eq!((x, y), (map_x, map_y));

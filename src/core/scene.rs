@@ -22,6 +22,11 @@ use super::{
 #[derive(Resource, Default, Debug)]
 pub struct GameMap(pub Vec<Vec<String>>);
 
+#[derive(Resource, Default, Debug)]
+pub struct ChunkMap {
+    pub walkables: Vec<Vec<bool>>,
+}
+
 #[allow(unused)]
 #[derive(Resource, Default, Debug)]
 pub struct MainPath(pub PathCost);

@@ -70,7 +70,7 @@ pub fn update_character<T>(
                         }
                         Act::Attack => {
                             // Look direction
-                            if let Some(actor_target_at_position) = actor_target_at.position {
+                            if let Some(actor_target_at_position) = actor_target_at.last_position {
                                 sprite.flip_x = character_transform.translation.x
                                     > actor_target_at_position.xy.x;
 

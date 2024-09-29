@@ -11,7 +11,8 @@ use std::fmt::Debug;
 
 #[derive(Component, Clone, Debug, Default)]
 pub struct TargetAt {
-    pub position: Option<Position>,
+    pub next_position: Option<Position>,
+    pub last_position: Option<Position>,
 }
 
 #[derive(Clone, Component, Debug, ActionBuilder)]
@@ -169,18 +170,17 @@ pub fn fight_action_system<T, U>(
                                 if target_health_value > 0. {
                                     debug!("🦀 target_health_value:{}", target_health_value);
                                     // Look direction
-                                    sprite.flip_x =
-                                        actor_position.xy.x > closest_target.xy.x;
+                                    sprite.flip_x = actor_position.xy.x > closest_target.xy.x;
 
                                     // Lock target
-                                    actor_target_at.position = Some(closest_target);
+                                    actor_target_at.last_position = Some(closest_target);
 
                                     // Action
                                     *actor_action = Action(Act::Attack);
                                 } else {
                                     debug!("🦀🦀 NO TARGET w/ HEALTH");
                                     // Unlock target
-                                    actor_target_at.position = None;
+                                    actor_target_at.last_position = None;
 
                                     // Action
                                     // *actor_action = Action(Act::Idle);
@@ -194,7 +194,7 @@ pub fn fight_action_system<T, U>(
                             None => {
                                 debug!("🦀 find_closest_target_with_health NOT FOUND");
                                 // Unlock target
-                                actor_target_at.position = None;
+                                actor_target_at.last_position = None;
 
                                 // Action
                                 if actor_action.0 != Act::Die {

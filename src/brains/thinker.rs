@@ -8,8 +8,10 @@ use crate::characters::bar::Health;
 use crate::core::chest::Chest;
 use crate::core::damage::Death;
 use crate::core::grave::Grave;
+use crate::core::map::{find_path, get_map_from_position, get_position_from_map};
 use crate::core::point::Exit;
 use crate::core::position::Position;
+use crate::core::scene::ChunkMap;
 use crate::core::stage::{CharacterInfo, Human, Monster, Npc};
 use std::cmp::Ordering;
 use std::fmt::Debug;
@@ -238,6 +240,7 @@ pub fn move_to_nearest_system<T: Component + Debug + Clone>(
         (&Actor, &mut ActionState, &MoveToNearest<T>, &ActionSpan),
         Without<Death>,
     >,
+    chunk_map: Res<ChunkMap>,
 ) {
     if targets.is_empty() {
         return;
@@ -256,33 +259,59 @@ pub fn move_to_nearest_system<T: Component + Debug + Clone>(
                 // Look up the actor's position.
                 if let Ok((mut actor_position, mut actor_action)) = characters.get_mut(*actor) {
                     // Look up the target closest to them.
-                    match find_closest_target::<T>(&targets, &actor_position) {
+                    println!("targets: {:?}", &targets);
+                    println!("actor_position: {:?}", &actor_position);
+                    let foo = find_closest_target::<T>(&targets, &actor_position);
+                    println!("foo: {:?}", foo);
+                    match foo {
                         Some(closest_target) => {
-                            // Find how far we are from it.
-                            let delta = closest_target.xy - actor_position.xy;
+                            // Find path to target
+                            let start = get_map_from_position(actor_position.xy, None);
+                            let goal = get_map_from_position(closest_target.xy, None);
+                            println!("start: {:?}", start);
+                            println!("goal: {:?}", goal);
+                            let path_cost =
+                                match find_path(&chunk_map.walkables, start, goal, false) {
+                                    Ok(path_cost) => Some(path_cost),
+                                    Err(_) => None,
+                                };
 
-                            let distance = delta.length();
+                            if let Some(path_cost) = path_cost {
+                                println!("path_cost: {:?}", path_cost);
 
-                            trace!("Distance: {}", distance);
+                                // How close to next position
+                                let (x, y) = if path_cost.path.len() == 1 {
+                                    path_cost.path[0]
+                                } else {
+                                    path_cost.path[1]
+                                };
+                                let next_position_transform = get_position_from_map(x, y, None);
+                                let next_translation = next_position_transform.translation;
+                                let delta = next_translation.xy() - actor_position.xy;
+                                let distance = delta.length();
 
-                            if distance > move_to.distance {
-                                trace!("Stepping closer.");
+                                let delta2 = closest_target.xy - actor_position.xy;
+                                let distance2 = delta2.length();
 
-                                let step_size = time.delta_seconds() * move_to.speed;
-                                let step = delta.normalize() * step_size.min(distance);
+                                if distance > move_to.distance || distance2 > move_to.distance {
+                                    // Too far, walk to it
+                                    trace!("Stepping closer.");
 
-                                // Move the actor.
-                                actor_position.xy += step;
+                                    let step_size = time.delta_seconds() * move_to.speed;
+                                    let step = delta.normalize() * step_size.min(distance);
 
-                                // Action
-                                *actor_action = Action(Act::Walk);
-                            } else {
-                                // debug!("🔥 We got there!");
+                                    // Move the actor.
+                                    actor_position.xy += step;
 
-                                *action_state = ActionState::Success;
+                                    // Action
+                                    *actor_action = Action(Act::Walk);
+                                } else {
+                                    debug!("🔥 We got there!");
+                                    *action_state = ActionState::Success;
 
-                                // Action
-                                *actor_action = Action(Act::Idle);
+                                    // Action
+                                    *actor_action = Action(Act::Idle);
+                                }
                             }
                         }
                         None => {
