@@ -1,3 +1,4 @@
+use crate::characters::actions::Act;
 use bevy::prelude::Component;
 use serde::Deserialize;
 use strum_macros::{Display, EnumString};
@@ -7,12 +8,15 @@ use strum_macros::{Display, EnumString};
 )]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
-pub enum CharacterKind {
+pub enum AniType {
     #[default]
-    Human,
-    Monster,
-    Animal,
+    Man,
+    Skeleton,
+    Crab,
+    Gate,
+    Chest,
 }
 
-#[derive(Component, Default, Clone, Deserialize, Debug, Eq, PartialEq)]
-pub struct CharacterId(pub String);
+pub fn get_animation_name(ani_type: &AniType, act: Act) -> String {
+    format!("{ani_type}_{act}")
+}

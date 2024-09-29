@@ -2,7 +2,8 @@ use crate::{
     char_type,
     characters::{
         actions::{Act, LookDirection},
-        entities::{AniType, CharacterId, CharacterKind},
+        ani::AniType,
+        entities::{CharacterId, CharacterKind},
     },
 };
 use anyhow::*;

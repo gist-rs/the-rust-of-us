@@ -2,6 +2,7 @@ use bevy::{
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
+use bevy_stat_bars::Statbar;
 
 use super::layer::SpriteLayer;
 use crate::{
@@ -110,6 +111,7 @@ pub fn update_damage(
 
                         commands.entity(entity).insert(Death);
                         commands.entity(entity).remove::<Fighter>();
+                        commands.entity(entity).remove::<Statbar<Health>>();
 
                         // println!("💥  GameState::Over");
                         // game_state.set(GameState::Over);

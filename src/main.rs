@@ -18,10 +18,7 @@ use brains::{
     fight::{fight_action_system, fight_scorer_system, fight_system, game_over_system},
     thinker::*,
 };
-use characters::{
-    bar::Health,
-    builder::{init_character, update_character},
-};
+use characters::{bar::Health, builder::init_character, update::update_character};
 use core::{
     chest::{update_chest, Chest, Chests},
     damage::{

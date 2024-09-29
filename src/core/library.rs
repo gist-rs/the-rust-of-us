@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_spritesheet_animation::prelude::*;
 use serde::Deserialize;
 
-use crate::characters::entities::AniType;
+use crate::characters::ani::AniType;
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct AnimationDetails {

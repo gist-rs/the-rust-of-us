@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use bevy_spritesheet_animation::prelude::*;
 use serde_json::from_str;
 
-use crate::characters::entities::AniType;
+use crate::characters::ani::AniType;
 
 use super::{
     chest::{Chest, ChestId, ChestState, Chests},
