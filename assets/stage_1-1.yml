@@ -24,7 +24,7 @@ enemies:
   - kind: monster
     ani_type: skeleton
     character_id: skeleton_0
-    position: e5
+    position: f3
     look_direction: right
     act: idle
     line_of_sight: 100

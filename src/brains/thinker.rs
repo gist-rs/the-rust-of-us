@@ -259,17 +259,14 @@ pub fn move_to_nearest_system<T: Component + Debug + Clone>(
                 // Look up the actor's position.
                 if let Ok((mut actor_position, mut actor_action)) = characters.get_mut(*actor) {
                     // Look up the target closest to them.
-                    println!("targets: {:?}", &targets);
-                    println!("actor_position: {:?}", &actor_position);
-                    let foo = find_closest_target::<T>(&targets, &actor_position);
-                    println!("foo: {:?}", foo);
-                    match foo {
+                    let closest_target = find_closest_target::<T>(&targets, &actor_position);
+
+                    match closest_target {
                         Some(closest_target) => {
                             // Find path to target
                             let start = get_map_from_position(actor_position.xy, None);
                             let goal = get_map_from_position(closest_target.xy, None);
-                            println!("start: {:?}", start);
-                            println!("goal: {:?}", goal);
+
                             let path_cost =
                                 match find_path(&chunk_map.walkables, start, goal, false) {
                                     Ok(path_cost) => Some(path_cost),
@@ -277,8 +274,6 @@ pub fn move_to_nearest_system<T: Component + Debug + Clone>(
                                 };
 
                             if let Some(path_cost) = path_cost {
-                                println!("path_cost: {:?}", path_cost);
-
                                 // How close to next position
                                 let (x, y) = if path_cost.path.len() == 1 {
                                     path_cost.path[0]
