@@ -209,7 +209,7 @@ pub fn find_closest_target_with_health<T: Component + Debug + Clone>(
             let db = (b_pos.position - actor_position.position).length_squared();
             da.partial_cmp(&db).unwrap_or(Ordering::Equal)
         })
-        .map(|(health, pos)| (health.value, pos.clone()))
+        .map(|(health, pos)| (health.value, *pos))
 }
 
 pub fn find_closest_target<T: Component + Debug + Clone>(
