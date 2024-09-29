@@ -106,6 +106,7 @@ pub fn guard_action_system<T: Component + Debug + Clone>(
 #[derive(Clone, Component, Debug, ScorerBuilder)]
 pub struct Duty;
 
+#[allow(clippy::type_complexity)]
 pub fn guarding_scorer_system(
     guards: Query<&Guard>,
     mut query: Query<(&Actor, &mut Score), (With<Duty>, Without<Death>)>,
@@ -132,7 +133,7 @@ where
                     per_second: 25.0,
                     distance: MAX_DISTANCE,
                 })
-                .step(MoveToNearest::<Exit>::new(MOVEMENT_SPEED, MAX_DISTANCE))
+                .step(MoveToNearest::<Exit>::new(MOVEMENT_SPEED, 0.))
                 .step(LookAround {
                     per_second: 25.0,
                     distance: MAX_DISTANCE,
@@ -141,10 +142,7 @@ where
             let move_and_fight = Steps::build()
                 .label("MoveAndFight")
                 .step(MoveToNearest::<Monster>::new(MOVEMENT_SPEED, MAX_DISTANCE))
-                .step(Fight {
-                    until: 10.0,
-                    per_second: 25.0,
-                });
+                .step(Fight {});
 
             Thinker::build()
                 .label("GuardingThinker")
@@ -165,10 +163,7 @@ where
             let move_and_fight = Steps::build()
                 .label("MoveAndFight")
                 .step(MoveToNearest::<Human>::new(MOVEMENT_SPEED, MAX_DISTANCE))
-                .step(Fight {
-                    until: 10.0,
-                    per_second: 25.0,
-                });
+                .step(Fight {});
 
             Thinker::build()
                 .label("GuardingThinker")
@@ -202,6 +197,7 @@ impl<T: Component + Debug + Clone> MoveToNearest<T> {
     }
 }
 
+#[allow(clippy::type_complexity)]
 pub fn find_closest_target_with_health<T: Component + Debug + Clone>(
     targets: &Query<(&Health, &Position), (With<T>, Without<Death>)>,
     actor_position: &Position,
