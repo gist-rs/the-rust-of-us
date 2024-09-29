@@ -72,7 +72,7 @@ pub fn guard_action_system<T: Component + Debug + Clone>(
             ActionState::Executing => {
                 match find_closest_target::<T>(&targets, actor_position) {
                     Some(closest_target) => {
-                        let distance = (closest_target.position - actor_position.position).length();
+                        let distance = (closest_target.xy - actor_position.xy).length();
                         if distance < look_around.distance {
                             trace!("Guarding!");
                             guard.concern -= look_around.per_second * time.delta_seconds();
@@ -205,8 +205,8 @@ pub fn find_closest_target_with_health<T: Component + Debug + Clone>(
     targets
         .iter()
         .min_by(|(_, a_pos), (_, b_pos)| {
-            let da = (a_pos.position - actor_position.position).length_squared();
-            let db = (b_pos.position - actor_position.position).length_squared();
+            let da = (a_pos.xy - actor_position.xy).length_squared();
+            let db = (b_pos.xy - actor_position.xy).length_squared();
             da.partial_cmp(&db).unwrap_or(Ordering::Equal)
         })
         .map(|(health, pos)| (health.value, *pos))
@@ -219,8 +219,8 @@ pub fn find_closest_target<T: Component + Debug + Clone>(
     targets
         .iter()
         .min_by(|a, b| {
-            let da = (a.position - actor_position.position).length_squared();
-            let db = (b.position - actor_position.position).length_squared();
+            let da = (a.xy - actor_position.xy).length_squared();
+            let db = (b.xy - actor_position.xy).length_squared();
             da.partial_cmp(&db).unwrap_or(Ordering::Equal)
         })
         .cloned()
@@ -259,7 +259,7 @@ pub fn move_to_nearest_system<T: Component + Debug + Clone>(
                     match find_closest_target::<T>(&targets, &actor_position) {
                         Some(closest_target) => {
                             // Find how far we are from it.
-                            let delta = closest_target.position - actor_position.position;
+                            let delta = closest_target.xy - actor_position.xy;
 
                             let distance = delta.length();
 
@@ -272,7 +272,7 @@ pub fn move_to_nearest_system<T: Component + Debug + Clone>(
                                 let step = delta.normalize() * step_size.min(distance);
 
                                 // Move the actor.
-                                actor_position.position += step;
+                                actor_position.xy += step;
 
                                 // Action
                                 *actor_action = Action(Act::Walk);

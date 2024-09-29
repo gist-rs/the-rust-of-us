@@ -133,7 +133,7 @@ pub fn init_character<T>(
                     .insert((
                         Action(*character.act()),
                         Position {
-                            position: Vec2::new(position.translation.x, position.translation.y),
+                            xy: Vec2::new(position.translation.x, position.translation.y),
                         },
                         Health::new_full(100.0),
                         Statbar::<Health> {

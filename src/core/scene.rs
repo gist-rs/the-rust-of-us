@@ -168,10 +168,7 @@ pub fn build_scene(
                             deco_bundle,
                             chest.clone(),
                             Position {
-                                position: Vec2::new(
-                                    transform.translation.x,
-                                    transform.translation.y,
-                                ),
+                                xy: Vec2::new(transform.translation.x, transform.translation.y),
                             },
                         ))
                         .insert(ChestId(chest_id.clone()));
@@ -198,7 +195,7 @@ pub fn build_scene(
                         },
                         Grave,
                         Position {
-                            position: Vec2::new(transform.translation.x, transform.translation.y),
+                            xy: Vec2::new(transform.translation.x, transform.translation.y),
                         },
                     ));
                 }
@@ -212,14 +209,14 @@ pub fn build_scene(
     commands.spawn((
         Entrance,
         Position {
-            position: Vec2::new(position.translation.x, position.translation.y),
+            xy: Vec2::new(position.translation.x, position.translation.y),
         },
     ));
     let position = get_position_from_map(exit.x, exit.y, None);
     commands.spawn((
         Exit,
         Position {
-            position: Vec2::new(position.translation.x, position.translation.y),
+            xy: Vec2::new(position.translation.x, position.translation.y),
         },
     ));
 }

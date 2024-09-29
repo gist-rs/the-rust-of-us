@@ -50,7 +50,7 @@ pub fn fight_system<T, U>(
                             Some((target_health_value, closest_target)) => {
                                 if target_health_value > 0. {
                                     // Find how far we are from it.
-                                    let delta = closest_target.position - actor_position.position;
+                                    let delta = closest_target.xy - actor_position.xy;
                                     let distance = delta.length();
 
                                     // Get attention when enemy getting close.
@@ -170,7 +170,7 @@ pub fn fight_action_system<T, U>(
                                     debug!("🦀 target_health_value:{}", target_health_value);
                                     // Look direction
                                     sprite.flip_x =
-                                        actor_position.position.x > closest_target.position.x;
+                                        actor_position.xy.x > closest_target.xy.x;
 
                                     // Lock target
                                     actor_target_at.position = Some(closest_target);

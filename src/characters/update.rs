@@ -60,11 +60,11 @@ pub fn update_character<T>(
                         Act::Walk => {
                             // Look direction
                             sprite.flip_x =
-                                character_transform.translation.x > character_position.position.x;
+                                character_transform.translation.x > character_position.xy.x;
 
                             // Snap
-                            character_transform.translation.x = character_position.position.x;
-                            character_transform.translation.y = character_position.position.y;
+                            character_transform.translation.x = character_position.xy.x;
+                            character_transform.translation.y = character_position.xy.y;
 
                             *ani_action = AniAction { act: action.0 };
                         }
@@ -72,18 +72,17 @@ pub fn update_character<T>(
                             // Look direction
                             if let Some(actor_target_at_position) = actor_target_at.position {
                                 sprite.flip_x = character_transform.translation.x
-                                    > actor_target_at_position.position.x;
+                                    > actor_target_at_position.xy.x;
 
                                 // TODO: use total frame /2
                                 // TOFIX: damage position max to radius
                                 if animation.progress.frame == 3 && ani_action.act != Act::Attack {
                                     // Damage
                                     let actor_position = character_position;
-                                    let delta =
-                                        actor_target_at_position.position - actor_position.position;
+                                    let delta = actor_target_at_position.xy - actor_position.xy;
                                     let _distance = delta.length();
                                     let direction = delta.normalize_or_zero();
-                                    let damage_position = actor_position.position + delta;
+                                    let damage_position = actor_position.xy + delta;
 
                                     let damage = Damage {
                                         by: *character_info.kind(),

@@ -3,5 +3,5 @@ use crate::Vec2;
 
 #[derive(Component, Debug, Copy, Clone, Default)]
 pub struct Position {
-    pub position: Vec2,
+    pub xy: Vec2,
 }
