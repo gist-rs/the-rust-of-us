@@ -1,8 +1,8 @@
 use crate::{
+    animations::{entities::AniType, utils::get_animation_name},
     brains::fight::TargetAt,
     characters::{
         actions::{Act, Action},
-        ani::get_animation_name,
         entities::CharacterId,
     },
     core::{
@@ -14,7 +14,7 @@ use crate::{
 use bevy::prelude::*;
 use bevy_spritesheet_animation::prelude::*;
 
-use super::{actions::AniAction, ani::AniType, entities::CharacterKind};
+use super::{actions::AniAction, entities::CharacterKind};
 
 #[allow(clippy::complexity)]
 pub fn update_character<T>(
@@ -129,7 +129,6 @@ pub fn update_character<T>(
 
                     if let Some(animation_id) = library.animation_with_name(animation_name) {
                         if animation.animation_id != animation_id {
-                            debug!("🥹 ACT: {}", action.0);
                             animation.switch(animation_id);
                         }
                     }

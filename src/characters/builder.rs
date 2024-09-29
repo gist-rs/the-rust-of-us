@@ -1,19 +1,18 @@
 use std::fs;
 
 use crate::{
+    animations::{build::build_library, entities::Ani, utils::get_animation_name},
     brains::{
         behavior::get_behavior,
         fight::{get_fighter, TargetAt},
     },
     characters::{
         actions::{Act, Action, LookDirection},
-        ani::get_animation_name,
         bar::Health,
         entities::CharacterId,
     },
     core::{
         layer::{SpriteLayer, YSort},
-        library::{build_library, Ani},
         map::{convert_map_to_screen, get_position_from_map},
         position::Position,
         stage::{CharacterInfo, GameStage, StageInfo},

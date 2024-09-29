@@ -3,7 +3,6 @@ pub mod damage;
 pub mod gate;
 pub mod grave;
 pub mod layer;
-pub mod library;
 pub mod map;
 pub mod menu;
 pub mod point;

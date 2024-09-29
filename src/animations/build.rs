@@ -1,25 +1,7 @@
 use bevy::prelude::*;
 use bevy_spritesheet_animation::prelude::*;
-use serde::Deserialize;
 
-use crate::characters::ani::AniType;
-
-#[derive(Deserialize, Clone, Debug)]
-pub struct AnimationDetails {
-    pub action_name: String,
-    pub x: usize,
-    pub y: usize,
-    pub count: usize,
-}
-
-#[derive(Deserialize, Clone, Debug)]
-pub struct Ani {
-    pub ani_type: AniType,
-    pub texture_path: String,
-    pub width: u32,
-    pub height: u32,
-    pub animations: Vec<AnimationDetails>,
-}
+use super::entities::Ani;
 
 pub fn build_library(
     atlas_layouts: &mut ResMut<Assets<TextureAtlasLayout>>,

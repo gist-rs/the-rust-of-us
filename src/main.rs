@@ -1,3 +1,4 @@
+mod animations;
 mod brains;
 mod characters;
 mod core;

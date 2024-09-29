@@ -4,14 +4,16 @@ use bevy::prelude::*;
 use bevy_spritesheet_animation::prelude::*;
 use serde_json::from_str;
 
-use crate::characters::ani::AniType;
+use crate::animations::{
+    build::build_library,
+    entities::{Ani, AniType},
+};
 
 use super::{
     chest::{Chest, ChestId, ChestState, Chests},
     gate::{Gate, GateState, Gates},
     grave::Grave,
     layer::{SpriteLayer, YSort},
-    library::{build_library, Ani},
     map::{get_position_from_map, MapPosition, PathCost},
     point::{Entrance, Exit},
     position::Position,

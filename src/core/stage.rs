@@ -1,8 +1,8 @@
 use crate::{
+    animations::entities::AniType,
     char_type,
     characters::{
         actions::{Act, LookDirection},
-        ani::AniType,
         entities::{CharacterId, CharacterKind},
     },
 };
