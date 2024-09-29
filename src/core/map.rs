@@ -31,6 +31,57 @@ fn distance(&(x1, y1): &(usize, usize), &(x2, y2): &(usize, usize)) -> usize {
     x1.abs_diff(x2) + y1.abs_diff(y2)
 }
 
+// TOFIX
+#[allow(clippy::ptr_arg)]
+fn is_walkable_line(
+    walkables: &Vec<Vec<bool>>,
+    (x1, y1): (usize, usize),
+    (x2, y2): (usize, usize),
+) -> bool {
+    let dx = (x2 as isize - x1 as isize).abs();
+    let dy = (y2 as isize - y1 as isize).abs();
+    let sx = if x1 < x2 { 1 } else { -1 };
+    let sy = if y1 < y2 { 1 } else { -1 };
+    let mut err = dx - dy;
+    let mut x = x1 as isize;
+    let mut y = y1 as isize;
+
+    loop {
+        if !walkables[y as usize][x as usize] {
+            return false;
+        }
+        if x == x2 as isize && y == y2 as isize {
+            break;
+        }
+        let e2 = 2 * err;
+        if e2 > -dy {
+            err -= dy;
+            x += sx;
+        }
+        if e2 < dx {
+            err += dx;
+            y += sy;
+        }
+    }
+    true
+}
+
+fn smooth_path(walkables: &Vec<Vec<bool>>, path: Vec<(usize, usize)>) -> Vec<(usize, usize)> {
+    let mut smoothed_path = vec![path[0]];
+    let mut i = 0;
+
+    while i < path.len() - 1 {
+        let mut j = i + 1;
+        while j < path.len() && is_walkable_line(walkables, path[i], path[j]) {
+            j += 1;
+        }
+        smoothed_path.push(path[j - 1]);
+        i = j - 1;
+    }
+
+    smoothed_path
+}
+
 pub fn find_path(
     walkables: &Vec<Vec<bool>>,
     start: (usize, usize),
@@ -48,7 +99,12 @@ pub fn find_path(
     )
     .expect("path not found");
 
-    Ok(PathCost { path, cost })
+    let smoothed_path = smooth_path(walkables, path);
+
+    Ok(PathCost {
+        path: smoothed_path,
+        cost,
+    })
 }
 
 #[derive(Default, Debug, Clone)]
@@ -113,7 +169,7 @@ pub fn load_map_from_csv(
         goal.clone().to_tuple(),
     ) {
         Ok(path_cost) => {
-            println!("{:?}", path_cost);
+            println!("path_cost: {:?}", path_cost);
             Ok((walkables, start, goal, path_cost, GameMap(map)))
         }
         Err(error) => bail!(error),
@@ -190,6 +246,39 @@ pub fn get_map_from_position(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_find_path_3x3() {
+        // Define a 3x3 grid with walkable and non-walkable cells
+        let walkables = vec![
+            vec![false, false, false, false, false, false],
+            vec![false, true, true, true, true, false],
+            vec![false, true, false, true, true, false],
+            vec![false, true, true, true, true, false],
+            vec![false, true, true, true, true, false],
+            vec![false, false, false, false, false, false],
+        ];
+
+        // Define the start and goal positions
+        let start = (1, 1);
+        let goal = (4, 4);
+
+        // Find the path
+        let result = find_path(&walkables, start, goal);
+
+        // Assert that the path is found
+        assert!(result.is_ok());
+
+        // Get the path and cost
+        let path_cost = result.unwrap();
+
+        // Define the expected smoothed path
+        let expected_path = vec![(1, 1), (4, 2), (4, 4)];
+
+        // Assert that the path matches the expected path
+        println!("path_cost.path:{:?}", path_cost.path);
+        assert_eq!(path_cost.path, expected_path);
+    }
 
     #[test]
     fn test_convert_map_to_screen() {
