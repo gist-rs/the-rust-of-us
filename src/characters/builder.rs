@@ -5,6 +5,7 @@ use crate::{
     brains::{
         behavior::get_behavior,
         fight::{get_fighter, TargetAt},
+        loot::get_looter,
     },
     characters::{
         actions::{Act, Action, LookDirection},
@@ -148,6 +149,7 @@ pub fn init_character<T>(
 
                 // Dynamics
                 get_fighter::<T>(&mut entity_commands);
+                get_looter::<T>(&mut entity_commands);
                 entity_commands.insert((get_thinker::<T>(), get_behavior::<T>()));
 
                 let character_id = entity_commands.id();

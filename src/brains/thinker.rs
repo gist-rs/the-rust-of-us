@@ -16,7 +16,8 @@ use crate::interactions::damage::Death;
 use std::cmp::Ordering;
 use std::fmt::Debug;
 
-use super::fight::{Fight, FightScorer};
+use super::fight::Fight;
+use super::loot::{Loot, LootScorer, Looted};
 
 const MAX_DISTANCE: f32 = 32.;
 
@@ -128,13 +129,18 @@ where
 {
     match char_type!(T) {
         id if id == char_type!(Human) => {
-            let move_and_guard = Steps::build()
-                .label("MoveAndGuard")
-                .step(MoveToNearest::<Chest>::new(MOVEMENT_SPEED, MAX_DISTANCE))
+            let move_and_exit = Steps::build()
+                .label("MoveAndLExit")
+                .step(MoveToNearest::<Exit>::new(MOVEMENT_SPEED, 0.))
                 .step(LookAround {
                     per_second: 25.0,
                     distance: MAX_DISTANCE,
-                })
+                });
+
+            let move_and_loot = Steps::build()
+                .label("MoveAndLoot")
+                .step(MoveToNearest::<Chest>::new(MOVEMENT_SPEED, MAX_DISTANCE))
+                .step(Loot {})
                 .step(MoveToNearest::<Exit>::new(MOVEMENT_SPEED, 0.))
                 .step(LookAround {
                     per_second: 25.0,
@@ -149,8 +155,9 @@ where
             Thinker::build()
                 .label("GuardingThinker")
                 .picker(Highest)
-                .when(FightScorer, move_and_fight)
-                .when(Duty, move_and_guard)
+                .when(LootScorer, move_and_loot)
+            // .when(FightScorer, move_and_fight)
+            // .when(Duty, move_and_exit)
         }
         id if id == char_type!(Monster) => {
             let move_and_guard = Steps::build()
@@ -167,11 +174,9 @@ where
                 .step(MoveToNearest::<Human>::new(MOVEMENT_SPEED, MAX_DISTANCE))
                 .step(Fight {});
 
-            Thinker::build()
-                .label("GuardingThinker")
-                .picker(Highest)
-                .when(FightScorer, move_and_fight)
-                .when(Duty, move_and_guard)
+            Thinker::build().label("GuardingThinker").picker(Highest)
+            // .when(FightScorer, move_and_fight)
+            // .when(Duty, move_and_guard)
         }
         id if id == char_type!(Npc) => {
             todo!()
@@ -211,13 +216,27 @@ pub fn find_closest_target_with_health<T: Component + Debug + Clone>(
             let db = (b_pos.xy - actor_position.xy).length_squared();
             da.partial_cmp(&db).unwrap_or(Ordering::Equal)
         })
-        .map(|(health, pos)| (health.value, *pos))
+        .map(|(health, position)| (health.value, *position))
+}
+
+pub fn find_closest_target_without_looted<T: Component + Debug + Clone>(
+    targets: &Query<&Position, (With<T>, Without<Looted>)>,
+    actor_position: &Position,
+) -> Option<(Position)> {
+    targets
+        .iter()
+        .min_by(|a, b| {
+            let da = (a.xy - actor_position.xy).length_squared();
+            let db = (b.xy - actor_position.xy).length_squared();
+            da.partial_cmp(&db).unwrap_or(Ordering::Equal)
+        })
+        .cloned()
 }
 
 pub fn find_closest_target<T: Component + Debug + Clone>(
     targets: &Query<&Position, (With<T>, Without<Death>)>,
     actor_position: &Position,
-) -> Option<Position> {
+) -> Option<(Position)> {
     targets
         .iter()
         .min_by(|a, b| {

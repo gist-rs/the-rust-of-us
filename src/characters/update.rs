@@ -6,10 +6,14 @@ use crate::{
         entities::CharacterId,
     },
     core::{
+        chest::ChestId,
         position::Position,
         stage::{CharacterInfo, GameStage, StageInfo},
     },
-    interactions::damage::{Damage, DamageEvent},
+    interactions::{
+        damage::{Damage, DamageEvent},
+        toggle::{Toggle, ToggleEvent},
+    },
 };
 use bevy::prelude::*;
 use bevy_spritesheet_animation::prelude::*;
@@ -36,6 +40,7 @@ pub fn update_character<T>(
     >,
     library: Res<AnimationLibrary>,
     mut damage_events: EventWriter<DamageEvent>,
+    mut toggle_events: EventWriter<ToggleEvent>,
 ) where
     T: CharacterInfo + 'static,
 {
@@ -119,6 +124,40 @@ pub fn update_character<T>(
                             } else {
                                 *ani_action = AniAction { act: action.0 };
                             }
+                        }
+                        Act::Open => {
+                            // Look direction
+                            if let Some(actor_target_at_position) = actor_target_at.last_position {
+                                sprite.flip_x = character_transform.translation.x
+                                    > actor_target_at_position.xy.x;
+
+                                // TODO: use total frame /2
+                                if animation.progress.frame == 3 && ani_action.act != Act::Open {
+                                    // Open
+                                    let actor_position = character_position;
+                                    let delta = actor_target_at_position.xy - actor_position.xy;
+                                    let _distance = delta.length();
+                                    let direction = delta.normalize_or_zero();
+                                    let toggle_position = actor_position.xy + delta;
+
+                                    let toggle = Toggle {
+                                        by: *character_info.kind(),
+                                        position: toggle_position,
+                                        // TOFIX
+                                        // target: ChestId(actor_target_at.id),
+                                        target: ChestId("chest_0".to_owned()),
+                                    };
+
+                                    println!("💥 ToggleEvent:{:?}", toggle);
+                                    toggle_events.send(ToggleEvent(toggle));
+                                    *ani_action = AniAction { act: action.0 };
+                                };
+
+                                // This weird
+                                if animation.progress.frame > 5 {
+                                    *ani_action = AniAction { act: Act::Idle };
+                                }
+                            };
                         }
                         _ => (),
                     }

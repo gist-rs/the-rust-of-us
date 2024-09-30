@@ -31,7 +31,7 @@ pub struct ChunkMap {
 #[derive(Resource, Default, Debug)]
 pub struct MainPath(pub PathCost);
 
-#[derive(Component)]
+#[derive(Component, Clone, Debug, Default)]
 pub struct Decor;
 
 #[derive(Bundle)]
@@ -164,20 +164,22 @@ pub fn build_scene(
                     );
 
                     let chest_id = format!("chest_{}", chests.0.len());
-                    let chest = Chest {
-                        status: ChestState::Close,
-                        key: None,
-                    };
-                    commands
+                    let entity = commands
                         .spawn((
                             deco_bundle,
-                            chest.clone(),
+                            ChestId(chest_id.clone()),
                             Position {
                                 xy: Vec2::new(transform.translation.x, transform.translation.y),
                             },
                         ))
-                        .insert(ChestId(chest_id.clone()));
+                        .id();
 
+                    let chest = Chest {
+                        status: ChestState::Close,
+                        key: None,
+                    };
+
+                    commands.entity(entity).insert(chest.clone());
                     chests.0.insert(chest_id, chest);
                 }
                 "🪦" => {

@@ -18,6 +18,7 @@ use big_brain::{BigBrainPlugin, BigBrainSet};
 use brains::{
     behavior::Behavior,
     fight::{fight_action_system, fight_scorer_system, fight_system, game_over_system},
+    loot::{loot_action_system, loot_scorer_system, loot_system},
     thinker::*,
 };
 use characters::{bar::Health, builder::init_character, update::update_character};
@@ -34,8 +35,11 @@ use core::{
     state::GameState,
 };
 use extol_sprite_layer::SpriteLayerPlugin;
-use interactions::damage::{
-    despawn_damage_indicator, spawn_damage_indicator, update_damage, DamageEvent, Damages,
+use interactions::{
+    damage::{
+        despawn_damage_indicator, spawn_damage_indicator, update_damage, DamageEvent, Damages,
+    },
+    toggle::{update_toggle_chest, ToggleEvent},
 };
 
 // `InspectorOptions` are completely optional
@@ -98,10 +102,15 @@ fn main() {
                 // adjust_stats,
                 button_system,
                 guard_system,
+                // Chest
                 update_chest,
+                update_toggle_chest,
                 update_gate,
+                // Character
                 update_character::<Human>,
                 update_character::<Monster>,
+                // Loot
+                loot_system::<Human, Chest>,
                 // Fight
                 fight_system::<Monster, Human>,
                 fight_system::<Human, Monster>,
@@ -124,7 +133,6 @@ fn main() {
             PreUpdate,
             (
                 guard_action_system::<Chest>,
-                move_to_nearest_system::<Chest>,
                 move_to_nearest_system::<Grave>,
                 move_to_nearest_system::<Exit>,
                 // --- Monster Fight ---
@@ -141,11 +149,16 @@ fn main() {
                 move_to_nearest_system::<Monster>,
                 // Human fight with Monster
                 fight_action_system::<Human, Monster>,
+                // --- Human Loot ---
+                loot_scorer_system::<Human>,
+                move_to_nearest_system::<Chest>,
+                loot_action_system::<Human, Chest>,
             )
                 .in_set(BigBrainSet::Actions)
                 .run_if(in_state(GameState::Running)),
         )
         .add_systems(First, guarding_scorer_system)
         .add_event::<DamageEvent>()
+        .add_event::<ToggleEvent>()
         .run();
 }

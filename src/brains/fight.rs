@@ -11,7 +11,7 @@ use std::fmt::Debug;
 
 #[derive(Component, Clone, Debug, Default)]
 pub struct TargetAt {
-    pub next_position: Option<Position>,
+    pub id: Option<String>,
     pub last_position: Option<Position>,
 }
 
@@ -43,7 +43,7 @@ pub fn fight_system<T, U>(
         id if id == char_type!(Human) || id == char_type!(Monster) => {
             for Actor(actor) in &mut action_query {
                 // Use the fight_action's actor to look up the corresponding Fighter Component.
-                if let Ok(mut fight) = fights.get_mut(*actor) {
+                if let Ok(mut fighter) = fights.get_mut(*actor) {
                     // Look up the actor's action.
                     if let Ok((actor_position, character_info)) = characters.get_mut(*actor) {
                         // Look up the target closest to them.
@@ -56,14 +56,15 @@ pub fn fight_system<T, U>(
 
                                     // Get attention when enemy getting close.
                                     if distance < character_info.line_of_sight() {
-                                        fight.attention += fight.per_second * time.delta_seconds();
-                                        if fight.attention >= 100.0 {
-                                            fight.attention = 100.0;
+                                        fighter.attention +=
+                                            fighter.per_second * time.delta_seconds();
+                                        if fighter.attention >= 100.0 {
+                                            fighter.attention = 100.0;
                                         }
-                                        trace!("Fight.attention: {}", fight.attention);
+                                        trace!("Fight.attention: {}", fighter.attention);
                                     }
                                 } else {
-                                    fight.attention = 0.;
+                                    fighter.attention = 0.;
                                 }
                             }
                             None => {
@@ -88,10 +89,10 @@ pub fn fight_scorer_system<T: Component + Debug + Clone>(
     match char_type!(T) {
         id if id == char_type!(Human) || id == char_type!(Monster) => {
             for (Actor(actor), mut score, span) in &mut query {
-                if let Ok(fight) = fights.get(*actor) {
-                    let new_score = fight.attention / 100.0;
+                if let Ok(fighter) = fights.get(*actor) {
+                    let new_score = fighter.attention / 100.0;
 
-                    if fight.is_fighting {
+                    if fighter.is_fighting {
                         let _score = last_score.get_or_insert(new_score);
 
                         score.set(*_score);
@@ -99,9 +100,12 @@ pub fn fight_scorer_system<T: Component + Debug + Clone>(
                         last_score.take();
                         score.set(new_score);
 
-                        if fight.attention >= 80.0 {
+                        if fighter.attention >= 80.0 {
                             span.span().in_scope(|| {
-                                trace!("Fight above threshold! Score: {}", fight.attention / 100.0)
+                                trace!(
+                                    "Fight above threshold! Score: {}",
+                                    fighter.attention / 100.0
+                                )
                             });
                         }
                     }
