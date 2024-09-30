@@ -6,13 +6,13 @@ use crate::char_type;
 use crate::characters::actions::{Act, Action};
 use crate::characters::bar::Health;
 use crate::core::chest::Chest;
-use crate::core::damage::Death;
 use crate::core::grave::Grave;
 use crate::core::map::{find_path, get_map_from_position, get_position_from_map};
 use crate::core::point::Exit;
 use crate::core::position::Position;
 use crate::core::scene::ChunkMap;
 use crate::core::stage::{CharacterInfo, Human, Monster, Npc};
+use crate::interactions::damage::Death;
 use std::cmp::Ordering;
 use std::fmt::Debug;
 

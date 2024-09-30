@@ -1,9 +1,9 @@
 use crate::characters::actions::{Act, Action};
 use crate::characters::bar::Health;
-use crate::core::damage::Death;
 use crate::core::position::Position;
 use crate::core::stage::{CharacterInfo, Human, Monster, Npc};
 use crate::core::state::GameState;
+use crate::interactions::damage::Death;
 use crate::{char_type, find_closest_target_with_health};
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use big_brain::prelude::*;

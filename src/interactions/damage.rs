@@ -4,7 +4,6 @@ use bevy::{
 };
 use bevy_stat_bars::Statbar;
 
-use super::layer::SpriteLayer;
 use crate::{
     brains::fight::Fighter,
     characters::{
@@ -12,6 +11,7 @@ use crate::{
         bar::Health,
         entities::CharacterKind,
     },
+    core::layer::SpriteLayer,
 };
 use std::fmt::Debug;
 

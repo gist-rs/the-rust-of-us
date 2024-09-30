@@ -6,10 +6,10 @@ use crate::{
         entities::CharacterId,
     },
     core::{
-        damage::{Damage, DamageEvent},
         position::Position,
         stage::{CharacterInfo, GameStage, StageInfo},
     },
+    interactions::damage::{Damage, DamageEvent},
 };
 use bevy::prelude::*;
 use bevy_spritesheet_animation::prelude::*;

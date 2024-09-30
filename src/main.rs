@@ -2,6 +2,7 @@ mod animations;
 mod brains;
 mod characters;
 mod core;
+mod interactions;
 mod macros;
 
 use bevy::{
@@ -22,9 +23,6 @@ use brains::{
 use characters::{bar::Health, builder::init_character, update::update_character};
 use core::{
     chest::{update_chest, Chest, Chests},
-    damage::{
-        despawn_damage_indicator, spawn_damage_indicator, update_damage, DamageEvent, Damages,
-    },
     gate::{update_gate, Gates},
     grave::Grave,
     layer::{y_sort, SpriteLayer},
@@ -36,6 +34,9 @@ use core::{
     state::GameState,
 };
 use extol_sprite_layer::SpriteLayerPlugin;
+use interactions::damage::{
+    despawn_damage_indicator, spawn_damage_indicator, update_damage, DamageEvent, Damages,
+};
 
 // `InspectorOptions` are completely optional
 #[derive(Reflect, Resource, Default, InspectorOptions)]
