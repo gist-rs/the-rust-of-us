@@ -11,6 +11,8 @@ use std::fmt::Debug;
 
 #[derive(Component, Clone, Debug, Default)]
 pub struct TargetAt {
+    // TODO: use id?
+    #[allow(unused)]
     pub id: Option<String>,
     pub last_position: Option<Position>,
 }

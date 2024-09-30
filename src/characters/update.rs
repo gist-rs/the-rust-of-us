@@ -137,7 +137,7 @@ pub fn update_character<T>(
                                     let actor_position = character_position;
                                     let delta = actor_target_at_position.xy - actor_position.xy;
                                     let _distance = delta.length();
-                                    let direction = delta.normalize_or_zero();
+                                    // let direction = delta.normalize_or_zero();
                                     let toggle_position = actor_position.xy + delta;
 
                                     let toggle = Toggle {

@@ -16,7 +16,7 @@ use crate::interactions::damage::Death;
 use std::cmp::Ordering;
 use std::fmt::Debug;
 
-use super::fight::Fight;
+use super::fight::{Fight, FightScorer};
 use super::loot::{Loot, LootScorer, Looted};
 
 const MAX_DISTANCE: f32 = 32.;
@@ -156,8 +156,8 @@ where
                 .label("GuardingThinker")
                 .picker(Highest)
                 .when(LootScorer, move_and_loot)
-            // .when(FightScorer, move_and_fight)
-            // .when(Duty, move_and_exit)
+                .when(FightScorer, move_and_fight)
+                .when(Duty, move_and_exit)
         }
         id if id == char_type!(Monster) => {
             let move_and_guard = Steps::build()
@@ -174,9 +174,11 @@ where
                 .step(MoveToNearest::<Human>::new(MOVEMENT_SPEED, MAX_DISTANCE))
                 .step(Fight {});
 
-            Thinker::build().label("GuardingThinker").picker(Highest)
-            // .when(FightScorer, move_and_fight)
-            // .when(Duty, move_and_guard)
+            Thinker::build()
+                .label("GuardingThinker")
+                .picker(Highest)
+                .when(FightScorer, move_and_fight)
+                .when(Duty, move_and_guard)
         }
         id if id == char_type!(Npc) => {
             todo!()
@@ -219,10 +221,11 @@ pub fn find_closest_target_with_health<T: Component + Debug + Clone>(
         .map(|(health, position)| (health.value, *position))
 }
 
+// TODO: generic with find_closest_target
 pub fn find_closest_target_without_looted<T: Component + Debug + Clone>(
     targets: &Query<&Position, (With<T>, Without<Looted>)>,
     actor_position: &Position,
-) -> Option<(Position)> {
+) -> Option<Position> {
     targets
         .iter()
         .min_by(|a, b| {
@@ -236,7 +239,7 @@ pub fn find_closest_target_without_looted<T: Component + Debug + Clone>(
 pub fn find_closest_target<T: Component + Debug + Clone>(
     targets: &Query<&Position, (With<T>, Without<Death>)>,
     actor_position: &Position,
-) -> Option<(Position)> {
+) -> Option<Position> {
     targets
         .iter()
         .min_by(|a, b| {

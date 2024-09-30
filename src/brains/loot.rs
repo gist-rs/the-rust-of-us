@@ -52,7 +52,7 @@ pub fn loot_system<T, U>(
                     if let Ok((actor_position, character_info)) = characters.get_mut(*actor) {
                         // Look up the target closest to them.
                         match find_closest_target_without_looted(&targets, &actor_position) {
-                            Some((closest_target)) => {
+                            Some(closest_target) => {
                                 // Find how far we are from it.
                                 let delta = closest_target.xy - actor_position.xy;
                                 let distance = delta.length();
@@ -141,7 +141,7 @@ pub fn loot_action_system<T, U>(
         (&mut TargetAt, &mut Position, &mut Action, &mut Sprite),
         (With<T>, Without<U>),
     >,
-    targets: Query<(&Position), (With<U>, Without<Looted>)>,
+    targets: Query<&Position, (With<U>, Without<Looted>)>,
     mut action_query: Query<(&Actor, &mut ActionState, &Loot, &ActionSpan)>,
 ) where
     T: CharacterInfo + Clone + Debug + 'static,
@@ -170,7 +170,7 @@ pub fn loot_action_system<T, U>(
 
                         // Look up the target closest to them.
                         match find_closest_target_without_looted(&targets, &actor_position) {
-                            Some((closest_target)) => {
+                            Some(closest_target) => {
                                 debug!("🦀 closest_target:{:?}", closest_target);
                                 // Look direction
                                 sprite.flip_x = actor_position.xy.x > closest_target.xy.x;

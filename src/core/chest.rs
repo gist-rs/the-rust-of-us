@@ -1,9 +1,7 @@
 use bevy::{prelude::*, utils::HashMap};
 use bevy_spritesheet_animation::prelude::*;
 
-use crate::brains::loot::{Loot, Looted};
-
-use super::scene::Decor;
+use crate::brains::loot::Looted;
 
 #[derive(Resource, Default, Debug)]
 pub struct Chests(pub HashMap<String, Chest>);

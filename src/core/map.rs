@@ -119,10 +119,7 @@ pub struct MapPosition {
 }
 
 impl MapPosition {
-    fn new(x: usize, y: usize) -> Self {
-        Self { x, y }
-    }
-
+    #[allow(unused)]
     fn to_tuple(&self) -> (usize, usize) {
         (self.x, self.y)
     }
@@ -149,11 +146,11 @@ pub fn load_map_from_csv(
             map[y][x] = cell.to_string();
             match cell {
                 "🆕" => {
-                    start = MapPosition::new(x, y);
+                    start = MapPosition { x, y };
                     walkables[y][x] = true;
                 }
                 "🆒" => {
-                    goal = MapPosition::new(x, y);
+                    goal = MapPosition { x, y };
                     walkables[y][x] = true;
                 }
                 "🚪" | "🌳" => {
