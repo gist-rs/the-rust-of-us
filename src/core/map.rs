@@ -148,11 +148,11 @@ pub fn load_map_from_csv(
         for (x, cell) in record.iter().enumerate() {
             map[y][x] = cell.to_string();
             match cell {
-                "▶️" => {
+                "🆕" => {
                     start = MapPosition::new(x, y);
                     walkables[y][x] = true;
                 }
-                "⏹" => {
+                "🆒" => {
                     goal = MapPosition::new(x, y);
                     walkables[y][x] = true;
                 }
