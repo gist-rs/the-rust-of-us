@@ -42,20 +42,29 @@ sequenceDiagram
 - [x] [FIGHT] Monster attack when 1 block close.
 - [x] [FIGHT] Human hurt when attack hit.
 - [x] [FIGHT] Human die when out of health.
-- [ ] [FIGHT] Human attack when 1 block close.
-- [ ] [FIGHT] Monster hurt when attack hit.
-- [ ] [FIGHT] Monster die when out of health.
+- [x] [FIGHT] Human attack when 1 block close.
+- [x] [FIGHT] Monster hurt when attack hit.
+- [x] [FIGHT] Monster die when out of health.
+- [x] [LOOT] Human walk and open nearest chest.
+- [x] Walkable with Pathfinding from a to b.
+- [x] Walkable with adaptive Pathfinding from a to b.
+- [ ] Show game clear.
+- [ ] Show game over.
+- [ ] Show SAVE as NFT.
+- [ ] Connect wallet.
+- [ ] Record map and message on NFT.
+- [ ] Show on big map 256x256.
+- [ ] Gen more stage map via llm and eval then cache.
+
+## TOHAVE
+
+- [ ] Record on KV and NFT as a fallback.
 - [ ] Offer ai to choose behavior and task. e.g. explore north, find treasure, avoid monster.
-- [ ] Walkable with Pathfinding from a to b.
-- [ ] Walkable with adaptive Pathfinding from a to b.
-- [ ] Gen next stage map via llm.
 - [ ] Gen next move by llm.
 - [ ] Show model name.
+- [ ] Cut scene show owner and their message. // render like x ss
 - [ ] [MENU] Add setting menu.
 - [ ] [MENU] Allow to add `API_URI`, `API_KEY`.
-- [ ] Record map on KV and NFT fallback.
-- [ ] Cut scene show owner and their message. // render like x ss
-- [ ] Walkable from a to b.
 - [ ] Logic gates quiz
 - [ ] Move stone to open path way.
 - [ ] Move stone to toggle switch.

@@ -1,3 +1,4 @@
+mod afterlife;
 mod animations;
 mod brains;
 mod characters;
@@ -5,6 +6,7 @@ mod core;
 mod interactions;
 mod macros;
 
+use afterlife::over::game_over_system;
 use bevy::{
     log::LogPlugin,
     prelude::*,
@@ -17,7 +19,7 @@ use bevy_stat_bars::RegisterStatbarSubject;
 use big_brain::{BigBrainPlugin, BigBrainSet};
 use brains::{
     behavior::Behavior,
-    fight::{fight_action_system, fight_scorer_system, fight_system, game_over_system},
+    fight::{fight_action_system, fight_scorer_system, fight_system},
     loot::{loot_action_system, loot_scorer_system, loot_system},
     thinker::*,
 };
@@ -127,7 +129,7 @@ fn main() {
         )
         .add_systems(
             Update,
-            (game_over_system,).run_if(in_state(GameState::Over)),
+            (game_over_system,).run_if(in_state(GameState::Running)),
         )
         .add_systems(
             PreUpdate,
