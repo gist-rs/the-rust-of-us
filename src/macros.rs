@@ -17,7 +17,7 @@ impl PartialEq for TypeIdWrapper {
 }
 
 #[macro_export]
-macro_rules! char_type {
+macro_rules! get_type_id {
     ($t:ty) => {
         $crate::macros::TypeIdWrapper(std::any::TypeId::of::<$t>())
     };

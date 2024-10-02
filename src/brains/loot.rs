@@ -4,7 +4,7 @@ use crate::core::position::Position;
 
 use crate::core::stage::{CharacterInfo, Human, Monster, Npc};
 
-use crate::{char_type, find_closest_target_without_looted};
+use crate::{get_type_id, find_closest_target_without_looted};
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use big_brain::prelude::*;
 use std::fmt::Debug;
@@ -43,8 +43,8 @@ pub fn loot_system<T, U>(
     T: CharacterInfo + Clone + Debug + Component + 'static,
     U: Clone + Debug + Component + 'static,
 {
-    match char_type!(T) {
-        id if id == char_type!(Human) => {
+    match get_type_id!(T) {
+        id if id == get_type_id!(Human) => {
             for Actor(actor) in &mut action_query {
                 // Use the loot_action's actor to look up the corresponding Looter Component.
                 if let Ok(mut looter) = loots.get_mut(*actor) {
@@ -75,7 +75,7 @@ pub fn loot_system<T, U>(
                 }
             }
         }
-        id if id == char_type!(Npc) => (),
+        id if id == get_type_id!(Npc) => (),
         _ => (),
     }
 }
@@ -86,8 +86,8 @@ pub fn loot_scorer_system<T: Component + Debug + Clone>(
     loots: Query<&Looter>,
     mut query: Query<(&Actor, &mut Score, &ScorerSpan), (With<LootScorer>, Without<T>)>,
 ) {
-    match char_type!(T) {
-        id if id == char_type!(Human) || id == char_type!(Monster) => {
+    match get_type_id!(T) {
+        id if id == get_type_id!(Human) || id == get_type_id!(Monster) => {
             for (Actor(actor), mut score, span) in &mut query {
                 if let Ok(looter) = loots.get(*actor) {
                     let new_score = looter.attention / 100.0;
@@ -109,7 +109,7 @@ pub fn loot_scorer_system<T: Component + Debug + Clone>(
                 }
             }
         }
-        id if id == char_type!(Npc) => (),
+        id if id == get_type_id!(Npc) => (),
         _ => (),
     }
 }
@@ -118,8 +118,8 @@ pub fn get_looter<T>(entity_commands: &mut EntityCommands)
 where
     T: CharacterInfo + Clone + Debug + 'static,
 {
-    match char_type!(T) {
-        id if id == char_type!(Human) || id == char_type!(Monster) => {
+    match get_type_id!(T) {
+        id if id == get_type_id!(Human) || id == get_type_id!(Monster) => {
             entity_commands.insert((
                 Looter {
                     is_looting: false,
@@ -129,7 +129,7 @@ where
                 LootScorer,
             ));
         }
-        id if id == char_type!(Npc) => (),
+        id if id == get_type_id!(Npc) => (),
         _ => (),
     }
 }
@@ -161,7 +161,7 @@ pub fn loot_action_system<T, U>(
                 println!("state:{:?}", state);
                 match *state {
                     ActionState::Requested => {
-                        debug!("🦀 Time to loot! :{}", char_type!(T));
+                        debug!("🦀 Time to loot! :{}", get_type_id!(T));
                         looter.is_looting = true;
                         *state = ActionState::Executing;
                     }

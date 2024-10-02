@@ -3,7 +3,7 @@ use serde::Deserialize;
 use strum_macros::{Display, EnumString};
 
 use crate::{
-    char_type,
+    get_type_id,
     core::stage::{CharacterInfo, Human, Monster, Npc},
     Guard,
 };
@@ -37,10 +37,10 @@ pub fn get_behavior<T>() -> Guard
 where
     T: CharacterInfo + Clone + Debug + 'static,
 {
-    match char_type!(T) {
-        id if id == char_type!(Human) => Guard::new(75.0, 10.0),
-        id if id == char_type!(Monster) => Guard::new(75.0, 10.0),
-        id if id == char_type!(Npc) => {
+    match get_type_id!(T) {
+        id if id == get_type_id!(Human) => Guard::new(75.0, 10.0),
+        id if id == get_type_id!(Monster) => Guard::new(75.0, 10.0),
+        id if id == get_type_id!(Npc) => {
             todo!()
         }
         _ => todo!(),

@@ -1,6 +1,6 @@
 use crate::{
     animations::entities::AniType,
-    char_type,
+    get_type_id,
     characters::{
         actions::{Act, LookDirection},
         entities::{CharacterId, CharacterKind},
@@ -34,16 +34,16 @@ impl StageInfo for Stage {
     where
         T: 'static,
     {
-        match char_type!(T) {
-            id if id == char_type!(Human) => {
+        match get_type_id!(T) {
+            id if id == get_type_id!(Human) => {
                 let humans: &[T] = unsafe { std::mem::transmute(&self.humans[..]) };
                 Some(humans.iter())
             }
-            id if id == char_type!(Monster) => {
+            id if id == get_type_id!(Monster) => {
                 let enemies: &[T] = unsafe { std::mem::transmute(&self.enemies[..]) };
                 Some(enemies.iter())
             }
-            id if id == char_type!(Npc) => {
+            id if id == get_type_id!(Npc) => {
                 let npcs: &[T] = unsafe { std::mem::transmute(&self.npcs[..]) };
                 Some(npcs.iter())
             }

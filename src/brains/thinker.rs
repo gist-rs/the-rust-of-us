@@ -2,9 +2,9 @@ use bevy::prelude::*;
 use bevy::utils::tracing::{debug, trace};
 use big_brain::prelude::*;
 
-use crate::char_type;
 use crate::characters::actions::{Act, Action};
 use crate::characters::bar::Health;
+use crate::characters::entities::CharacterId;
 use crate::core::chest::Chest;
 use crate::core::grave::Grave;
 use crate::core::map::{find_path, get_map_from_position, get_position_from_map};
@@ -12,6 +12,9 @@ use crate::core::point::Exit;
 use crate::core::position::Position;
 use crate::core::scene::ChunkMap;
 use crate::core::stage::{CharacterInfo, Human, Monster, Npc};
+use crate::core::state::GameState;
+use crate::dialogs::ask::{AskDialogContent, AskDialogEvent};
+use crate::get_type_id;
 use crate::interactions::damage::Death;
 use std::cmp::Ordering;
 use std::fmt::Debug;
@@ -127,8 +130,8 @@ pub fn get_thinker<T>() -> ThinkerBuilder
 where
     T: CharacterInfo + Clone + Debug + 'static,
 {
-    match char_type!(T) {
-        id if id == char_type!(Human) => {
+    match get_type_id!(T) {
+        id if id == get_type_id!(Human) => {
             let move_and_exit = Steps::build()
                 .label("MoveAndLExit")
                 .step(MoveToNearest::<Exit>::new(MOVEMENT_SPEED, 0.))
@@ -159,7 +162,7 @@ where
                 .when(FightScorer, move_and_fight)
                 .when(Duty, move_and_exit)
         }
-        id if id == char_type!(Monster) => {
+        id if id == get_type_id!(Monster) => {
             let move_and_guard = Steps::build()
                 .label("MoveAndGuard")
                 .step(MoveToNearest::<Chest>::new(MOVEMENT_SPEED, MAX_DISTANCE))
@@ -180,7 +183,7 @@ where
                 .when(FightScorer, move_and_fight)
                 .when(Duty, move_and_guard)
         }
-        id if id == char_type!(Npc) => {
+        id if id == get_type_id!(Npc) => {
             todo!()
         }
         _ => todo!(),
@@ -255,7 +258,7 @@ pub fn move_to_nearest_system<T: Component + Debug + Clone>(
     time: Res<Time>,
     targets: Query<&Position, (With<T>, Without<Death>)>,
     mut characters: Query<
-        (&mut Position, &mut Action),
+        (&mut Position, &mut Action, &CharacterId),
         (With<HasThinker>, Without<T>, Without<Death>),
     >,
     mut action_query: Query<
@@ -263,6 +266,8 @@ pub fn move_to_nearest_system<T: Component + Debug + Clone>(
         Without<Death>,
     >,
     chunk_map: Res<ChunkMap>,
+    mut ask_dialog_events: EventWriter<AskDialogEvent>,
+    mut game_state: ResMut<NextState<GameState>>,
 ) {
     if targets.is_empty() {
         return;
@@ -279,7 +284,9 @@ pub fn move_to_nearest_system<T: Component + Debug + Clone>(
             }
             ActionState::Executing => {
                 // Look up the actor's position.
-                if let Ok((mut actor_position, mut actor_action)) = characters.get_mut(*actor) {
+                if let Ok((mut actor_position, mut actor_action, character_id)) =
+                    characters.get_mut(*actor)
+                {
                     // Look up the target closest to them.
                     let closest_target = find_closest_target::<T>(&targets, &actor_position);
 
@@ -327,7 +334,27 @@ pub fn move_to_nearest_system<T: Component + Debug + Clone>(
                                     *action_state = ActionState::Success;
 
                                     // Action
-                                    *actor_action = Action(Act::Idle);
+                                    match std::any::type_name::<T>() {
+                                        // TODO: const this?
+                                        "the_rust_of_us::core::point::Exit" => {
+                                            let ask_dialog = AskDialogContent {
+                                                position: actor_position.xy,
+                                                by: character_id.clone(),
+                                                content: "I did it!".to_owned(),
+                                            };
+                                            println!(
+                                                "💥 AskDialogEvent:{:?}, {:?}",
+                                                character_id.clone(),
+                                                ask_dialog
+                                            );
+                                            ask_dialog_events.send(AskDialogEvent(ask_dialog));
+
+                                            game_state.set(GameState::Clear);
+                                        }
+                                        _ => {
+                                            *actor_action = Action(Act::Idle);
+                                        }
+                                    }
                                 }
                             }
                         }

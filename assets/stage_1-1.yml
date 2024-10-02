@@ -4,7 +4,7 @@ humans:
   - kind: human
     ani_type: man
     character_id: man_0
-    position: c2
+    position: e2
     look_direction: left
     act: idle
     line_of_sight: 200

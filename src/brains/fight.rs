@@ -2,9 +2,8 @@ use crate::characters::actions::{Act, Action};
 use crate::characters::bar::Health;
 use crate::core::position::Position;
 use crate::core::stage::{CharacterInfo, Human, Monster, Npc};
-use crate::core::state::GameState;
 use crate::interactions::damage::Death;
-use crate::{char_type, find_closest_target_with_health};
+use crate::{find_closest_target_with_health, get_type_id};
 use bevy::{ecs::system::EntityCommands, prelude::*};
 use big_brain::prelude::*;
 use std::fmt::Debug;
@@ -41,8 +40,8 @@ pub fn fight_system<T, U>(
     T: CharacterInfo + Clone + Debug + Component + 'static,
     U: CharacterInfo + Clone + Debug + Component + 'static,
 {
-    match char_type!(T) {
-        id if id == char_type!(Human) || id == char_type!(Monster) => {
+    match get_type_id!(T) {
+        id if id == get_type_id!(Human) || id == get_type_id!(Monster) => {
             for Actor(actor) in &mut action_query {
                 // Use the fight_action's actor to look up the corresponding Fighter Component.
                 if let Ok(mut fighter) = fights.get_mut(*actor) {
@@ -77,7 +76,7 @@ pub fn fight_system<T, U>(
                 }
             }
         }
-        id if id == char_type!(Npc) => (),
+        id if id == get_type_id!(Npc) => (),
         _ => (),
     }
 }
@@ -88,8 +87,8 @@ pub fn fight_scorer_system<T: Component + Debug + Clone>(
     fights: Query<&Fighter>,
     mut query: Query<(&Actor, &mut Score, &ScorerSpan), With<FightScorer>>,
 ) {
-    match char_type!(T) {
-        id if id == char_type!(Human) || id == char_type!(Monster) => {
+    match get_type_id!(T) {
+        id if id == get_type_id!(Human) || id == get_type_id!(Monster) => {
             for (Actor(actor), mut score, span) in &mut query {
                 if let Ok(fighter) = fights.get(*actor) {
                     let new_score = fighter.attention / 100.0;
@@ -114,7 +113,7 @@ pub fn fight_scorer_system<T: Component + Debug + Clone>(
                 }
             }
         }
-        id if id == char_type!(Npc) => (),
+        id if id == get_type_id!(Npc) => (),
         _ => (),
     }
 }
@@ -123,8 +122,8 @@ pub fn get_fighter<T>(entity_commands: &mut EntityCommands)
 where
     T: CharacterInfo + Clone + Debug + 'static,
 {
-    match char_type!(T) {
-        id if id == char_type!(Human) || id == char_type!(Monster) => {
+    match get_type_id!(T) {
+        id if id == get_type_id!(Human) || id == get_type_id!(Monster) => {
             entity_commands.insert((
                 Fighter {
                     is_fighting: false,
@@ -134,7 +133,7 @@ where
                 FightScorer,
             ));
         }
-        id if id == char_type!(Npc) => (),
+        id if id == get_type_id!(Npc) => (),
         _ => (),
     }
 }
@@ -163,7 +162,7 @@ pub fn fight_action_system<T, U>(
             {
                 match *state {
                     ActionState::Requested => {
-                        debug!("🦀 Time to fight! :{}", char_type!(T));
+                        debug!("🦀 Time to fight! :{}", get_type_id!(T));
                         fighter.is_fighting = true;
                         *state = ActionState::Executing;
                     }

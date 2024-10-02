@@ -3,6 +3,7 @@ mod animations;
 mod brains;
 mod characters;
 mod core;
+mod dialogs;
 mod interactions;
 mod macros;
 
@@ -36,6 +37,7 @@ use core::{
     stage::{init_stage, GameStage, Human, Monster},
     state::GameState,
 };
+use dialogs::ask::{update_ask_dialog, AskDialogEvent};
 use extol_sprite_layer::SpriteLayerPlugin;
 use interactions::{
     damage::{
@@ -124,8 +126,13 @@ fn main() {
                 // despawn_fighter_on_death_system::<Monster>,
                 despawn_damage_indicator,
                 // death_system,
+                update_ask_dialog,
             )
                 .run_if(in_state(GameState::Running)),
+        )
+        .add_systems(
+            Update,
+            (update_ask_dialog,).run_if(in_state(GameState::Clear)),
         )
         .add_systems(
             Update,
@@ -162,5 +169,6 @@ fn main() {
         .add_systems(First, guarding_scorer_system)
         .add_event::<DamageEvent>()
         .add_event::<ToggleEvent>()
+        .add_event::<AskDialogEvent>()
         .run();
 }
