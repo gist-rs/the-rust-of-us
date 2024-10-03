@@ -6,6 +6,7 @@
 
 ```
 cargo install cargo-watch
+cargo install wasm-bindgen-cli
 ```
 
 ## Dev
@@ -16,6 +17,18 @@ cargo watch -c -w src -x run
 # or more trace
 cargo watch -c -w src -s "RUST_LOG=the_rust_of_us=trace cargo run --features=trace"
 ```
+
+## Build
+
+```
+# for web
+cargo build --release --target wasm32-unknown-unknown
+
+# noted for `bevy_egui::manage_clipboard` via `bevy-inspector-egui`
+RUSTFLAGS=--cfg=web_sys_unstable_apis cargo build --release --target wasm32-unknown-unknown
+```
+
+## Notes
 
 ```mermaid
 sequenceDiagram

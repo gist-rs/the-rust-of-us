@@ -18,7 +18,6 @@ lazy_static = "1.5.0"
 strum = { version = "0.26.2", features = ["derive"] }
 strum_macros = "0.26.4"
 big-brain = { version = "0.21.1", features = ["trace"] }
-bevy-inspector-egui = "0.26.0"
 rand = "0.8.5"
 
 [profile.dev]

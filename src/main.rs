@@ -13,8 +13,6 @@ use bevy::{
     prelude::*,
     window::{PresentMode, WindowResolution},
 };
-use bevy_inspector_egui::prelude::*;
-// use bevy_inspector_egui::quick::ResourceInspectorPlugin;
 use bevy_spritesheet_animation::prelude::*;
 use bevy_stat_bars::RegisterStatbarSubject;
 use big_brain::{BigBrainPlugin, BigBrainSet};
@@ -46,9 +44,8 @@ use interactions::{
     toggle::{update_toggle_chest, ToggleEvent},
 };
 
-// `InspectorOptions` are completely optional
-#[derive(Reflect, Resource, Default, InspectorOptions)]
-#[reflect(Resource, InspectorOptions)]
+#[derive(Reflect, Resource, Default)]
+#[reflect(Resource)]
 struct Configuration {
     behavior: Behavior,
 }
