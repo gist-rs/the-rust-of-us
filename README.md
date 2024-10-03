@@ -48,8 +48,7 @@ sequenceDiagram
 - [x] [LOOT] Human walk and open nearest chest.
 - [x] Walkable with Pathfinding from a to b.
 - [x] Walkable with adaptive Pathfinding from a to b.
-- [ ] Show game clear.
-- [ ] Show game over.
+- [x] Show game clear.
 - [ ] Show SAVE as NFT.
 - [ ] Connect wallet.
 - [ ] Record map and message on NFT.
@@ -58,6 +57,7 @@ sequenceDiagram
 
 ## TOHAVE
 
+- [ ] Show game over.
 - [ ] Record on KV and NFT as a fallback.
 - [ ] Offer ai to choose behavior and task. e.g. explore north, find treasure, avoid monster.
 - [ ] Gen next move by llm.
