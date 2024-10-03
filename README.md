@@ -16,6 +16,9 @@ cargo watch -c -w src -x run
 
 # or more trace
 cargo watch -c -w src -s "RUST_LOG=the_rust_of_us=trace cargo run --features=trace"
+
+# or with dynamic linking (no Wasm)
+cargo watch -c -w src -x "run --features bevy/dynamic_linking"
 ```
 
 ## Build
@@ -102,3 +105,10 @@ sequenceDiagram
 - [x] [big-brain] Utility AI library for the Bevy game engine: https://github.com/zkat/big-brain
 - [ ] [🍃 Bevy Tweening]: https://github.com/djeedai/bevy_tweening
 - [ ] [bevy-inspector-egui]: https://github.com/jakobhellermann/bevy-inspector-egui
+- [ ] [bevy_local_storage]: https://github.com/robertdodd/bevy_local_storage
+- [ ] https://github.com/umut-sahin/bevy-persistent
+- [ ] https://github.com/topheman/bevy-rust-wasm-experiments
+- [ ] https://github.com/ndinata/rust-wasm-vite
+- [ ] https://github.com/mvlabat/bevy_egui
+- [ ] https://github.com/rwasm/vite-rsw-wasm-template
+- [ ] https://bevy-cheatbook.github.io/platforms/wasm.html
