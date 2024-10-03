@@ -11,7 +11,7 @@ use crate::{
         bar::Health,
         entities::CharacterKind,
     },
-    core::layer::SpriteLayer,
+    core::{layer::SpriteLayer, state::GameState},
 };
 use std::fmt::Debug;
 
@@ -84,7 +84,7 @@ pub fn update_damage(
     mut commands: Commands,
     mut targets: Query<(Entity, &CharacterKind, &mut Health, &mut Action)>,
     mut damage_events: EventReader<DamageEvent>,
-    // mut game_state: ResMut<NextState<GameState>>,
+    mut game_state: ResMut<NextState<GameState>>,
 ) {
     for DamageEvent(damage) in damage_events.read() {
         targets
@@ -113,8 +113,16 @@ pub fn update_damage(
                         commands.entity(entity).remove::<Fighter>();
                         commands.entity(entity).remove::<Statbar<Health>>();
 
-                        // println!("💥  GameState::Over");
-                        // game_state.set(GameState::Over);
+                        // Human?
+                        match kind {
+                            CharacterKind::Human => {
+                                println!("💥  GameState::Over");
+                                game_state.set(GameState::Over);
+                            }
+                            _ => {
+                                //
+                            }
+                        }
                     }
                 }
             });
