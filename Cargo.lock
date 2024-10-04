@@ -3570,7 +3570,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "the-rust-of-us"
+name = "the_rust_of_us"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -3588,6 +3588,7 @@ dependencies = [
  "serde_yaml",
  "strum",
  "strum_macros",
+ "wasm-bindgen",
 ]
 
 [[package]]

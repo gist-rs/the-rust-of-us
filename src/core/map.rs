@@ -120,12 +120,11 @@ pub struct MapPosition {
 
 impl MapPosition {
     #[allow(unused)]
-    fn to_tuple(&self) -> (usize, usize) {
+    pub fn to_tuple(&self) -> (usize, usize) {
         (self.x, self.y)
     }
 }
 
-#[allow(clippy::type_complexity)]
 pub fn load_map_from_csv(
     file_path: &str,
 ) -> Result<(Vec<Vec<bool>>, MapPosition, MapPosition, GameMap)> {
@@ -134,17 +133,30 @@ pub fn load_map_from_csv(
     let mut rdr = Reader::from_reader(file_content.as_bytes());
 
     // Initialize the grid
-    let mut walkables = vec![vec![false; 8]; 8];
     let mut map = vec![vec![String::new(); 8]; 8];
-    let mut start = MapPosition::default();
-    let mut goal = MapPosition::default();
 
     // Parse the CSV data and set obstacles
     for (y, result) in rdr.records().enumerate() {
         let record = result?;
         for (x, cell) in record.iter().enumerate() {
             map[y][x] = cell.to_string();
-            match cell {
+        }
+    }
+
+    let (walkables, start, goal) = generate_map(&map);
+
+    Ok((walkables, start, goal, GameMap(map)))
+}
+
+#[allow(clippy::ptr_arg)]
+pub fn generate_map(map: &Vec<Vec<String>>) -> (Vec<Vec<bool>>, MapPosition, MapPosition) {
+    let mut walkables = vec![vec![false; 8]; 8];
+    let mut start = MapPosition::default();
+    let mut goal = MapPosition::default();
+
+    for y in 0..8 {
+        for x in 0..8 {
+            match map[y][x].as_str() {
                 "🆕" => {
                     start = MapPosition { x, y };
                     walkables[y][x] = true;
@@ -163,21 +175,7 @@ pub fn load_map_from_csv(
         }
     }
 
-    // // Find the path
-    // match find_path(
-    //     &walkables,
-    //     start.clone().to_tuple(),
-    //     goal.clone().to_tuple(),
-    //     false,
-    // ) {
-    //     Ok(path_cost) => {
-    //         // println!("path_cost: {:?}", path_cost);
-    //         Ok((walkables, start, goal, path_cost, GameMap(map)))
-    //     }
-    //     Err(error) => bail!(error),
-    // }
-
-    Ok((walkables, start, goal, GameMap(map)))
+    (walkables, start, goal)
 }
 
 pub fn convert_map_to_screen(map_coord: String) -> Option<(usize, usize)> {
