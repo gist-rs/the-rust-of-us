@@ -182,7 +182,7 @@ pub fn build_scene(
                     commands.entity(entity).insert(chest.clone());
                     chests.0.insert(chest_id, chest);
                 }
-                "🪦" => {
+                "💀" => {
                     commands.spawn((
                         DecorBundle {
                             sprite_bundle: SpriteBundle {

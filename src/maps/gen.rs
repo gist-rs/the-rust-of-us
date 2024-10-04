@@ -1,5 +1,5 @@
 use crate::core::{
-    map::{find_path, generate_map, load_map_from_csv, MapPosition, PathCost},
+    map::{find_path, generate_map, MapPosition, PathCost},
     scene::GameMap,
 };
 use rand::Rng;
@@ -72,10 +72,10 @@ fn refine_walkable_map(
             }
         }
 
-        // Check if any node in the main route can access 💥
+        // Check if any node in the main route can access 💀
         for row in 0..8 {
             for col in 0..8 {
-                if map[row][col] == *"💥" {
+                if map[row][col] == *"💀" {
                     let target = MapPosition { x: col, y: row };
                     if let Ok(_path) =
                         find_path(walkables, start.clone().to_tuple(), (col, row), false)
@@ -136,11 +136,11 @@ pub fn gen_map_from_public_key(
         map[row][col] = '💰'.to_string();
     }
 
-    // Place 💥 randomly between row 4-6, col 2-6
+    // Place 💀 randomly between row 4-6, col 2-6
     for _ in 0..3 {
         let row = rng.gen_range(4..=6);
         let col = rng.gen_range(2..=6);
-        map[row][col] = '💥'.to_string();
+        map[row][col] = '💀'.to_string();
     }
 
     // Place the 🚪 gates
@@ -163,7 +163,6 @@ pub fn gen_map_from_public_key(
 fn test_refine_walkable_map() {
     let pubkey = "gistmeAhMG7AcKSPCHis8JikGmKT9tRRyZpyMLNNULq";
     let (walkables, start, goal, game_map) = gen_map_from_public_key(pubkey).unwrap();
-    // let (walkables, start, goal, game_map) = load_map_from_csv("assets/map.csv").unwrap();
     let GameMap(map) = game_map;
 
     for y in 0..8 {
@@ -215,10 +214,10 @@ fn test_refine_walkable_map() {
         }
     }
 
-    // Assert that start to 💥 is walkable
+    // Assert that start to 💀 is walkable
     for row in 4..=6 {
         for col in 2..=6 {
-            if map[row][col] == *"💥" {
+            if map[row][col] == *"💀" {
                 assert!(find_path(&walkables, start.clone().to_tuple(), (col, row), true).is_ok());
             }
         }
