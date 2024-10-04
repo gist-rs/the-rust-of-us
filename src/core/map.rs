@@ -1,6 +1,6 @@
 use std::fs;
 
-use anyhow::Result;
+use anyhow::{bail, Result};
 use bevy::{math::Vec2, prelude::Transform};
 use csv::*;
 use pathfinding::prelude::*;
@@ -89,7 +89,7 @@ pub fn find_path(
     is_smooth: bool,
 ) -> Result<PathCost> {
     let mut counter = 0;
-    let (path, cost) = astar(
+    let Some((path, cost)) = astar(
         &start,
         |n| {
             counter += 1;
@@ -97,8 +97,9 @@ pub fn find_path(
         },
         |n| distance(n, &goal),
         |n| n == &goal,
-    )
-    .expect("path not found");
+    ) else {
+        bail!("Path not found")
+    };
 
     if is_smooth {
         let smoothed_path = smooth_path(walkables, path);

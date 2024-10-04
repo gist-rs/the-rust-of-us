@@ -19,7 +19,7 @@ use super::{
     position::Position,
 };
 
-#[derive(Resource, Default, Debug)]
+#[derive(Resource, Default, Debug, Clone)]
 pub struct GameMap(pub Vec<Vec<String>>);
 
 #[derive(Resource, Default, Debug)]
