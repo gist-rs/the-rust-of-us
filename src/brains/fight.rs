@@ -173,7 +173,7 @@ pub fn fight_action_system<T, U>(
                         match find_closest_target_with_health::<U>(&targets, &actor_position) {
                             Some((target_health_value, closest_target)) => {
                                 if target_health_value > 0. {
-                                    debug!("🦀 target_health_value:{}", target_health_value);
+                                    // debug!("🦀 target_health_value:{}", target_health_value);
                                     // Look direction
                                     sprite.flip_x = actor_position.xy.x > closest_target.xy.x;
 
