@@ -25,6 +25,9 @@ pub struct GameMap(pub Vec<Vec<String>>);
 #[derive(Resource, Default, Debug)]
 pub struct ChunkMap {
     pub walkables: Vec<Vec<bool>>,
+    pub entrance:MapPosition,
+    pub exit:MapPosition, 
+    pub graves:Vec<MapPosition>,
 }
 
 #[allow(unused)]
@@ -75,7 +78,50 @@ pub fn build_scene(
     ));
 
     // Load decor from JSON file
-    let decor_json = fs::read_to_string("assets/decor.json").expect("Unable to read file");
+    // let decor_json = fs::read_to_string("assets/decor.json").expect("Unable to read file");
+    let decor_json = r#"[
+  {
+    "ani_type": "chest",
+    "texture_path": "chest.png",
+    "width": 18,
+    "height": 29,
+    "animations": [
+      {
+        "action_name": "close",
+        "x": 0,
+        "y": 0,
+        "count": 1
+      },
+      {
+        "action_name": "open",
+        "x": 0,
+        "y": 1,
+        "count": 1
+      }
+    ]
+  },
+  {
+    "ani_type": "gate",
+    "texture_path": "gate.png",
+    "width": 42,
+    "height": 18,
+    "animations": [
+      {
+        "action_name": "close",
+        "x": 0,
+        "y": 0,
+        "count": 1
+      },
+      {
+        "action_name": "open",
+        "x": 0,
+        "y": 1,
+        "count": 1
+      }
+    ]
+  }
+]
+"#;
     let decor_animations: Vec<Ani> = from_str(&decor_json).expect("Unable to parse JSON");
 
     for (y, row) in map.0.iter().enumerate() {

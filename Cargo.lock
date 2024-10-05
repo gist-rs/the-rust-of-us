@@ -3570,7 +3570,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "the_rust_of_us"
+name = "the-rust-of-us"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -3578,6 +3578,7 @@ dependencies = [
  "bevy_spritesheet_animation",
  "bevy_stat_bars",
  "big-brain",
+ "console_error_panic_hook",
  "csv",
  "extol_sprite_layer",
  "lazy_static",
@@ -3589,6 +3590,7 @@ dependencies = [
  "strum",
  "strum_macros",
  "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]

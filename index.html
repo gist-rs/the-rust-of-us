@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Trunk | Vanilla | web-sys</title>
+
+    <link data-trunk rel="scss" href="src/index.scss" />
+    <link data-trunk rel="css" href="src/app.css" />
+    <link data-trunk data-no-minify rel="css" href="src/not_minified.css" />
+    <link data-trunk rel="copy-dir" href="./assets" />
+    <base data-trunk-public-url />
+  </head>
+  <body>
+    <link
+      data-trunk
+      rel="rust"
+      href="Cargo.toml"
+      data-wasm-opt="z"
+      data-bin="the-rust-of-us"
+    />
+    <script data-trunk src="src/script.js"></script>
+    <script data-trunk src="src/script.mjs" type="module"></script>
+    <canvas id="game" width="320" height="320"></canvas>
+  </body>
+  <script>
+    testFromJavaScript();
+  </script>
+
+  <script type="module">
+    addEventListener("TrunkApplicationStarted", (event) => {
+      console.log(
+        "application started - bindings:",
+        window.wasmBindings,
+        "WASM:",
+        event.detail.wasm
+      );
+      window.wasmBindings.wasm_ffi();
+      // You can also run this via the WASM instance in the details
+      //   event.detail.wasm.wasm_ffi();
+    });
+  </script>
+</html>

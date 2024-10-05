@@ -50,7 +50,7 @@ fn check_and_pave_path(
 
 // Refine the walkable map
 #[allow(unused)]
-fn refine_walkable_map(
+pub fn refine_walkable_map(
     walkables: &mut [Vec<bool>],
     game_map: &mut GameMap,
     start: &MapPosition,
@@ -90,7 +90,13 @@ fn refine_walkable_map(
 #[allow(unused)]
 pub fn gen_map_from_public_key(
     public_key: &str,
-) -> Result<(Vec<Vec<bool>>, MapPosition, MapPosition, GameMap)> {
+) -> Result<(
+    Vec<Vec<bool>>,
+    MapPosition,
+    MapPosition,
+    GameMap,
+    Vec<MapPosition>,
+)> {
     let mut map = vec![vec!["➖".to_string(); 8]; 8];
 
     // Fill the edges with 🌳
@@ -124,6 +130,7 @@ pub fn gen_map_from_public_key(
     map[7][a as usize] = "🚪".to_string();
 
     // Place 🆒 and 🆕
+    let mut graves = vec![];
     let mut rng = OsRng;
     loop {
         // Place 💰 and 💀 randomly ensuring no conflict with 🆒 and 🆕
@@ -136,6 +143,7 @@ pub fn gen_map_from_public_key(
             let row = rng.gen_range(1..=6);
             let col = rng.gen_range(1..=6);
             map[row][col] = "💀".to_string();
+            graves.push(MapPosition { x: col, y: row });
         }
 
         if map[1][c as usize] != "💰" && map[1][c as usize] != "💀" {
@@ -147,13 +155,13 @@ pub fn gen_map_from_public_key(
 
     let (walkables, start, goal) = generate_map(&map);
 
-    Ok((walkables, start, goal, GameMap(map)))
+    Ok((walkables, start, goal, GameMap(map), graves))
 }
 
 #[test]
 fn test_refine_walkable_map() {
     let pubkey = "gistmeAhMG7AcKSPCHis8JikGmKT9tRRyZpyMLNNULq";
-    let (walkables, start, goal, game_map) = gen_map_from_public_key(pubkey).unwrap();
+    let (walkables, start, goal, game_map, _) = gen_map_from_public_key(pubkey).unwrap();
     let GameMap(map) = game_map;
 
     #[allow(clippy::needless_range_loop)]

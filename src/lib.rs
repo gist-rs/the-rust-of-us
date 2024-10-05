@@ -45,15 +45,12 @@ use interactions::{
     toggle::{update_toggle_chest, ToggleEvent},
 };
 
-use wasm_bindgen::prelude::*;
-
 #[derive(Reflect, Resource, Default)]
 #[reflect(Resource)]
 struct Configuration {
     behavior: Behavior,
 }
 
-#[wasm_bindgen(start)]
 pub fn entry() {
     App::new()
         .add_plugins((
@@ -65,6 +62,7 @@ pub fn entry() {
                         title: "🦀 The Rust of Us".into(),
                         resolution: WindowResolution::new(320.0, 320.0),
                         present_mode: PresentMode::AutoNoVsync,
+                        canvas: Some("#game".into()),
                         ..default()
                     }),
                     ..default()
@@ -171,5 +169,38 @@ pub fn entry() {
         .add_event::<DamageEvent>()
         .add_event::<ToggleEvent>()
         .add_event::<AskDialogEvent>()
+        .run();
+}
+
+// ---------------------------------------------
+
+use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
+
+fn setup(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    commands.spawn(Camera2dBundle::default());
+    commands.spawn(MaterialMesh2dBundle {
+        mesh: Mesh2dHandle(meshes.add(Circle { radius: 50.0 })),
+        material: materials.add(Color::srgb(1., 0., 0.)),
+        ..default()
+    });
+}
+
+pub fn entry2() {
+    App::new()
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                title: "🦀 The Rust of Us".into(),
+                resolution: WindowResolution::new(320.0, 320.0),
+                present_mode: PresentMode::AutoNoVsync,
+                canvas: Some("#game".into()),
+                ..default()
+            }),
+            ..default()
+        }))
+        .add_systems(Startup, setup)
         .run();
 }

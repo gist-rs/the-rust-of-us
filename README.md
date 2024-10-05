@@ -112,3 +112,4 @@ sequenceDiagram
 - [ ] https://github.com/mvlabat/bevy_egui
 - [ ] https://github.com/rwasm/vite-rsw-wasm-template
 - [ ] https://bevy-cheatbook.github.io/platforms/wasm.html
+- [ ] https://github.com/trunk-rs/trunk
