@@ -16,7 +16,7 @@ fn always_find_path(start: &MapPosition, goal: &MapPosition) -> PathCost {
 }
 
 fn check_and_pave_path(
-    walkables: &mut Vec<Vec<bool>>,
+    walkables: &mut [Vec<bool>],
     map: &mut [Vec<String>],
     start: &MapPosition,
     main_route_path: &[(usize, usize)],
@@ -51,7 +51,7 @@ fn check_and_pave_path(
 // Refine the walkable map
 #[allow(unused)]
 fn refine_walkable_map(
-    walkables: &mut Vec<Vec<bool>>,
+    walkables: &mut [Vec<bool>],
     game_map: &mut GameMap,
     start: &MapPosition,
     goal: &MapPosition,
@@ -83,7 +83,7 @@ fn refine_walkable_map(
     // Check and pave paths to "💀"
     check_and_pave_path(walkables, map, start, &main_route_path, "💀", &mut rng);
 
-    (game_map.clone(), walkables.clone())
+    (game_map.clone(), walkables.to_vec())
 }
 
 #[allow(clippy::type_complexity)]

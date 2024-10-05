@@ -15,12 +15,7 @@ pub struct PathCost {
     pub cost: usize,
 }
 
-// TOFIX
-#[allow(clippy::ptr_arg)]
-fn successors(
-    walkables: &Vec<Vec<bool>>,
-    &(x, y): &(usize, usize),
-) -> Vec<((usize, usize), usize)> {
+fn successors(walkables: &[Vec<bool>], &(x, y): &(usize, usize)) -> Vec<((usize, usize), usize)> {
     vec![(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
         .into_iter()
         .filter_map(|(nx, ny)| walkables[ny][nx].then_some(((nx, ny), 1)))
@@ -31,10 +26,8 @@ fn distance(&(x1, y1): &(usize, usize), &(x2, y2): &(usize, usize)) -> usize {
     x1.abs_diff(x2) + y1.abs_diff(y2)
 }
 
-// TOFIX
-#[allow(clippy::ptr_arg)]
 fn is_walkable_line(
-    walkables: &Vec<Vec<bool>>,
+    walkables: &[Vec<bool>],
     (x1, y1): (usize, usize),
     (x2, y2): (usize, usize),
 ) -> bool {
@@ -66,7 +59,7 @@ fn is_walkable_line(
     true
 }
 
-fn smooth_path(walkables: &Vec<Vec<bool>>, path: Vec<(usize, usize)>) -> Vec<(usize, usize)> {
+fn smooth_path(walkables: &[Vec<bool>], path: Vec<(usize, usize)>) -> Vec<(usize, usize)> {
     let mut smoothed_path = vec![path[0]];
     let mut i = 0;
 
@@ -83,7 +76,7 @@ fn smooth_path(walkables: &Vec<Vec<bool>>, path: Vec<(usize, usize)>) -> Vec<(us
 }
 
 pub fn find_path(
-    walkables: &Vec<Vec<bool>>,
+    walkables: &[Vec<bool>],
     start: (usize, usize),
     goal: (usize, usize),
     is_smooth: bool,
@@ -149,8 +142,7 @@ pub fn load_map_from_csv(
     Ok((walkables, start, goal, GameMap(map)))
 }
 
-#[allow(clippy::ptr_arg)]
-pub fn generate_map(map: &Vec<Vec<String>>) -> (Vec<Vec<bool>>, MapPosition, MapPosition) {
+pub fn generate_map(map: &[Vec<String>]) -> (Vec<Vec<bool>>, MapPosition, MapPosition) {
     let mut walkables = vec![vec![false; 8]; 8];
     let mut start = MapPosition::default();
     let mut goal = MapPosition::default();
