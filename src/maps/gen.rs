@@ -5,11 +5,11 @@ use crate::core::{
 use anyhow::Result;
 use rand::{rngs::OsRng, Rng};
 
-fn always_find_path(start: MapPosition, goal: MapPosition) -> PathCost {
+fn always_find_path(start: &MapPosition, goal: &MapPosition) -> PathCost {
     find_path(
         &vec![vec![true; 8]; 8],
-        start.clone().to_tuple(),
-        goal.clone().to_tuple(),
+        start.to_tuple(),
+        goal.to_tuple(),
         false,
     )
     .unwrap()
@@ -18,17 +18,16 @@ fn always_find_path(start: MapPosition, goal: MapPosition) -> PathCost {
 fn check_and_pave_path(
     walkables: &mut Vec<Vec<bool>>,
     map: &mut Vec<Vec<String>>,
-    start: MapPosition,
+    start: &MapPosition,
     main_route_path: &[(usize, usize)],
     target_char: &str,
     rng: &mut rand::rngs::ThreadRng,
 ) {
     for row in 0..8 {
         for col in 0..8 {
-            if map[row][col] == *target_char {
+            if map[row][col] == target_char {
                 let target = MapPosition { x: col, y: row };
-                if let Ok(_path) = find_path(walkables, start.clone().to_tuple(), (col, row), false)
-                {
+                if let Ok(_path) = find_path(walkables, start.to_tuple(), (col, row), false) {
                     // OK
                 } else {
                     // If no sub-route found, randomly pick a node and pave the way
@@ -36,7 +35,7 @@ fn check_and_pave_path(
                     let (x, y) = main_route_path[node_index];
 
                     // Pave the way to the nearest target
-                    let path_cost = always_find_path(MapPosition { x, y }, target.clone());
+                    let path_cost = always_find_path(&MapPosition { x, y }, &target);
                     for (px, py) in path_cost.path {
                         if !walkables[py][px] {
                             walkables[py][px] = true;
@@ -53,8 +52,8 @@ fn check_and_pave_path(
 fn refine_walkable_map(
     walkables: &mut Vec<Vec<bool>>,
     game_map: &mut GameMap,
-    start: MapPosition,
-    goal: MapPosition,
+    start: &MapPosition,
+    goal: &MapPosition,
 ) -> GameMap {
     let mut rng = rand::thread_rng();
     let GameMap(map) = game_map;
@@ -64,7 +63,7 @@ fn refine_walkable_map(
         Ok(path_cost) => path_cost.path,
         _ => {
             // Find the main route
-            let main_route_path = always_find_path(start.clone(), goal).path;
+            let main_route_path = always_find_path(start, goal).path;
             // Pave the way
             for (px, py) in main_route_path.clone() {
                 if !walkables[py][px] {
@@ -78,14 +77,7 @@ fn refine_walkable_map(
     };
 
     // Check and pave paths to "💰"
-    check_and_pave_path(
-        walkables,
-        map,
-        start.clone(),
-        &main_route_path,
-        "💰",
-        &mut rng,
-    );
+    check_and_pave_path(walkables, map, start, &main_route_path, "💰", &mut rng);
 
     // Check and pave paths to "💀"
     check_and_pave_path(walkables, map, start, &main_route_path, "💀", &mut rng);
@@ -162,12 +154,8 @@ fn test_refine_walkable_map() {
 
     let mut walkables = walkables;
 
-    let GameMap(map) = refine_walkable_map(
-        &mut walkables,
-        &mut GameMap(map.clone()),
-        start.clone(),
-        goal.clone(),
-    );
+    let GameMap(map) =
+        refine_walkable_map(&mut walkables, &mut GameMap(map.clone()), &start, &goal);
 
     for y in 0..8 {
         for x in 0..8 {
@@ -185,19 +173,13 @@ fn test_refine_walkable_map() {
     }
 
     // Assert that start to goal is walkable
-    assert!(find_path(
-        &walkables,
-        start.clone().to_tuple(),
-        goal.clone().to_tuple(),
-        true
-    )
-    .is_ok());
+    assert!(find_path(&walkables, start.to_tuple(), goal.to_tuple(), true).is_ok());
 
     // Assert that start to 💰 is walkable
     for row in 0..8 {
         for col in 0..8 {
             if map[row][col] == *"💰" {
-                assert!(find_path(&walkables, start.clone().to_tuple(), (col, row), true).is_ok());
+                assert!(find_path(&walkables, start.to_tuple(), (col, row), true).is_ok());
             }
         }
     }
@@ -206,7 +188,7 @@ fn test_refine_walkable_map() {
     for row in 4..=6 {
         for col in 2..=6 {
             if map[row][col] == *"💀" {
-                assert!(find_path(&walkables, start.clone().to_tuple(), (col, row), true).is_ok());
+                assert!(find_path(&walkables, start.to_tuple(), (col, row), true).is_ok());
             }
         }
     }
