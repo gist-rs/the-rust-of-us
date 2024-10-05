@@ -17,7 +17,7 @@ fn always_find_path(start: &MapPosition, goal: &MapPosition) -> PathCost {
 
 fn check_and_pave_path(
     walkables: &mut Vec<Vec<bool>>,
-    map: &mut Vec<Vec<String>>,
+    map: &mut [Vec<String>],
     start: &MapPosition,
     main_route_path: &[(usize, usize)],
     target_char: &str,
@@ -49,6 +49,7 @@ fn check_and_pave_path(
 }
 
 // Refine the walkable map
+#[allow(unused)]
 fn refine_walkable_map(
     walkables: &mut Vec<Vec<bool>>,
     game_map: &mut GameMap,
@@ -86,6 +87,7 @@ fn refine_walkable_map(
 }
 
 #[allow(clippy::type_complexity)]
+#[allow(unused)]
 pub fn gen_map_from_public_key(
     public_key: &str,
 ) -> Result<(Vec<Vec<bool>>, MapPosition, MapPosition, GameMap)> {
@@ -154,6 +156,7 @@ fn test_refine_walkable_map() {
     let (walkables, start, goal, game_map) = gen_map_from_public_key(pubkey).unwrap();
     let GameMap(map) = game_map;
 
+    #[allow(clippy::needless_range_loop)]
     for y in 0..8 {
         for x in 0..8 {
             print!("{}", map[y][x]);
@@ -169,6 +172,7 @@ fn test_refine_walkable_map() {
 
     let GameMap(map) = refined_game_map;
 
+    #[allow(clippy::needless_range_loop)]
     for y in 0..8 {
         for x in 0..8 {
             print!("{}", map[y][x]);
@@ -189,6 +193,7 @@ fn test_refine_walkable_map() {
     assert!(find_path(&refined_walkables, start.to_tuple(), goal.to_tuple(), true).is_ok());
 
     // Assert that start to 💰 is walkable
+    #[allow(clippy::needless_range_loop)]
     for row in 0..8 {
         for col in 0..8 {
             if map[row][col] == *"💰" {
@@ -198,6 +203,7 @@ fn test_refine_walkable_map() {
     }
 
     // Assert that start to 💀 is walkable
+    #[allow(clippy::needless_range_loop)]
     for row in 4..=6 {
         for col in 2..=6 {
             if map[row][col] == *"💀" {
