@@ -12,7 +12,7 @@ fn always_find_path(start: &MapPosition, goal: &MapPosition) -> PathCost {
         goal.to_tuple(),
         false,
     )
-    .unwrap()
+    .expect("Expected PathCost")
 }
 
 fn check_and_pave_path(
@@ -54,7 +54,7 @@ fn refine_walkable_map(
     game_map: &mut GameMap,
     start: &MapPosition,
     goal: &MapPosition,
-) -> GameMap {
+) -> (GameMap, Vec<Vec<bool>>) {
     let mut rng = rand::thread_rng();
     let GameMap(map) = game_map;
 
@@ -82,12 +82,12 @@ fn refine_walkable_map(
     // Check and pave paths to "💀"
     check_and_pave_path(walkables, map, start, &main_route_path, "💀", &mut rng);
 
-    game_map.clone()
+    (game_map.clone(), walkables.clone())
 }
 
 #[allow(clippy::type_complexity)]
 pub fn gen_map_from_public_key(
-    pubkey: &str,
+    public_key: &str,
 ) -> Result<(Vec<Vec<bool>>, MapPosition, MapPosition, GameMap)> {
     let mut map = vec![vec!["➖".to_string(); 8]; 8];
 
@@ -100,15 +100,24 @@ pub fn gen_map_from_public_key(
     }
 
     // Place 🌳 based on the rest of the characters
-    for (i, ch) in pubkey.chars().enumerate().skip(2) {
+    for (i, ch) in public_key.chars().enumerate().skip(2) {
         let row = (i % 7) + 1; // Rows 1 to 7
         let col = ch as u8 % 8;
         map[row][col as usize] = "🌳".to_string();
     }
 
     // Place the 🚪 gates
-    let c = 1 + pubkey.chars().nth(0).unwrap() as u8 % 6;
-    let a = 1 + pubkey.chars().nth(1).unwrap() as u8 % 6;
+    #[allow(clippy::iter_nth_zero)]
+    let c = 1 + public_key
+        .chars()
+        .nth(0)
+        .expect("Expected valid public key") as u8
+        % 6;
+    let a = 1 + public_key
+        .chars()
+        .nth(1)
+        .expect("Expected valid public key") as u8
+        % 6;
     map[0][c as usize] = "🚪".to_string();
     map[7][a as usize] = "🚪".to_string();
 
@@ -151,11 +160,14 @@ fn test_refine_walkable_map() {
         }
         println!();
     }
+    println!();
 
     let mut walkables = walkables;
 
-    let GameMap(map) =
-        refine_walkable_map(&mut walkables, &mut GameMap(map.clone()), &start, &goal);
+    let (refined_game_map, refined_walkables) =
+        refine_walkable_map(&mut walkables, &mut GameMap(map), &start, &goal);
+
+    let GameMap(map) = refined_game_map;
 
     for y in 0..8 {
         for x in 0..8 {
@@ -163,9 +175,10 @@ fn test_refine_walkable_map() {
         }
         println!();
     }
+    println!();
 
     // Print the refined walkable map for verification
-    for row in &walkables {
+    for row in &refined_walkables {
         for &cell in row {
             print!("{}", if cell { "✅" } else { "❌" });
         }
@@ -173,13 +186,13 @@ fn test_refine_walkable_map() {
     }
 
     // Assert that start to goal is walkable
-    assert!(find_path(&walkables, start.to_tuple(), goal.to_tuple(), true).is_ok());
+    assert!(find_path(&refined_walkables, start.to_tuple(), goal.to_tuple(), true).is_ok());
 
     // Assert that start to 💰 is walkable
     for row in 0..8 {
         for col in 0..8 {
             if map[row][col] == *"💰" {
-                assert!(find_path(&walkables, start.to_tuple(), (col, row), true).is_ok());
+                assert!(find_path(&refined_walkables, start.to_tuple(), (col, row), true).is_ok());
             }
         }
     }
@@ -188,7 +201,7 @@ fn test_refine_walkable_map() {
     for row in 4..=6 {
         for col in 2..=6 {
             if map[row][col] == *"💀" {
-                assert!(find_path(&walkables, start.to_tuple(), (col, row), true).is_ok());
+                assert!(find_path(&refined_walkables, start.to_tuple(), (col, row), true).is_ok());
             }
         }
     }
