@@ -10,6 +10,7 @@ mod maps;
 
 use afterlife::over::game_over_system;
 use bevy::{
+    asset::AssetMetaCheck,
     log::LogPlugin,
     prelude::*,
     window::{PresentMode, WindowResolution},
@@ -72,7 +73,11 @@ pub fn entry() {
                     filter: "big_brain=debug,the_rust_of_us=debug".to_string(),
                     ..default()
                 })
-                .set(ImagePlugin::default_nearest()),
+                .set(ImagePlugin::default_nearest())
+                .set(AssetPlugin {
+                    meta_check: AssetMetaCheck::Never,
+                    ..default()
+                }),
         ))
         .add_plugins(BigBrainPlugin::new(PreUpdate))
         // .add_plugins(ResourceInspectorPlugin::<Configuration>::default())
