@@ -9,7 +9,12 @@ fn start_app() {
         .and_then(|win| win.document())
         .expect("Could not access document");
     let body = document.body().expect("Could not access document.body");
-    let text_node = document.create_text_node("Hello, world from Vanilla Rust!");
+
+    let br_node = document.create_element("br").expect("Failed to create br");
+    body.append_child(br_node.as_ref())
+        .expect("Failed to append br");
+
+    let text_node = document.create_text_node("The Rust of Us by @katopz");
     body.append_child(text_node.as_ref())
         .expect("Failed to append text");
 }
