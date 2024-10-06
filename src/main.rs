@@ -10,11 +10,7 @@ fn start_app() {
         .expect("Could not access document");
     let body = document.body().expect("Could not access document.body");
 
-    let br_node = document.create_element("br").expect("Failed to create br");
-    body.append_child(br_node.as_ref())
-        .expect("Failed to append br");
-
-    let text_node = document.create_text_node("The Rust of Us by @katopz");
+    let text_node = document.create_text_node("");
     body.append_child(text_node.as_ref())
         .expect("Failed to append text");
 }
@@ -34,7 +30,7 @@ fn main() {
     {
         set_panic_hook();
         snippetTest();
-        start_app();
+        // start_app();
     }
     entry();
 }
