@@ -7,6 +7,8 @@ mod dialogs;
 mod interactions;
 mod macros;
 mod maps;
+
+#[cfg(target_arch = "wasm32")]
 mod web;
 
 use afterlife::over::game_over_system;
@@ -47,6 +49,8 @@ use interactions::{
     },
     toggle::{update_toggle_chest, ToggleEvent},
 };
+
+#[cfg(target_arch = "wasm32")]
 use web::local_storage::get_local_storage_value;
 
 #[derive(Reflect, Resource, Default)]
@@ -214,6 +218,7 @@ pub fn entry2() {
         .run();
 }
 
+#[cfg(target_arch = "wasm32")]
 pub fn get_public_key() -> Option<String> {
     let public_key = get_local_storage_value("public_key");
     debug!("public_key: {:?}", public_key);

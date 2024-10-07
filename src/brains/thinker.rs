@@ -72,7 +72,7 @@ pub fn guard_action_system<T: Component + Debug + Clone>(
         match *state {
             ActionState::Requested => {
                 // We'll start guarding as soon as we're requested to do so.
-                debug!("🔥 Guarding...{}", guard.concern);
+                // debug!("🔥 Guarding...{}", guard.concern);
                 *state = ActionState::Executing;
             }
             ActionState::Executing => {
@@ -80,7 +80,7 @@ pub fn guard_action_system<T: Component + Debug + Clone>(
                     Some(closest_target) => {
                         let distance = (closest_target.xy - actor_position.xy).length();
                         if distance < look_around.distance {
-                            trace!("Guarding!");
+                            // trace!("Guarding!");
                             guard.concern -= look_around.per_second * time.delta_seconds();
 
                             // Once we hit 0 concern, we stop guarding and report success.
@@ -88,7 +88,7 @@ pub fn guard_action_system<T: Component + Debug + Clone>(
                                 guard.concern = 0.0;
                                 *state = ActionState::Success;
 
-                                debug!("🔥 Guarding success!");
+                                // debug!("🔥 Guarding success!");
                             }
                         } else {
                             debug!("We're too far away!");
@@ -278,7 +278,7 @@ pub fn move_to_nearest_system<T: Component + Debug + Clone>(
 
         match *action_state {
             ActionState::Requested => {
-                debug!("🔥 Let's go find a {:?}", std::any::type_name::<T>());
+                // debug!("🔥 Let's go find a {:?}", std::any::type_name::<T>());
 
                 *action_state = ActionState::Executing;
             }
@@ -330,7 +330,7 @@ pub fn move_to_nearest_system<T: Component + Debug + Clone>(
                                     // Action
                                     *actor_action = Action(Act::Walk);
                                 } else {
-                                    debug!("🔥 We got there!");
+                                    // debug!("🔥 We got there!");
                                     *action_state = ActionState::Success;
 
                                     // Action
@@ -342,11 +342,11 @@ pub fn move_to_nearest_system<T: Component + Debug + Clone>(
                                                 by: character_id.clone(),
                                                 content: "I did it!".to_owned(),
                                             };
-                                            println!(
-                                                "💥 AskDialogEvent:{:?}, {:?}",
-                                                character_id.clone(),
-                                                ask_dialog
-                                            );
+                                            // println!(
+                                            //     "💥 AskDialogEvent:{:?}, {:?}",
+                                            //     character_id.clone(),
+                                            //     ask_dialog
+                                            // );
                                             ask_dialog_events.send(AskDialogEvent(ask_dialog));
 
                                             game_state.set(GameState::Clear);

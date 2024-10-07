@@ -1,11 +1,10 @@
 #![recursion_limit = "1024"]
-mod web;
 
-use bevy::log::debug;
+#[cfg(target_arch = "wasm32")]
 use console_error_panic_hook::set_once as set_panic_hook;
-use the_rust_of_us::{entry, get_public_key};
+
+use the_rust_of_us::entry;
 use wasm_bindgen::prelude::*;
-use web::local_storage::{get_local_storage_value, set_local_storage_value};
 use web_sys::window;
 
 #[wasm_bindgen(inline_js = "export function snippetTest() { console.log('Hello from JS FFI!'); }")]
@@ -13,6 +12,7 @@ extern "C" {
     fn snippetTest();
 }
 
+// TOFIX
 #[wasm_bindgen]
 pub fn wasm_ffi() {
     web_sys::console::log_1(&"Hello from WASM!".into());
@@ -24,6 +24,7 @@ pub fn wasm_ffi() {
 //     debug!("public_key: {:?}", public_key);
 // }
 
+#[cfg(target_arch = "wasm32")]
 fn start_app() {
     let document = window()
         .and_then(|win| win.document())
@@ -40,9 +41,6 @@ fn main() {
         set_panic_hook();
         snippetTest();
         // start_app();
-        // set_public_key("baz");
-        debug!("public_key:...");
-        debug!("public_key:{:?}", get_public_key());
     }
     entry();
 }

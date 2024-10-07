@@ -45,18 +45,18 @@ pub fn spawn_damage_indicator(
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     for DamageEvent(damage) in damage_events.read() {
-        let shape = meshes.add(Circle {
-            radius: damage.radius,
-        });
+        // let shape = meshes.add(Circle {
+        //     radius: damage.radius,
+        // });
         commands.spawn((
-            MaterialMesh2dBundle {
-                mesh: Mesh2dHandle(shape),
-                material: materials.add(Color::srgba(1.0, 0.0, 0.0, damage.power / 50.)),
-                transform: Transform::from_xyz(damage.position.x, damage.position.y, 0.0)
-                    .with_scale(Vec3::new(damage.radius / 100.0, damage.radius / 100.0, 1.0)),
-                ..default()
-            },
-            SpriteLayer::Foreground,
+            // MaterialMesh2dBundle {
+            //     mesh: Mesh2dHandle(shape),
+            //     material: materials.add(Color::srgba(1.0, 0.0, 0.0, damage.power / 50.)),
+            //     transform: Transform::from_xyz(damage.position.x, damage.position.y, 0.0)
+            //         .with_scale(Vec3::new(damage.radius / 100.0, damage.radius / 100.0, 1.0)),
+            //     ..default()
+            // },
+            // SpriteLayer::Foreground,
             DamageIndicator {
                 duration: damage.duration,
             },
