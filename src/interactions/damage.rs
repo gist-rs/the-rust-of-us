@@ -56,7 +56,7 @@ pub fn spawn_damage_indicator(
             //         .with_scale(Vec3::new(damage.radius / 100.0, damage.radius / 100.0, 1.0)),
             //     ..default()
             // },
-            // SpriteLayer::Foreground,
+            SpriteLayer::Foreground,
             DamageIndicator {
                 duration: damage.duration,
             },
@@ -118,6 +118,7 @@ pub fn update_damage(
                             CharacterKind::Human => {
                                 println!("💥  GameState::Over");
                                 game_state.set(GameState::Over);
+                                game_state.set(GameState::Menu);
                             }
                             _ => {
                                 //

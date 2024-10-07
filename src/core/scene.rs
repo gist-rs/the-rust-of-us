@@ -1,12 +1,15 @@
 use std::fs;
 
-use bevy::prelude::*;
+use bevy::{color::palettes::css::RED, prelude::*};
 use bevy_spritesheet_animation::prelude::*;
 use serde_json::from_str;
 
-use crate::animations::{
-    build::build_library,
-    entities::{Ani, AniType},
+use crate::{
+    animations::{
+        build::build_library,
+        entities::{self, Ani, AniType},
+    },
+    entry::game::OnGameScreen,
 };
 
 use super::{
@@ -14,7 +17,7 @@ use super::{
     gate::{Gate, GateState, Gates},
     grave::Grave,
     layer::{SpriteLayer, YSort},
-    map::{get_position_from_map, MapPosition, PathCost},
+    map::{get_position_from_map, MapConfig, MapPosition, PathCost},
     point::{Entrance, Exit},
     position::Position,
 };
@@ -25,9 +28,9 @@ pub struct GameMap(pub Vec<Vec<String>>);
 #[derive(Resource, Default, Debug)]
 pub struct ChunkMap {
     pub walkables: Vec<Vec<bool>>,
-    pub entrance:MapPosition,
-    pub exit:MapPosition, 
-    pub graves:Vec<MapPosition>,
+    pub entrance: MapPosition,
+    pub exit: MapPosition,
+    pub graves: Vec<MapPosition>,
 }
 
 #[allow(unused)]
@@ -56,7 +59,22 @@ pub fn build_scene(
     mut gates: ResMut<Gates>,
     entrance: MapPosition,
     exit: MapPosition,
-) {
+    map_config: Res<MapConfig>,
+) -> Vec<(Entity, Chest)> {
+    // TODO: Didn't help
+    // child.spawn(NodeBundle {
+    //     background_color: Color::srgba(1., 0., 0., 0.1).into(),
+    //     style: Style {
+    //         // position_type: PositionType::Absolute,
+    //         left: Val::Px(0.0),
+    //         bottom: Val::Px(0.0),
+    //         width: Val::Px(320.0),
+    //         height: Val::Px(320.0),
+    //         ..default()
+    //     },
+    //     ..default()
+    // });
+
     // Spawn the background
     let transform = Transform::from_scale(Vec3::splat(11.5));
     commands.spawn((
@@ -123,16 +141,29 @@ pub fn build_scene(
 ]
 "#;
     let decor_animations: Vec<Ani> = from_str(&decor_json).expect("Unable to parse JSON");
+    let mut chest_entities = vec![];
 
     for (y, row) in map.0.iter().enumerate() {
         for (x, cell) in row.iter().enumerate() {
             let transform = get_position_from_map(x, y, None);
+
+            let transform = transform.with_translation(Vec3::new(
+                transform.translation.x,
+                transform.translation.y,
+                transform.translation.z,
+            ));
             match cell.as_str() {
                 "🌳" => {
                     commands.spawn(DecorBundle {
                         sprite_bundle: SpriteBundle {
                             texture: asset_server.load("tree.png"),
-                            transform: transform.with_scale(Vec3::splat(2.0)),
+                            transform: transform.with_scale(Vec3::splat(2.0)).with_translation(
+                                Vec3::new(
+                                    transform.translation.x,
+                                    transform.translation.y - 8.,
+                                    transform.translation.z,
+                                ),
+                            ),
                             ..default()
                         },
                         sprite_layer: SpriteLayer::Ground,
@@ -225,7 +256,8 @@ pub fn build_scene(
                         key: None,
                     };
 
-                    commands.entity(entity).insert(chest.clone());
+                    // commands.entity(entity).insert(chest.clone());
+                    chest_entities.push((entity, chest.clone()));
                     chests.0.insert(chest_id, chest);
                 }
                 "💀" => {
@@ -272,6 +304,8 @@ pub fn build_scene(
             xy: Vec2::new(position.translation.x, position.translation.y),
         },
     ));
+
+    chest_entities
 }
 
 #[derive(Bundle)]

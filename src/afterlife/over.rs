@@ -12,7 +12,7 @@ pub fn game_over_system(
 ) {
     // println!("game_state:{:?}", game_state.get());
     match game_state.get() {
-        GameState::Running => {
+        GameState::Game => {
             // TODO
         }
         GameState::Clear => {
@@ -22,6 +22,9 @@ pub fn game_over_system(
             if query.is_empty() {
                 show_game_over(&mut commands, &asset_server);
             }
+        }
+        _ => {
+            // TODO
         }
     }
 }

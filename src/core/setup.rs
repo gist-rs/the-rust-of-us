@@ -3,13 +3,14 @@ use bevy_spritesheet_animation::prelude::*;
 
 use crate::{
     core::scene::GameMap,
+    entry::game::OnGameScreen,
     maps::gen::{gen_map_from_public_key, refine_walkable_map},
 };
 
 use super::{
     chest::Chests,
     gate::Gates,
-    map::load_map_from_csv,
+    map::{load_map_from_csv, MapConfig},
     scene::{build_scene, ChunkMap},
 };
 
@@ -21,9 +22,9 @@ pub fn setup_scene(
     chests: ResMut<Chests>,
     gates: ResMut<Gates>,
     mut chunk_map: ResMut<ChunkMap>,
+    map_config: Res<MapConfig>,
 ) {
     println!("🔥 setup_scene");
-    commands.spawn(Camera2dBundle::default());
 
     // Load map
     // let (walkables, start, goal, map) = load_map_from_csv("assets/map.csv").unwrap();
@@ -44,7 +45,7 @@ pub fn setup_scene(
         graves,
     };
 
-    build_scene(
+    let chest_entities = build_scene(
         &mut commands,
         &asset_server,
         &mut atlas_layouts,
@@ -54,5 +55,10 @@ pub fn setup_scene(
         gates,
         start,
         goal,
+        map_config,
     );
+
+    chest_entities.into_iter().for_each(|(entity, chest)| {
+        commands.entity(entity).insert(chest.clone());
+    });
 }

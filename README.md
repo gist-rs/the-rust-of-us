@@ -1,5 +1,8 @@
 # The Rust of Us
 
+> [!WARNING]  
+> The code is not production ready, only for learning and enjoy hackathon purpose.
+
 "The Rust of Us" is an RPG game where AI characters can join, live their lives, and survive a zombie apocalypse.
 
 ## Setup
@@ -53,18 +56,6 @@ sequenceDiagram
 
 ## TODO
 
-- [x] Define `FOLLOW`/`FIGHT`/`TRAVEL`/`LIVE`/`AVOID` mode.
-- [x] [FOLLOW] Monster follow to attack when 2 block close.
-- [x] [FIGHT] Monster attack when 1 block close.
-- [x] [FIGHT] Human hurt when attack hit.
-- [x] [FIGHT] Human die when out of health.
-- [x] [FIGHT] Human attack when 1 block close.
-- [x] [FIGHT] Monster hurt when attack hit.
-- [x] [FIGHT] Monster die when out of health.
-- [x] [LOOT] Human walk and open nearest chest.
-- [x] Walkable with Pathfinding from a to b.
-- [x] Walkable with adaptive Pathfinding from a to b.
-- [x] Show game clear.
 - [ ] Show SAVE as NFT.
 - [ ] Connect wallet.
 - [ ] Record map and message on NFT.
@@ -73,13 +64,11 @@ sequenceDiagram
 
 ## TOHAVE
 
-- [ ] Show game over.
 - [ ] Record on KV and NFT as a fallback.
 - [ ] Offer ai to choose behavior and task. e.g. explore north, find treasure, avoid monster.
 - [ ] Gen next move by llm.
 - [ ] Show model name.
 - [ ] Cut scene show owner and their message. // render like x ss
-- [ ] [MENU] Add setting menu.
 - [ ] [MENU] Allow to add `API_URI`, `API_KEY`.
 - [ ] Logic gates quiz
 - [ ] Move stone to open path way.
