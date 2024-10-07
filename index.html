@@ -22,11 +22,31 @@
     <script data-trunk src="src/script.js"></script>
     <script data-trunk src="src/script.mjs" type="module"></script>
     <div style="width: 100%; text-align: center">
-      <canvas id="game" width="320" height="320"></canvas>
-      <br />
-      <small
-        >The Rust of Us by <a href="https://x.com/katopz">@katopz</a></small
-      >
+      <small>The Rust of Us by <a href="https://x.com/katopz">@katopz</a></small
+      ><br />
+      <canvas id="game" width="320px" height="320px"></canvas>
+      <br>
+      <input
+        id="public_key"
+        type="text"
+        style="width:320px;font-size: x-small; font-family: monospace; text-align: center;"
+        value="gistmeAhMG7AcKSPCHis8JikGmKT9tRRyZpyMLNNULq"
+      />
+      <br>
+      <button id="gen-stage-btn">GEN STAGE</button>
+    </div>
+
+    <script>
+      function handle_click() {
+        let public_key = document.getElementById("public_key").value;
+        console.log("public_key:", public_key);
+        localStorage.setItem("public_key", public_key);
+        // didn't work
+        // window.wasmBindings.set_public_key(public_key);
+      }
+
+      document.getElementById("gen-stage-btn").onclick = handle_click;
+    </script>
     </div>
   </body>
   <script>
@@ -35,6 +55,7 @@
 
   <script type="module">
     addEventListener("TrunkApplicationStarted", (event) => {
+      alert("TrunkApplicationStarted");
       console.log(
         "application started - bindings:",
         window.wasmBindings,

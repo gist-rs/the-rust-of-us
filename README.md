@@ -104,12 +104,24 @@ sequenceDiagram
 - [x] A\* Pathfinding: https://github.com/nikhilhenry/astar.rs
 - [x] [big-brain] Utility AI library for the Bevy game engine: https://github.com/zkat/big-brain
 - [ ] [🍃 Bevy Tweening]: https://github.com/djeedai/bevy_tweening
-- [ ] [bevy-inspector-egui]: https://github.com/jakobhellermann/bevy-inspector-egui
+- [x] [bevy-inspector-egui]: https://github.com/jakobhellermann/bevy-inspector-egui
 - [ ] [bevy_local_storage]: https://github.com/robertdodd/bevy_local_storage
 - [ ] https://github.com/umut-sahin/bevy-persistent
+- [ ] https://github.com/johanhelsing/bevy_pkv
+
+## Wasm
+
 - [ ] https://github.com/topheman/bevy-rust-wasm-experiments
 - [ ] https://github.com/ndinata/rust-wasm-vite
 - [ ] https://github.com/mvlabat/bevy_egui
 - [ ] https://github.com/rwasm/vite-rsw-wasm-template
 - [ ] https://bevy-cheatbook.github.io/platforms/wasm.html
-- [ ] https://github.com/trunk-rs/trunk
+- [x] https://github.com/trunk-rs/trunk
+- [ ] https://github.com/katopz/yew-dapp-examples
+
+## Js
+
+```
+const {publicKey} = await window.solana.connect();
+console.log(publicKey.toString());
+```

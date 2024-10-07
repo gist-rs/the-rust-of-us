@@ -7,6 +7,7 @@ mod dialogs;
 mod interactions;
 mod macros;
 mod maps;
+mod web;
 
 use afterlife::over::game_over_system;
 use bevy::{
@@ -15,6 +16,7 @@ use bevy::{
     prelude::*,
     window::{PresentMode, WindowResolution},
 };
+use bevy_pkv::PkvStore;
 use bevy_spritesheet_animation::prelude::*;
 use bevy_stat_bars::RegisterStatbarSubject;
 use big_brain::{BigBrainPlugin, BigBrainSet};
@@ -45,6 +47,7 @@ use interactions::{
     },
     toggle::{update_toggle_chest, ToggleEvent},
 };
+use web::local_storage::get_local_storage_value;
 
 #[derive(Reflect, Resource, Default)]
 #[reflect(Resource)]
@@ -85,6 +88,7 @@ pub fn entry() {
         .register_type::<Behavior>()
         .add_statbar_component_observer::<Health>()
         .register_type::<Configuration>()
+        .insert_resource(PkvStore::new("foo", "bar"))
         .init_resource::<Configuration>()
         .init_resource::<Chests>()
         .init_resource::<Gates>()
@@ -208,4 +212,10 @@ pub fn entry2() {
         }))
         .add_systems(Startup, setup)
         .run();
+}
+
+pub fn get_public_key() -> Option<String> {
+    let public_key = get_local_storage_value("public_key");
+    debug!("public_key: {:?}", public_key);
+    public_key
 }
