@@ -7,8 +7,6 @@ pub enum SpriteLayer {
     Background,
     Ground,
     Foreground,
-    // TODO
-    #[allow(dead_code)]
     Ui,
 }
 

@@ -98,7 +98,6 @@ pub fn update_character<T>(
                                         duration: 0.5,
                                     };
 
-                                    println!("💥 DamageEvent:{:?}", damage);
                                     damage_events.send(DamageEvent(damage));
                                     *ani_action = AniAction { act: action.0 };
                                 };

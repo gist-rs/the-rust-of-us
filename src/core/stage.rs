@@ -1,10 +1,10 @@
 use crate::{
     animations::entities::AniType,
-    get_type_id,
     characters::{
         actions::{Act, LookDirection},
         entities::{CharacterId, CharacterKind},
     },
+    get_type_id,
 };
 use anyhow::*;
 use bevy::prelude::*;
@@ -177,7 +177,56 @@ pub struct Npc {
 pub struct GameStage(pub Stage);
 
 pub fn load_stage_from_yaml(file_path: &str) -> Result<Stage> {
-    let file_content = fs::read_to_string(file_path).expect("Expected stage_1-1.yml");
+    // let file_content = fs::read_to_string(file_path).expect("Expected stage_1-1.yml");
+    let file_content = r#"id: 1-1
+name: "hello world!"
+humans:
+  - kind: human
+    ani_type: man
+    character_id: man_0
+    position: e2
+    look_direction: left
+    act: idle
+    line_of_sight: 200
+    attack: 10
+    defend: 10
+    health: 100
+    tasks:
+      - "find the chest"
+    mindsets:
+      - "when idle, do task"
+      - "when no task, find exit"
+      - "when beside(<1 block) monster, attack monster"
+      - "when lost, find unvisited place"
+      - "when hurt, attack the attacker"
+      - "when low(<50%) health and has potion, drink potion"
+enemies:
+  - kind: monster
+    ani_type: skeleton
+    character_id: skeleton_0
+    position: f3
+    look_direction: right
+    act: idle
+    line_of_sight: 100
+    attack: 1
+    defend: 10
+    health: 100
+    mindsets:
+      - "when idle, rally between grave and chest"
+      - "when near (<2 block) player, follow player"
+      - "when beside (<1 block) player, attack player"
+npcs:
+  - kind: animal
+    ani_type: crab
+    character_id: crab_0
+    position: b2
+    look_direction: left
+    act: idle
+    prompt: |
+      You are a crab representing Rustaceans. 
+      Say only good things about Rust language, 
+      Nothing else.
+"#;
     let stage: Stage = from_str(&file_content)?;
     Ok(stage)
 }

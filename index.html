@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Trunk | Vanilla | web-sys</title>
+
+    <link data-trunk rel="scss" href="src/index.scss" />
+    <link data-trunk rel="css" href="src/app.css" />
+    <link data-trunk data-no-minify rel="css" href="src/not_minified.css" />
+    <link data-trunk rel="copy-dir" href="./assets" />
+    <base data-trunk-public-url />
+  </head>
+  <body>
+    <link
+      data-trunk
+      rel="rust"
+      href="Cargo.toml"
+      data-wasm-opt="z"
+      data-bin="the-rust-of-us"
+    />
+    <script data-trunk src="src/script.js"></script>
+    <script data-trunk src="src/script.mjs" type="module"></script>
+    <div style="width: 100%; text-align: center">
+      <small>The Rust of Us by <a href="https://x.com/katopz">@katopz</a></small
+      ><br />
+      <canvas id="game" width="320px" height="320px"></canvas>
+      <br>
+      <input
+        id="public_key"
+        type="text"
+        style="width:320px;font-size: x-small; font-family: monospace; text-align: center;"
+        value="gistmeAhMG7AcKSPCHis8JikGmKT9tRRyZpyMLNNULq"
+      />
+      <br>
+      <button id="gen-stage-btn">GEN STAGE</button>
+    </div>
+
+    <script>
+      function handle_click() {
+        let public_key = document.getElementById("public_key").value;
+        console.log("public_key:", public_key);
+        localStorage.setItem("public_key", public_key);
+        // didn't work
+        // window.wasmBindings.set_public_key(public_key);
+      }
+
+      document.getElementById("gen-stage-btn").onclick = handle_click;
+    </script>
+    </div>
+  </body>
+  <script>
+    testFromJavaScript();
+  </script>
+
+  <script type="module">
+    addEventListener("TrunkApplicationStarted", (event) => {
+      alert("TrunkApplicationStarted");
+      console.log(
+        "application started - bindings:",
+        window.wasmBindings,
+        "WASM:",
+        event.detail.wasm
+      );
+      window.wasmBindings.wasm_ffi();
+      // You can also run this via the WASM instance in the details
+      //   event.detail.wasm.wasm_ffi();
+    });
+  </script>
+</html>

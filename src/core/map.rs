@@ -1,7 +1,10 @@
 use std::fs;
 
 use anyhow::{bail, Result};
-use bevy::{math::Vec2, prelude::Transform};
+use bevy::{
+    math::Vec2,
+    prelude::{Resource, Transform},
+};
 use csv::*;
 use pathfinding::prelude::*;
 
@@ -189,11 +192,13 @@ pub fn convert_map_to_screen(map_coord: String) -> Option<(usize, usize)> {
     Some((x, y))
 }
 
+// TODO decouple bevy Resource
+#[derive(Resource, Clone)]
 pub struct MapConfig {
-    cell_size: usize,
-    half_width: f32,
-    half_height: f32,
-    offset: (f32, f32),
+    pub cell_size: usize,
+    pub half_width: f32,
+    pub half_height: f32,
+    pub offset: (f32, f32),
 }
 
 impl Default for MapConfig {
