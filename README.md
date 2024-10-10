@@ -1,5 +1,7 @@
 # The Rust of Us
 
+![](ss_0.png)
+
 > [!WARNING]  
 > The code is not production ready, only for learning and enjoy hackathon purpose.
 
